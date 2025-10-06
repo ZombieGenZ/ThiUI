@@ -108,26 +108,26 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <section className="relative h-[600px] bg-slate-100">
+      <section className="relative h-[600px] bg-slate-100 overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920"
             alt="Hero"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover animate-scale-in"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="text-white max-w-2xl">
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+            <h2 className="text-5xl md:text-6xl font-bold mb-4 leading-tight animate-slide-in-left">
               Nội Thất Cao Cấp<br />Cho Ngôi Nhà Của Bạn
             </h2>
-            <p className="text-xl mb-8 text-gray-100">
+            <p className="text-xl mb-8 text-gray-100 animate-slide-in-left animation-delay-200">
               Khám phá bộ sưu tập nội thất hiện đại, sang trọng với chất lượng vượt trội
             </p>
-            <button className="bg-white text-slate-900 px-8 py-4 rounded-sm font-semibold hover:bg-gray-100 transition-colors inline-flex items-center">
+            <button className="bg-white text-slate-900 px-8 py-4 rounded-sm font-semibold hover:bg-gray-100 transition-all duration-300 inline-flex items-center hover:gap-3 gap-2 animate-slide-in-left animation-delay-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 group">
               Khám Phá Ngay
-              <ChevronRight className="ml-2 w-5 h-5" />
+              <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
             </button>
           </div>
         </div>
@@ -135,16 +135,17 @@ export default function HomePage() {
 
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900">
+          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900 animate-fade-in">
             Danh Mục Sản Phẩm
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((category, index) => (
               <div
                 key={index}
-                className="bg-slate-50 p-6 text-center hover:bg-slate-100 transition-colors cursor-pointer border border-gray-200"
+                className="bg-slate-50 p-6 text-center hover:bg-slate-900 hover:text-white transition-all duration-300 cursor-pointer border border-gray-200 rounded-lg transform hover:scale-105 hover:shadow-lg animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <p className="font-semibold text-slate-900">{category}</p>
+                <p className="font-semibold">{category}</p>
               </div>
             ))}
           </div>
@@ -154,10 +155,10 @@ export default function HomePage() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
-            <h3 className="text-3xl font-bold text-slate-900">Sản Phẩm Nổi Bật</h3>
-            <a href="/products" className="text-slate-600 hover:text-slate-900 font-medium inline-flex items-center">
+            <h3 className="text-3xl font-bold text-slate-900 animate-slide-in-left">Sản Phẩm Nổi Bật</h3>
+            <a href="/products" className="text-slate-600 hover:text-slate-900 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all duration-300 animate-slide-in-right group">
               Xem Tất Cả
-              <ChevronRight className="ml-1 w-5 h-5" />
+              <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
             </a>
           </div>
 
@@ -171,45 +172,45 @@ export default function HomePage() {
 
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900">
+          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900 animate-fade-in">
             Tại Sao Chọn Chúng Tôi
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center group animate-slide-up">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900">Chất Lượng Đảm Bảo</h4>
-              <p className="text-slate-600">Sản phẩm chính hãng, bảo hành dài hạn</p>
+              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Chất Lượng Đảm Bảo</h4>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Sản phẩm chính hãng, bảo hành dài hạn</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center group animate-slide-up animation-delay-100">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900">Giá Cả Hợp Lý</h4>
-              <p className="text-slate-600">Giá tốt nhất thị trường, nhiều ưu đãi</p>
+              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Giá Cả Hợp Lý</h4>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Giá tốt nhất thị trường, nhiều ưu đãi</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center group animate-slide-up animation-delay-200">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900">Giao Hàng Nhanh</h4>
-              <p className="text-slate-600">Vận chuyển và lắp đặt tận nơi</p>
+              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Giao Hàng Nhanh</h4>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Vận chuyển và lắp đặt tận nơi</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center group animate-slide-up animation-delay-300">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900">Hỗ Trợ 24/7</h4>
-              <p className="text-slate-600">Tư vấn nhiệt tình, chuyên nghiệp</p>
+              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Hỗ Trợ 24/7</h4>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Tư vấn nhiệt tình, chuyên nghiệp</p>
             </div>
           </div>
         </div>
@@ -217,12 +218,12 @@ export default function HomePage() {
 
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900">
+          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900 animate-fade-in">
             Khách Hàng Nói Gì Về Chúng Tôi
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-sm">
+            {testimonials.map((testimonial, index) => (
+              <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-slide-up" style={{ animationDelay: `${index * 0.15}s` }}>
                 <div className="flex items-center mb-4">
                   <img
                     src={testimonial.avatar}
@@ -247,19 +248,19 @@ export default function HomePage() {
 
       <section className="py-16 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-3xl font-bold mb-4">
+          <h3 className="text-3xl font-bold mb-4 animate-fade-in">
             Đăng Ký Nhận Tin Khuyến Mãi
           </h3>
-          <p className="text-gray-300 mb-8">
+          <p className="text-gray-300 mb-8 animate-fade-in animation-delay-100">
             Nhận thông tin sản phẩm mới và ưu đãi đặc biệt qua email
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto animate-slide-up animation-delay-200">
             <input
               type="email"
               placeholder="Nhập email của bạn"
-              className="flex-1 px-4 py-3 rounded-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-white"
+              className="flex-1 px-4 py-3 rounded-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300 focus:scale-105"
             />
-            <button className="bg-white text-slate-900 px-8 py-3 rounded-sm font-semibold hover:bg-gray-100 transition-colors">
+            <button className="bg-white text-slate-900 px-8 py-3 rounded-sm font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95">
               Đăng Ký
             </button>
           </div>

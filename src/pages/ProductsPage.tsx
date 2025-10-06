@@ -143,8 +143,8 @@ export default function ProductsPage() {
 
       <section className="py-8 bg-slate-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Sản Phẩm</h1>
-          <p className="text-slate-600">Khám phá bộ sưu tập nội thất đa dạng của chúng tôi</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2 animate-slide-down">Sản Phẩm</h1>
+          <p className="text-slate-600 animate-slide-down animation-delay-100">Khám phá bộ sưu tập nội thất đa dạng của chúng tôi</p>
         </div>
       </section>
 
@@ -152,7 +152,7 @@ export default function ProductsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8">
             <aside className="lg:w-64 flex-shrink-0">
-              <div className="bg-white p-6 rounded-lg border border-gray-200 sticky top-24">
+              <div className="bg-white p-6 rounded-lg border border-gray-200 sticky top-24 animate-slide-in-left hover:shadow-lg transition-shadow duration-300">
                 <div className="flex items-center mb-4">
                   <SlidersHorizontal className="w-5 h-5 text-slate-900 mr-2" />
                   <h3 className="font-bold text-lg text-slate-900">Bộ Lọc</h3>
@@ -238,21 +238,21 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                <button className="w-full bg-slate-900 text-white py-2 rounded-sm hover:bg-slate-700 transition-colors">
+                <button className="w-full bg-slate-900 text-white py-2 rounded-sm hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95">
                   Xóa Bộ Lọc
                 </button>
               </div>
             </aside>
 
             <main className="flex-1">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 animate-slide-in-right">
                 <p className="text-slate-600">
                   Hiển thị <span className="font-semibold">{filteredProducts.length}</span> sản phẩm
                 </p>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all duration-300 hover:shadow-lg"
                 >
                   <option value="newest">Mới nhất</option>
                   <option value="price-low">Giá thấp đến cao</option>
@@ -267,15 +267,15 @@ export default function ProductsPage() {
                 ))}
               </div>
 
-              <div className="mt-12 flex justify-center">
+              <div className="mt-12 flex justify-center animate-fade-in">
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">
+                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
                     Trước
                   </button>
-                  <button className="px-4 py-2 bg-slate-900 text-white rounded-sm">1</button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">2</button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">3</button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">
+                  <button className="px-4 py-2 bg-slate-900 text-white rounded-sm transform scale-110 shadow-lg">1</button>
+                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">2</button>
+                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">3</button>
+                  <button className="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
                     Sau
                   </button>
                 </div>

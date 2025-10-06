@@ -41,19 +41,19 @@ export default function AboutPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <section className="relative h-[400px] bg-slate-100">
+      <section className="relative h-[400px] bg-slate-100 overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920"
             alt="About Us"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover animate-scale-in"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center">
           <div className="text-center text-white">
-            <h1 className="text-5xl font-bold mb-4">Về Chúng Tôi</h1>
-            <p className="text-xl text-gray-100">
+            <h1 className="text-5xl font-bold mb-4 animate-slide-down">Về Chúng Tôi</h1>
+            <p className="text-xl text-gray-100 animate-slide-down animation-delay-200">
               Đồng hành cùng bạn tạo nên không gian sống hoàn hảo
             </p>
           </div>
@@ -63,7 +63,7 @@ export default function AboutPage() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="animate-slide-in-left">
               <h2 className="text-3xl font-bold text-slate-900 mb-6">
                 Câu Chuyện Của Chúng Tôi
               </h2>
@@ -83,16 +83,16 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 animate-slide-in-right">
               <img
                 src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=600"
                 alt="Showroom 1"
-                className="w-full h-64 object-cover rounded-lg"
+                className="w-full h-64 object-cover rounded-lg hover:scale-105 transition-transform duration-500 shadow-lg hover:shadow-2xl"
               />
               <img
                 src="https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=600"
                 alt="Showroom 2"
-                className="w-full h-64 object-cover rounded-lg mt-8"
+                className="w-full h-64 object-cover rounded-lg mt-8 hover:scale-105 transition-transform duration-500 shadow-lg hover:shadow-2xl"
               />
             </div>
           </div>
@@ -102,10 +102,10 @@ export default function AboutPage() {
       <section className="py-16 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat) => (
-              <div key={stat.id} className="text-center">
-                <div className="text-4xl font-bold text-slate-900 mb-2">{stat.value}</div>
-                <div className="text-slate-600">{stat.label}</div>
+            {stats.map((stat, index) => (
+              <div key={stat.id} className="text-center group animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
+                <div className="text-4xl font-bold text-slate-900 mb-2 group-hover:scale-110 transition-transform duration-300">{stat.value}</div>
+                <div className="text-slate-600 group-hover:text-slate-900 transition-colors duration-300">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -114,43 +114,43 @@ export default function AboutPage() {
 
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
+          <h2 className="text-3xl font-bold text-center text-slate-900 mb-12 animate-fade-in">
             Giá Trị Cốt Lõi
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="w-8 h-8" />
+            <div className="text-center group animate-slide-up">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                <Award className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">Chất Lượng</h3>
-              <p className="text-slate-600">
+              <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-700 transition-colors duration-300">Chất Lượng</h3>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">
                 Cam kết sản phẩm chính hãng với tiêu chuẩn cao nhất
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8" />
+            <div className="text-center group animate-slide-up animation-delay-100">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                <Users className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">Khách Hàng</h3>
-              <p className="text-slate-600">
+              <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-700 transition-colors duration-300">Khách Hàng</h3>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">
                 Đặt sự hài lòng của khách hàng lên hàng đầu
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-8 h-8" />
+            <div className="text-center group animate-slide-up animation-delay-200">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                <Building2 className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">Chuyên Nghiệp</h3>
-              <p className="text-slate-600">
+              <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-700 transition-colors duration-300">Chuyên Nghiệp</h3>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">
                 Đội ngũ tư vấn giàu kinh nghiệm và nhiệt tình
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8" />
+            <div className="text-center group animate-slide-up animation-delay-300">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                <Heart className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">Tận Tâm</h3>
-              <p className="text-slate-600">
+              <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-700 transition-colors duration-300">Tận Tâm</h3>
+              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">
                 Phục vụ khách hàng với trái tim và tâm huyết
               </p>
             </div>
@@ -160,19 +160,19 @@ export default function AboutPage() {
 
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
+          <h2 className="text-3xl font-bold text-center text-slate-900 mb-12 animate-fade-in">
             Đội Ngũ Của Chúng Tôi
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member) => (
-              <div key={member.id} className="text-center">
+            {team.map((member, index) => (
+              <div key={member.id} className="text-center group animate-scale-in" style={{ animationDelay: `${index * 0.15}s` }}>
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="w-48 h-48 rounded-full mx-auto mb-4 object-cover"
+                  className="w-48 h-48 rounded-full mx-auto mb-4 object-cover group-hover:scale-110 transition-transform duration-500 shadow-lg group-hover:shadow-2xl"
                 />
-                <h3 className="font-bold text-lg text-slate-900">{member.name}</h3>
-                <p className="text-slate-600">{member.position}</p>
+                <h3 className="font-bold text-lg text-slate-900 group-hover:text-slate-700 transition-colors duration-300">{member.name}</h3>
+                <p className="text-slate-600 group-hover:text-slate-800 transition-colors duration-300">{member.position}</p>
               </div>
             ))}
           </div>
@@ -181,15 +181,15 @@ export default function AboutPage() {
 
       <section className="py-16 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4">
+          <h2 className="text-3xl font-bold mb-4 animate-fade-in">
             Sẵn Sàng Tạo Nên Không Gian Mơ Ước?
           </h2>
-          <p className="text-gray-300 mb-8 text-lg">
+          <p className="text-gray-300 mb-8 text-lg animate-fade-in animation-delay-100">
             Hãy để chúng tôi giúp bạn biến ngôi nhà thành tổ ấm hoàn hảo
           </p>
           <a
             href="/contact"
-            className="inline-block bg-white text-slate-900 px-8 py-4 rounded-sm font-semibold hover:bg-gray-100 transition-colors"
+            className="inline-block bg-white text-slate-900 px-8 py-4 rounded-sm font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 animate-slide-up animation-delay-200"
           >
             Liên Hệ Ngay
           </a>
