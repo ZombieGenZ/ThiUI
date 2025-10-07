@@ -26,7 +26,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            data-cursor="explore"
+           
           >
             <X className="w-5 h-5" />
           </button>
@@ -45,7 +45,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <button
                 onClick={onClose}
                 className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-                data-cursor="explore"
+               
               >
                 Continue Shopping
               </button>
@@ -75,7 +75,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-                          data-cursor="explore"
+                         
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -83,7 +83,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           className="w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-                          data-cursor="explore"
+                         
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -92,7 +92,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="text-sm text-red-600 hover:underline"
-                        data-cursor="explore"
+                       
                       >
                         Remove
                       </button>
@@ -121,7 +121,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
             <button
               className="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors font-semibold"
-              data-cursor="explore"
+             
             >
               Proceed to Checkout
             </button>
@@ -129,7 +129,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             <button
               onClick={onClose}
               className="w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              data-cursor="explore"
+             
             >
               Continue Shopping
             </button>

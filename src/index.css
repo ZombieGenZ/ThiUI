@@ -16,12 +16,9 @@
     @apply antialiased font-sans text-neutral-800;
   }
 
-  * {
-    @apply will-change-auto;
-  }
-
   img {
-    @apply will-change-transform;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }
 

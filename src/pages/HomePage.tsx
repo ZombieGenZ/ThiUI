@@ -99,7 +99,7 @@ export function HomePage() {
                 </p>
                 <button
                   className="bg-white text-black px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 inline-flex items-center space-x-2"
-                  data-cursor="explore"
+                 
                 >
                   <span>{slide.cta}</span>
                   <ArrowRight className="w-5 h-5" />
@@ -112,14 +112,14 @@ export function HomePage() {
         <button
           onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
           className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors"
-          data-cursor="explore"
+         
         >
           <ChevronLeft className="w-6 h-6 text-white" />
         </button>
         <button
           onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
           className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors"
-          data-cursor="explore"
+         
         >
           <ChevronRight className="w-6 h-6 text-white" />
         </button>
@@ -132,7 +132,7 @@ export function HomePage() {
               className={`w-3 h-3 rounded-full transition-all ${
                 index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
               }`}
-              data-cursor="explore"
+             
             />
           ))}
         </div>
@@ -156,7 +156,7 @@ export function HomePage() {
           <a
             href="/shop"
             className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
-            data-cursor="explore"
+           
           >
             <span>View All</span>
             <ArrowRight className="w-4 h-4" />
@@ -185,7 +185,7 @@ export function HomePage() {
                 key={category.id}
                 href={`/shop/${category.slug}`}
                 className="group relative aspect-square rounded-lg overflow-hidden"
-                data-cursor="explore"
+               
                 data-aos="zoom-in"
                 data-aos-delay={index * 50}
               >
@@ -216,7 +216,7 @@ export function HomePage() {
           <a
             href="/shop?filter=new"
             className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
-            data-cursor="explore"
+           
           >
             <span>View All</span>
             <ArrowRight className="w-4 h-4" />

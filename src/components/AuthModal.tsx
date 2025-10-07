@@ -67,7 +67,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <button
             onClick={onClose}
             className="absolute right-4 top-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            data-cursor="explore"
+           
           >
             <X className="w-5 h-5" />
           </button>
@@ -147,7 +147,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      data-cursor="explore"
+                     
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -165,7 +165,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     type="button"
                     onClick={() => setMode('reset')}
                     className="text-black hover:underline"
-                    data-cursor="explore"
+                   
                   >
                     Forgot password?
                   </button>
@@ -176,7 +176,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 type="submit"
                 disabled={loading}
                 className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                data-cursor="explore"
+               
               >
                 {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
               </button>
@@ -193,7 +193,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       setSuccess('');
                     }}
                     className="text-black font-semibold hover:underline"
-                    data-cursor="explore"
+                   
                   >
                     Sign up
                   </button>
@@ -208,7 +208,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       setSuccess('');
                     }}
                     className="text-black font-semibold hover:underline"
-                    data-cursor="explore"
+                   
                   >
                     Sign in
                   </button>

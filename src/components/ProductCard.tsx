@@ -52,7 +52,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           <Link
             to={`/product/${product.slug}`}
             className="bg-white text-neutral-900 px-5 py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100"
-            data-cursor="explore"
+           
           >
             <Eye className="w-4 h-4" />
             <span>View</span>
@@ -61,7 +61,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             <button
               onClick={onAddToCart}
               className="bg-brand-600 text-white px-5 py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700"
-              data-cursor="cart"
+             
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Add</span>

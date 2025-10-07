@@ -16,6 +16,7 @@ import { ProductDetailPage } from './pages/ProductDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { ContactPage } from './pages/ContactPage';
+import { SalePage } from './pages/SalePage';
 import { Header } from './components/Header';
 
 function App() {
@@ -26,12 +27,12 @@ function App() {
   const handleLoadComplete = () => {
     setLoading(false);
     AOS.init({
-      duration: 600,
-      easing: 'ease-out-cubic',
+      duration: 400,
+      easing: 'ease-out',
       once: true,
-      offset: 50,
+      offset: 20,
       delay: 0,
-      disable: 'mobile',
+      disable: false,
     });
   };
 
@@ -51,9 +52,9 @@ function App() {
 
           {!loading && (
             <>
-              <div className="min-h-screen flex flex-col">
+              <div className="min-h-screen flex flex-col transition-opacity duration-300">
                 <Header onCartOpen={() => setCartOpen(true)} onAuthOpen={() => setAuthOpen(true)} />
-                <main className="flex-1 pt-20">
+                <main className="flex-1 pt-20 transition-all duration-300">
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/about" element={<AboutPage />} />
@@ -64,6 +65,7 @@ function App() {
                     <Route path="/shop/office" element={<OfficePage />} />
                     <Route path="/shop/outdoor" element={<OutdoorPage />} />
                     <Route path="/product/:slug" element={<ProductDetailPage />} />
+                    <Route path="/sale" element={<SalePage />} />
                   </Routes>
                 </main>
                 <Footer />

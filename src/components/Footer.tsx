@@ -60,28 +60,28 @@ export function Footer() {
               <a
                 href="#"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
-                data-cursor="explore"
+               
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
-                data-cursor="explore"
+               
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
-                data-cursor="explore"
+               
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
-                data-cursor="explore"
+               
               >
                 <Youtube className="w-5 h-5" />
               </a>
@@ -97,7 +97,7 @@ export function Footer() {
                     <a
                       href={link.path}
                       className="text-sm hover:text-white transition-colors"
-                      data-cursor="explore"
+                     
                     >
                       {link.name}
                     </a>
@@ -127,7 +127,7 @@ export function Footer() {
               <button
                 type="submit"
                 className="px-6 py-2 bg-white text-gray-900 rounded-r-lg hover:bg-gray-100 transition-colors font-medium text-sm"
-                data-cursor="explore"
+               
               >
                 Subscribe
               </button>

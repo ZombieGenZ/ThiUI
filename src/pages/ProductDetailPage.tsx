@@ -19,9 +19,10 @@ interface Product {
   room_type: string | null;
   dimensions: any;
   materials: string[];
-  colors: string[];
-  in_stock: boolean;
+  weight: number | null;
+  sku: string;
   stock_quantity: number;
+  style: string | null;
 }
 
 export function ProductDetailPage() {
@@ -207,7 +208,23 @@ export function ProductDetailPage() {
 
             <p className="text-neutral-600 leading-relaxed mb-8">{product.description}</p>
 
+            {product.style && (
+              <div className="mb-6">
+                <span className="inline-block bg-neutral-100 text-neutral-700 text-sm font-medium px-4 py-2 rounded-full">
+                  Style: {product.style}
+                </span>
+              </div>
+            )}
+
             <div className="border-t border-neutral-200 pt-8 mb-8">
+              {product.stock_quantity > 0 && product.stock_quantity <= 10 && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-amber-800 text-sm font-medium">
+                    Only {product.stock_quantity} left in stock - order soon!
+                  </p>
+                </div>
+              )}
+
               <div className="flex items-center space-x-4 mb-6">
                 <label className="font-semibold text-neutral-900">Quantity:</label>
                 <div className="flex items-center border border-neutral-300 rounded-lg">
@@ -230,15 +247,15 @@ export function ProductDetailPage() {
               <div className="flex space-x-4">
                 <button
                   onClick={handleAddToCart}
-                  disabled={addingToCart || !product.in_stock}
+                  disabled={addingToCart || product.stock_quantity === 0}
                   className={`flex-1 bg-brand-600 text-white px-8 py-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                    product.in_stock
+                    product.stock_quantity > 0
                       ? 'hover:bg-brand-700 transform hover:scale-[1.02]'
                       : 'opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>{addingToCart ? 'Adding...' : product.in_stock ? 'Add to Cart' : 'Out of Stock'}</span>
+                  <span>{addingToCart ? 'Adding...' : product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
                 </button>
                 {user && (
                   <button className="w-14 h-14 border-2 border-neutral-300 rounded-lg flex items-center justify-center hover:border-brand-600 hover:text-brand-600 transition-colors">
@@ -272,37 +289,59 @@ export function ProductDetailPage() {
               </div>
             </div>
 
-            {product.dimensions && (
-              <div className="border-t border-neutral-200 pt-8 mt-8">
-                <h3 className="font-semibold text-neutral-900 mb-4">Product Details</h3>
-                <div className="space-y-2 text-sm">
-                  {product.dimensions.width && (
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">Width:</span>
-                      <span className="text-neutral-900 font-medium">{product.dimensions.width}"</span>
-                    </div>
-                  )}
-                  {product.dimensions.height && (
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">Height:</span>
-                      <span className="text-neutral-900 font-medium">{product.dimensions.height}"</span>
-                    </div>
-                  )}
-                  {product.dimensions.depth && (
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">Depth:</span>
-                      <span className="text-neutral-900 font-medium">{product.dimensions.depth}"</span>
-                    </div>
-                  )}
-                  {product.materials && product.materials.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">Materials:</span>
-                      <span className="text-neutral-900 font-medium">{product.materials.join(', ')}</span>
-                    </div>
-                  )}
+            <div className="border-t border-neutral-200 pt-8 mt-8">
+              <h3 className="font-semibold text-neutral-900 mb-4">Product Details</h3>
+              <div className="space-y-2 text-sm">
+                {product.sku && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">SKU:</span>
+                    <span className="text-neutral-900 font-medium">{product.sku}</span>
+                  </div>
+                )}
+                {product.dimensions?.width && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Width:</span>
+                    <span className="text-neutral-900 font-medium">{product.dimensions.width}</span>
+                  </div>
+                )}
+                {product.dimensions?.height && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Height:</span>
+                    <span className="text-neutral-900 font-medium">{product.dimensions.height}</span>
+                  </div>
+                )}
+                {product.dimensions?.depth && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Depth:</span>
+                    <span className="text-neutral-900 font-medium">{product.dimensions.depth}</span>
+                  </div>
+                )}
+                {product.weight && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Weight:</span>
+                    <span className="text-neutral-900 font-medium">{product.weight} kg</span>
+                  </div>
+                )}
+                {product.materials && product.materials.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Materials:</span>
+                    <span className="text-neutral-900 font-medium">{product.materials.join(', ')}</span>
+                  </div>
+                )}
+                {product.room_type && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Room Type:</span>
+                    <span className="text-neutral-900 font-medium">{product.room_type}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">Availability:</span>
+                  <span className={`font-medium ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {product.stock_quantity > 0 ? `In Stock (${product.stock_quantity} available)` : 'Out of Stock'}
+                  </span>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
