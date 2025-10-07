@@ -15,6 +15,9 @@ import { OfficePage } from './pages/OfficePage';
 import { OutdoorPage } from './pages/OutdoorPage';
 import { SalePage } from './pages/SalePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { AboutPage } from './pages/AboutPage';
+import { ProductsPage } from './pages/ProductsPage';
+import { ContactPage } from './pages/ContactPage';
 import { Header } from './components/Header';
 
 function App() {
@@ -56,6 +59,9 @@ function App() {
                 <main className="flex-1 pt-20">
                   <Routes>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
                     <Route path="/shop/bedroom" element={<BedroomPage />} />
                     <Route path="/shop/dining" element={<DiningPage />} />
                     <Route path="/shop/office" element={<OfficePage />} />

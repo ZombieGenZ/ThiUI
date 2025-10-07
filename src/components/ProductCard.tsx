@@ -12,6 +12,8 @@ interface Product {
   review_count: number;
   is_new: boolean;
   room_type: string | null;
+  stock_quantity?: number;
+  in_stock?: boolean;
 }
 
 interface ProductCardProps {
@@ -91,7 +93,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           </div>
         )}
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 mb-2">
           <span className={`font-bold text-lg ${hasDiscount ? 'text-accent-600' : 'text-neutral-900'}`}>
             ${price.toFixed(2)}
           </span>
@@ -99,6 +101,12 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             <span className="text-sm text-neutral-500 line-through">${product.base_price.toFixed(2)}</span>
           )}
         </div>
+
+        {product.stock_quantity !== undefined && product.stock_quantity > 0 && product.stock_quantity <= 10 && (
+          <p className="text-xs text-orange-600 font-semibold">
+            Only {product.stock_quantity} left in stock!
+          </p>
+        )}
       </div>
     </div>
   );
