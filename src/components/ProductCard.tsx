@@ -29,8 +29,8 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft">
-      <div className="relative aspect-square overflow-hidden bg-neutral-100">
+    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft flex flex-col h-full">
+      <div className="relative aspect-square overflow-hidden bg-neutral-100 flex-shrink-0">
         {product.is_new && (
           <div className="absolute top-4 left-4 z-10 bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-medium">
             NEW
@@ -70,9 +70,9 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         </div>
       </div>
 
-      <div className="p-5">
-        <Link to={`/product/${product.slug}`}>
-          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
+      <div className="p-5 flex flex-col flex-1">
+        <Link to={`/product/${product.slug}`} className="flex-1">
+          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors min-h-[3rem]">
             {product.name}
           </h3>
         </Link>
@@ -93,7 +93,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           </div>
         )}
 
-        <div className="flex items-center space-x-2 mb-2">
+        <div className="flex items-center space-x-2 mb-2 mt-auto">
           <span className={`font-bold text-lg ${hasDiscount ? 'text-accent-600' : 'text-neutral-900'}`}>
             ${price.toFixed(2)}
           </span>

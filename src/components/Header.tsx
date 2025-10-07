@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, ShoppingCart, Heart, User, Menu, X, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -12,9 +12,10 @@ interface HeaderProps {
 export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const productCategories = [
     { name: 'All Products', path: '/products' },
@@ -53,30 +54,26 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
               </Link>
 
               <div
-                className="relative"
-                onMouseEnter={() => setProductsDropdownOpen(true)}
-                onMouseLeave={() => setProductsDropdownOpen(false)}
+                className="relative group"
               >
                 <button className="text-sm font-medium transition-colors hover:text-brand-600 flex items-center space-x-1">
                   <span>Products</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                {productsDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                    {productCategories.map((cat) => (
-                      <Link
-                        key={cat.name}
-                        to={cat.path}
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-100">
+                  {productCategories.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      to={cat.path}
+                      className="block px-4 py-3 text-sm hover:bg-brand-50 hover:text-brand-600 transition-colors font-medium"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
 
               <Link
@@ -199,16 +196,61 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
         </div>
 
         {searchOpen && (
-          <div className="border-t border-gray-200 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search furniture, rooms, styles..."
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  autoFocus
-                />
+          <div className="border-t border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-600" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+                        setSearchOpen(false);
+                        setSearchQuery('');
+                      }
+                    }}
+                    placeholder="Search for furniture, styles, rooms..."
+                    className="w-full pl-12 pr-32 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 text-base transition-all"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => {
+                      if (searchQuery.trim()) {
+                        navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+                        setSearchOpen(false);
+                        setSearchQuery('');
+                      }
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-600 text-white px-6 py-2.5 rounded-lg hover:bg-brand-700 transition-colors font-medium flex items-center space-x-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Search</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600 font-medium">Popular:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {['Sofa', 'Bed', 'Dining Table', 'Office Chair', 'Outdoor'].map((term) => (
+                        <button
+                          key={term}
+                          onClick={() => {
+                            navigate(`/products?search=${term}`);
+                            setSearchOpen(false);
+                          }}
+                          className="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm hover:border-brand-600 hover:text-brand-600 transition-colors"
+                        >
+                          {term}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
