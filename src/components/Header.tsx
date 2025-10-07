@@ -20,7 +20,6 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
     { name: 'About Us', path: '/about' },
     { name: 'Products', path: '/products' },
     { name: 'Contact', path: '/contact' },
-    { name: 'Sale', path: '/sale', highlight: true },
   ];
 
   return (
@@ -47,9 +46,7 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
                 <Link
                   key={cat.name}
                   to={cat.path}
-                  className={`text-sm font-medium transition-colors hover:text-gray-600 ${
-                    cat.highlight ? 'text-red-600 hover:text-red-700' : ''
-                  }`}
+                  className={`text-sm font-medium transition-colors hover:text-gray-600 `}
                   data-cursor="explore"
                 >
                   {cat.name}
@@ -179,9 +176,7 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
                 <Link
                   key={cat.name}
                   to={cat.path}
-                  className={`block px-6 py-3 text-sm font-medium hover:bg-gray-100 transition-colors ${
-                    cat.highlight ? 'text-red-600' : ''
-                  }`}
+                  className={`block px-6 py-3 text-sm font-medium hover:bg-gray-100 transition-colors `}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {cat.name}

@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { LoadingScreen } from './components/LoadingScreen';
-import { CustomCursor } from './components/CustomCursor';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
 import { AuthModal } from './components/AuthModal';
@@ -13,7 +12,6 @@ import { BedroomPage } from './pages/BedroomPage';
 import { DiningPage } from './pages/DiningPage';
 import { OfficePage } from './pages/OfficePage';
 import { OutdoorPage } from './pages/OutdoorPage';
-import { SalePage } from './pages/SalePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { ProductsPage } from './pages/ProductsPage';
@@ -53,7 +51,6 @@ function App() {
 
           {!loading && (
             <>
-              <CustomCursor />
               <div className="min-h-screen flex flex-col">
                 <Header onCartOpen={() => setCartOpen(true)} onAuthOpen={() => setAuthOpen(true)} />
                 <main className="flex-1 pt-20">
@@ -66,7 +63,6 @@ function App() {
                     <Route path="/shop/dining" element={<DiningPage />} />
                     <Route path="/shop/office" element={<OfficePage />} />
                     <Route path="/shop/outdoor" element={<OutdoorPage />} />
-                    <Route path="/sale" element={<SalePage />} />
                     <Route path="/product/:slug" element={<ProductDetailPage />} />
                   </Routes>
                 </main>
