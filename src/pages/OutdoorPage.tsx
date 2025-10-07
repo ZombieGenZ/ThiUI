@@ -146,13 +146,6 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-        <button
-          onClick={onAddToCart}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black px-6 py-2 rounded-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        >
-          Add to Cart
-        </button>
       </div>
       <div className="p-4">
         <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>

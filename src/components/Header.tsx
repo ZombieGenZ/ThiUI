@@ -26,7 +26,7 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 z-40 glass-effect border-b border-neutral-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <button
@@ -39,7 +39,7 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
 
             <div className="flex-1 lg:flex-initial">
               <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide font-bold" data-cursor="explore">
-                <span className="text-green-600">Zombie</span><span className="text-gray-900">Shop</span>
+                <span className="text-brand-600">Zombie</span><span className="text-neutral-900">Shop</span>
               </Link>
             </div>
 
@@ -84,7 +84,7 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
               >
                 <ShoppingCart className="w-5 h-5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-black text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                     {itemCount}
                   </span>
                 )}

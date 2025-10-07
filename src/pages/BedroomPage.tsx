@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Star, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
+import { ProductCard } from '../components/ProductCard';
 
 interface Product {
   id: string;
@@ -64,7 +65,7 @@ export function BedroomPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-neutral-50">
       <div
         className="relative h-80 bg-cover bg-center"
         style={{
@@ -82,17 +83,17 @@ export function BedroomPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center justify-between mb-8">
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Showing <span className="font-semibold">{filteredProducts.length}</span> products
           </p>
 
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <SlidersHorizontal className="w-5 h-5 text-gray-600" />
+              <SlidersHorizontal className="w-5 h-5 text-neutral-600" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                className="border border-neutral-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="featured">Featured</option>
                 <option value="newest">Newest</option>
@@ -103,7 +104,7 @@ export function BedroomPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product, index) => (
             <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
               <ProductCard product={product} onAddToCart={() => addToCart(product.id, 1)} />
@@ -113,7 +114,7 @@ export function BedroomPage() {
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-xl text-gray-600">No products found</p>
+            <p className="text-xl text-neutral-600">No products found</p>
           </div>
         )}
       </div>
@@ -121,61 +122,3 @@ export function BedroomPage() {
   );
 }
 
-function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: () => void }) {
-  const price = product.sale_price || product.base_price;
-  const hasDiscount = product.sale_price && product.sale_price < product.base_price;
-  const discountPercent = hasDiscount
-    ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
-    : 0;
-
-  return (
-    <div className="group relative bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
-        {product.is_new && (
-          <div className="absolute top-4 left-4 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            NEW
-          </div>
-        )}
-        {hasDiscount && (
-          <div className="absolute top-4 right-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            -{discountPercent}%
-          </div>
-        )}
-        <img
-          src={product.images[0] || 'https://images.pexels.com/photos/1743229/pexels-photo-1743229.jpeg'}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-        <button
-          onClick={onAddToCart}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black px-6 py-2 rounded-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        >
-          Add to Cart
-        </button>
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
-        {product.rating > 0 && (
-          <div className="flex items-center space-x-1 mb-2">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                }`}
-              />
-            ))}
-            <span className="text-sm text-gray-600">({product.review_count})</span>
-          </div>
-        )}
-        <div className="flex items-center space-x-2">
-          <span className="font-bold text-lg">${price.toFixed(2)}</span>
-          {hasDiscount && (
-            <span className="text-sm text-gray-500 line-through">${product.base_price.toFixed(2)}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}

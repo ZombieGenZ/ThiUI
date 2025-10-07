@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Star, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { ProductCard } from '../components/ProductCard';
 
 interface Product {
   id: string;
@@ -147,14 +148,14 @@ export function HomePage() {
         <div className="flex items-center justify-between mb-12" data-aos="fade-up">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <Sparkles className="w-6 h-6 text-yellow-500" />
-              <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Featured</span>
+              <Sparkles className="w-6 h-6 text-accent-500" />
+              <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">Featured</span>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl">Best Sellers</h2>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-900">Best Sellers</h2>
           </div>
           <a
             href="/shop"
-            className="text-sm font-semibold hover:underline inline-flex items-center space-x-1"
+            className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
             data-cursor="explore"
           >
             <span>View All</span>
@@ -162,20 +163,20 @@ export function HomePage() {
           </a>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {featuredProducts.map((product, index) => (
-            <div key={product.id} data-aos="fade-up" data-aos-delay={index * 100}>
+            <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
               <ProductCard product={product} />
             </div>
           ))}
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20">
+      <section className="gradient-bg py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12" data-aos="fade-up">
-            <h2 className="font-serif text-3xl md:text-4xl mb-4">Shop by Room</h2>
-            <p className="text-gray-600">Find everything you need for every space</p>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-900 mb-4">Shop by Room</h2>
+            <p className="text-neutral-600">Find everything you need for every space</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -207,14 +208,14 @@ export function HomePage() {
         <div className="flex items-center justify-between mb-12" data-aos="fade-up">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <TrendingUp className="w-6 h-6 text-blue-500" />
-              <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Just In</span>
+              <TrendingUp className="w-6 h-6 text-brand-600" />
+              <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">Just In</span>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl">New Arrivals</h2>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-900">New Arrivals</h2>
           </div>
           <a
             href="/shop?filter=new"
-            className="text-sm font-semibold hover:underline inline-flex items-center space-x-1"
+            className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
             data-cursor="explore"
           >
             <span>View All</span>
@@ -222,7 +223,7 @@ export function HomePage() {
           </a>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {newArrivals.map((product, index) => (
             <div key={product.id} data-aos="fade-up" data-aos-delay={index * 100}>
               <ProductCard product={product} />
@@ -231,7 +232,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="bg-black text-white py-20">
+      <section className="bg-neutral-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div data-aos="fade-up" data-aos-delay="0">
@@ -294,65 +295,3 @@ export function HomePage() {
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
-  const price = product.sale_price || product.base_price;
-  const hasDiscount = product.sale_price && product.sale_price < product.base_price;
-  const discountPercent = hasDiscount
-    ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
-    : 0;
-
-  return (
-    <a
-      href={`/product/${product.slug}`}
-      className="group relative bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-      data-cursor={product.room_type === 'Living Room' ? 'sofa' : 'chair'}
-    >
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
-        {product.is_new && (
-          <div className="absolute top-4 left-4 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            NEW
-          </div>
-        )}
-        {hasDiscount && (
-          <div className="absolute top-4 right-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            -{discountPercent}%
-          </div>
-        )}
-        <img
-          src={product.images[0] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-        <button
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black px-6 py-2 rounded-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          data-cursor="explore"
-        >
-          Quick View
-        </button>
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
-        {product.rating > 0 && (
-          <div className="flex items-center space-x-1 mb-2">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                }`}
-              />
-            ))}
-            <span className="text-sm text-gray-600">({product.review_count})</span>
-          </div>
-        )}
-        <div className="flex items-center space-x-2">
-          <span className="font-bold text-lg">${price.toFixed(2)}</span>
-          {hasDiscount && (
-            <span className="text-sm text-gray-500 line-through">${product.base_price.toFixed(2)}</span>
-          )}
-        </div>
-      </div>
-    </a>
-  );
-}

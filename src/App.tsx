@@ -24,10 +24,12 @@ function App() {
   const handleLoadComplete = () => {
     setLoading(false);
     AOS.init({
-      duration: 1000,
-      easing: 'ease-in-out-cubic',
+      duration: 600,
+      easing: 'ease-out-cubic',
       once: true,
-      offset: 100,
+      offset: 50,
+      delay: 0,
+      disable: 'mobile',
     });
   };
 

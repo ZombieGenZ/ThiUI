@@ -63,7 +63,7 @@ export function CustomCursor() {
       case 'star':
         return <Star className={iconClass} fill="white" />;
       case 'explore':
-        return <span className="text-sm text-white font-medium">Explore</span>;
+        return <div className="w-3 h-3 bg-white rounded-full" />;
       case 'cart':
         return <ShoppingCart className={iconClass} />;
       default:
