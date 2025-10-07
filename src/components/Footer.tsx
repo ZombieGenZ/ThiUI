@@ -50,7 +50,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div className="lg:col-span-1">
-            <h3 className="font-serif text-2xl text-white mb-4">Your Home Design</h3>
+            <h3 className="font-serif text-2xl text-white mb-4 font-bold">
+              <span className="text-green-500">Zombie</span>Shop
+            </h3>
             <p className="text-sm mb-6">
               Crafting beautiful spaces with premium furniture and expert design services.
             </p>
@@ -133,7 +135,7 @@ export function Footer() {
           </div>
 
           <div className="mt-8 text-center text-sm">
-            <p>&copy; 2024 Your Home Design. All rights reserved.</p>
+            <p>&copy; 2024 ZombieShop. All rights reserved.</p>
           </div>
         </div>
       </div>

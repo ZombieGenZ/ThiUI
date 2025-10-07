@@ -38,8 +38,8 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
             </button>
 
             <div className="flex-1 lg:flex-initial">
-              <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide" data-cursor="explore">
-                Your Home Design
+              <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide font-bold" data-cursor="explore">
+                <span className="text-green-600">Zombie</span><span className="text-gray-900">Shop</span>
               </Link>
             </div>
 
