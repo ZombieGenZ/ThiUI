@@ -1,273 +1,358 @@
-import { ChevronRight, Star } from 'lucide-react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import ProductCard from '../components/ProductCard';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Star, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
-export default function HomePage() {
-  const categories = [
-    'Phòng Khách',
-    'Phòng Ngủ',
-    'Phòng Bếp',
-    'Phòng Làm Việc',
-    'Phòng Ăn',
-    'Trang Trí'
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  base_price: number;
+  sale_price: number | null;
+  images: string[];
+  rating: number;
+  review_count: number;
+  is_new: boolean;
+  room_type: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+}
+
+export function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const [featured, newItems, cats] = await Promise.all([
+      supabase.from('products').select('*').eq('is_featured', true).limit(8),
+      supabase.from('products').select('*').eq('is_new', true).limit(8),
+      supabase.from('categories').select('*').is('parent_id', null).order('display_order'),
+    ]);
+
+    if (featured.data) setFeaturedProducts(featured.data);
+    if (newItems.data) setNewArrivals(newItems.data);
+    if (cats.data) setCategories(cats.data);
+  };
+
+  const heroSlides = [
+    {
+      title: 'Transform Your Living Space',
+      subtitle: 'Discover Premium Furniture Collections',
+      image: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920',
+      cta: 'Shop Now',
+    },
+    {
+      title: 'Curated for Comfort',
+      subtitle: 'Modern Designs, Timeless Elegance',
+      image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=1920',
+      cta: 'Explore Collection',
+    },
+    {
+      title: 'New Season Arrivals',
+      subtitle: 'Fresh Styles for Every Room',
+      image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920',
+      cta: 'Discover More',
+    },
   ];
 
-  const featuredProducts = [
-    {
-      id: 1,
-      name: 'Sofa Góc Hiện Đại',
-      price: '15.900.000',
-      image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.8,
-      reviews: 124
-    },
-    {
-      id: 2,
-      name: 'Bàn Ăn Gỗ Sồi',
-      price: '8.500.000',
-      image: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.9,
-      reviews: 89
-    },
-    {
-      id: 3,
-      name: 'Giường Ngủ Tân Cổ Điển',
-      price: '12.300.000',
-      image: 'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.7,
-      reviews: 156
-    },
-    {
-      id: 4,
-      name: 'Tủ Kệ Tivi Cao Cấp',
-      price: '6.200.000',
-      image: 'https://images.pexels.com/photos/276583/pexels-photo-276583.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.6,
-      reviews: 92
-    },
-    {
-      id: 5,
-      name: 'Bàn Làm Việc Minimalist',
-      price: '4.800.000',
-      image: 'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.8,
-      reviews: 203
-    },
-    {
-      id: 6,
-      name: 'Ghế Thư Giãn Đọc Sách',
-      price: '3.900.000',
-      image: 'https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.9,
-      reviews: 178
-    },
-    {
-      id: 7,
-      name: 'Tủ Quần Áo 4 Cánh',
-      price: '9.700.000',
-      image: 'https://images.pexels.com/photos/1648776/pexels-photo-1648776.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.5,
-      reviews: 67
-    },
-    {
-      id: 8,
-      name: 'Bộ Ghế Sofa 3 Chỗ',
-      price: '13.500.000',
-      image: 'https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg?auto=compress&cs=tinysrgb&w=800',
-      rating: 4.7,
-      reviews: 134
-    }
-  ];
-
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Nguyễn Văn A',
-      avatar: 'https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=100',
-      rating: 5,
-      comment: 'Chất lượng sản phẩm tuyệt vời, giao hàng nhanh chóng. Nhân viên tư vấn nhiệt tình. Tôi rất hài lòng với bộ sofa mới.'
-    },
-    {
-      id: 2,
-      name: 'Trần Thị B',
-      avatar: 'https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=100',
-      rating: 5,
-      comment: 'Thiết kế đẹp, hiện đại. Giá cả hợp lý so với chất lượng. Dịch vụ lắp đặt chuyên nghiệp. Sẽ giới thiệu cho bạn bè.'
-    },
-    {
-      id: 3,
-      name: 'Lê Văn C',
-      avatar: 'https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=100',
-      rating: 5,
-      comment: 'Mua bàn ăn và ghế ở đây, rất ưng ý. Gỗ thật, chắc chắn. Bảo hành tốt. Showroom đẹp, nhân viên thân thiện.'
-    }
-  ];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-
-      <section className="relative h-[600px] bg-slate-100 overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920"
-            alt="Hero"
-            className="w-full h-full object-cover animate-scale-in"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="text-white max-w-2xl">
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 leading-tight animate-slide-in-left">
-              Nội Thất Cao Cấp<br />Cho Ngôi Nhà Của Bạn
-            </h2>
-            <p className="text-xl mb-8 text-gray-100 animate-slide-in-left animation-delay-200">
-              Khám phá bộ sưu tập nội thất hiện đại, sang trọng với chất lượng vượt trội
-            </p>
-            <button className="bg-white text-slate-900 px-8 py-4 rounded-sm font-semibold hover:bg-gray-100 transition-all duration-300 inline-flex items-center hover:gap-3 gap-2 animate-slide-in-left animation-delay-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 group">
-              Khám Phá Ngay
-              <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900 animate-fade-in">
-            Danh Mục Sản Phẩm
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((category, index) => (
-              <div
-                key={index}
-                className="bg-slate-50 p-6 text-center hover:bg-slate-900 hover:text-white transition-all duration-300 cursor-pointer border border-gray-200 rounded-lg transform hover:scale-105 hover:shadow-lg animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <p className="font-semibold">{category}</p>
+    <div className="min-h-screen">
+      <section className="relative h-screen">
+        {heroSlides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 z-20 flex items-center justify-center text-center px-4">
+              <div className="max-w-4xl">
+                <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white mb-6 animate-fade-in">
+                  {slide.title}
+                </h1>
+                <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-in-delay">
+                  {slide.subtitle}
+                </p>
+                <button
+                  className="bg-white text-black px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 inline-flex items-center space-x-2"
+                  data-cursor="explore"
+                >
+                  <span>{slide.cta}</span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
+            </div>
+          </div>
+        ))}
+
+        <button
+          onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors"
+          data-cursor="explore"
+        >
+          <ChevronLeft className="w-6 h-6 text-white" />
+        </button>
+        <button
+          onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors"
+          data-cursor="explore"
+        >
+          <ChevronRight className="w-6 h-6 text-white" />
+        </button>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
+              }`}
+              data-cursor="explore"
+            />
+          ))}
+        </div>
+
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
+          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center pt-2">
+            <div className="w-1.5 h-3 bg-white rounded-full animate-scroll" />
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex items-center justify-between mb-12" data-aos="fade-up">
+          <div>
+            <div className="flex items-center space-x-2 mb-2">
+              <Sparkles className="w-6 h-6 text-yellow-500" />
+              <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Featured</span>
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl">Best Sellers</h2>
+          </div>
+          <a
+            href="/shop"
+            className="text-sm font-semibold hover:underline inline-flex items-center space-x-1"
+            data-cursor="explore"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featuredProducts.map((product, index) => (
+            <div key={product.id} data-aos="fade-up" data-aos-delay={index * 100}>
+              <ProductCard product={product} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12" data-aos="fade-up">
+            <h2 className="font-serif text-3xl md:text-4xl mb-4">Shop by Room</h2>
+            <p className="text-gray-600">Find everything you need for every space</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.map((category, index) => (
+              <a
+                key={category.id}
+                href={`/shop/${category.slug}`}
+                className="group relative aspect-square rounded-lg overflow-hidden"
+                data-cursor="explore"
+                data-aos="zoom-in"
+                data-aos-delay={index * 50}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+                <img
+                  src={category.image_url || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
+                  alt={category.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute bottom-4 left-4 z-20">
+                  <h3 className="text-white font-semibold">{category.name}</h3>
+                </div>
+              </a>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <h3 className="text-3xl font-bold text-slate-900 animate-slide-in-left">Sản Phẩm Nổi Bật</h3>
-            <a href="/products" className="text-slate-600 hover:text-slate-900 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all duration-300 animate-slide-in-right group">
-              Xem Tất Cả
-              <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex items-center justify-between mb-12" data-aos="fade-up">
+          <div>
+            <div className="flex items-center space-x-2 mb-2">
+              <TrendingUp className="w-6 h-6 text-blue-500" />
+              <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Just In</span>
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl">New Arrivals</h2>
           </div>
+          <a
+            href="/shop?filter=new"
+            className="text-sm font-semibold hover:underline inline-flex items-center space-x-1"
+            data-cursor="explore"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {newArrivals.map((product, index) => (
+            <div key={product.id} data-aos="fade-up" data-aos-delay={index * 100}>
+              <ProductCard product={product} />
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="py-16 bg-white">
+      <section className="bg-black text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900 animate-fade-in">
-            Tại Sao Chọn Chúng Tôi
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center group animate-slide-up">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
-                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div data-aos="fade-up" data-aos-delay="0">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Chất Lượng Đảm Bảo</h4>
-              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Sản phẩm chính hãng, bảo hành dài hạn</p>
+              <h3 className="font-semibold text-lg mb-2">Premium Quality</h3>
+              <p className="text-gray-400 text-sm">Crafted with the finest materials for lasting beauty</p>
             </div>
-            <div className="text-center group animate-slide-up animation-delay-100">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
-                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div data-aos="fade-up" data-aos-delay="100">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Giá Cả Hợp Lý</h4>
-              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Giá tốt nhất thị trường, nhiều ưu đãi</p>
+              <h3 className="font-semibold text-lg mb-2">Secure Payment</h3>
+              <p className="text-gray-400 text-sm">Multiple payment options with complete security</p>
             </div>
-            <div className="text-center group animate-slide-up animation-delay-200">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
-                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <div data-aos="fade-up" data-aos-delay="200">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Giao Hàng Nhanh</h4>
-              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Vận chuyển và lắp đặt tận nơi</p>
-            </div>
-            <div className="text-center group animate-slide-up animation-delay-300">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-slate-900 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
-                <svg className="w-8 h-8 text-slate-900 group-hover:text-white transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </div>
-              <h4 className="font-semibold text-lg mb-2 text-slate-900 group-hover:text-slate-700 transition-colors duration-300">Hỗ Trợ 24/7</h4>
-              <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300">Tư vấn nhiệt tình, chuyên nghiệp</p>
+              <h3 className="font-semibold text-lg mb-2">Fast Delivery</h3>
+              <p className="text-gray-400 text-sm">White glove delivery and assembly available</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-slate-900 animate-fade-in">
-            Khách Hàng Nói Gì Về Chúng Tôi
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-slide-up" style={{ animationDelay: `${index * 0.15}s` }}>
-                <div className="flex items-center mb-4">
-                  <img
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div className="ml-3">
-                    <h4 className="font-semibold text-slate-900">{testimonial.name}</h4>
-                    <div className="flex">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-slate-600 italic">"{testimonial.comment}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-slate-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-3xl font-bold mb-4 animate-fade-in">
-            Đăng Ký Nhận Tin Khuyến Mãi
-          </h3>
-          <p className="text-gray-300 mb-8 animate-fade-in animation-delay-100">
-            Nhận thông tin sản phẩm mới và ưu đãi đặc biệt qua email
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto animate-slide-up animation-delay-200">
-            <input
-              type="email"
-              placeholder="Nhập email của bạn"
-              className="flex-1 px-4 py-3 rounded-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300 focus:scale-105"
-            />
-            <button className="bg-white text-slate-900 px-8 py-3 rounded-sm font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95">
-              Đăng Ký
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
+      <style>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 1s ease-out;
+        }
+        .animate-fade-in-delay {
+          animation: fade-in 1s ease-out 0.3s both;
+        }
+        @keyframes scroll {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(8px); }
+        }
+        .animate-scroll {
+          animation: scroll 1.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
+  );
+}
+
+function ProductCard({ product }: { product: Product }) {
+  const price = product.sale_price || product.base_price;
+  const hasDiscount = product.sale_price && product.sale_price < product.base_price;
+  const discountPercent = hasDiscount
+    ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
+    : 0;
+
+  return (
+    <a
+      href={`/product/${product.slug}`}
+      className="group relative bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+      data-cursor={product.room_type === 'Living Room' ? 'sofa' : 'chair'}
+    >
+      <div className="relative aspect-square overflow-hidden bg-gray-100">
+        {product.is_new && (
+          <div className="absolute top-4 left-4 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            NEW
+          </div>
+        )}
+        {hasDiscount && (
+          <div className="absolute top-4 right-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            -{discountPercent}%
+          </div>
+        )}
+        <img
+          src={product.images[0] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+        <button
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black px-6 py-2 rounded-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          data-cursor="explore"
+        >
+          Quick View
+        </button>
+      </div>
+      <div className="p-4">
+        <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
+        {product.rating > 0 && (
+          <div className="flex items-center space-x-1 mb-2">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${
+                  i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                }`}
+              />
+            ))}
+            <span className="text-sm text-gray-600">({product.review_count})</span>
+          </div>
+        )}
+        <div className="flex items-center space-x-2">
+          <span className="font-bold text-lg">${price.toFixed(2)}</span>
+          {hasDiscount && (
+            <span className="text-sm text-gray-500 line-through">${product.base_price.toFixed(2)}</span>
+          )}
+        </div>
+      </div>
+    </a>
   );
 }

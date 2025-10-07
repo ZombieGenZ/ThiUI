@@ -1,219 +1,197 @@
-import { ShoppingCart, Search, Heart, Menu, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 
 interface HeaderProps {
-  cartCount?: number;
+  onCartOpen: () => void;
+  onAuthOpen: () => void;
 }
 
-export default function Header({ cartCount = 0 }: HeaderProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const location = useLocation();
+export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
+  const { user, signOut } = useAuth();
+  const { itemCount } = useCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const isActive = (path: string) => location.pathname === path;
+  const categories = [
+    { name: 'Living Room', path: '/shop/living-room' },
+    { name: 'Bedroom', path: '/shop/bedroom' },
+    { name: 'Dining', path: '/shop/dining' },
+    { name: 'Office', path: '/shop/office' },
+    { name: 'Outdoor', path: '/shop/outdoor' },
+    { name: 'Sale', path: '/sale', highlight: true },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
-      <div className="bg-slate-900 text-white py-2.5">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm text-center">
-            Miễn phí vận chuyển cho đơn hàng từ 5 triệu đồng | Hotline: 1900-xxxx
-          </p>
-        </div>
-      </div>
+          <div className="flex items-center justify-between h-20">
+            <button
+              className="lg:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-cursor="explore"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
 
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex items-center">
-            <Link
-              to="/"
-              className="text-2xl font-bold text-slate-900 tracking-tight transition-all duration-300 hover:scale-105 hover:text-slate-700"
-            >
-              LUXHOME
-            </Link>
-          </div>
+            <div className="flex-1 lg:flex-initial">
+              <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide" data-cursor="explore">
+                Your Home Design
+              </Link>
+            </div>
 
-          <div className="hidden md:flex items-center space-x-1">
-            <Link
-              to="/"
-              className={`relative px-4 py-2 font-medium transition-all duration-300 group ${
-                isActive('/')
-                  ? 'text-slate-900'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span className="relative z-10">Trang Chủ</span>
-              <span className={`absolute inset-0 rounded-lg transition-all duration-300 ${
-                isActive('/') 
-                  ? 'bg-slate-100 scale-100' 
-                  : 'bg-slate-50 scale-0 group-hover:scale-100'
-              }`}></span>
-              <span className={`absolute bottom-1 left-4 right-4 h-0.5 bg-slate-900 transition-all duration-300 ${
-                isActive('/') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-              }`}></span>
-            </Link>
-            <Link
-              to="/products"
-              className={`relative px-4 py-2 font-medium transition-all duration-300 group ${
-                isActive('/products')
-                  ? 'text-slate-900'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span className="relative z-10">Sản Phẩm</span>
-              <span className={`absolute inset-0 rounded-lg transition-all duration-300 ${
-                isActive('/products') 
-                  ? 'bg-slate-100 scale-100' 
-                  : 'bg-slate-50 scale-0 group-hover:scale-100'
-              }`}></span>
-              <span className={`absolute bottom-1 left-4 right-4 h-0.5 bg-slate-900 transition-all duration-300 ${
-                isActive('/products') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-              }`}></span>
-            </Link>
-            <Link
-              to="/about"
-              className={`relative px-4 py-2 font-medium transition-all duration-300 group ${
-                isActive('/about')
-                  ? 'text-slate-900'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span className="relative z-10">Về Chúng Tôi</span>
-              <span className={`absolute inset-0 rounded-lg transition-all duration-300 ${
-                isActive('/about') 
-                  ? 'bg-slate-100 scale-100' 
-                  : 'bg-slate-50 scale-0 group-hover:scale-100'
-              }`}></span>
-              <span className={`absolute bottom-1 left-4 right-4 h-0.5 bg-slate-900 transition-all duration-300 ${
-                isActive('/about') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-              }`}></span>
-            </Link>
-            <Link
-              to="/contact"
-              className={`relative px-4 py-2 font-medium transition-all duration-300 group ${
-                isActive('/contact')
-                  ? 'text-slate-900'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span className="relative z-10">Liên Hệ</span>
-              <span className={`absolute inset-0 rounded-lg transition-all duration-300 ${
-                isActive('/contact') 
-                  ? 'bg-slate-100 scale-100' 
-                  : 'bg-slate-50 scale-0 group-hover:scale-100'
-              }`}></span>
-              <span className={`absolute bottom-1 left-4 right-4 h-0.5 bg-slate-900 transition-all duration-300 ${
-                isActive('/contact') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-              }`}></span>
-            </Link>
-          </div>
+            <nav className="hidden lg:flex items-center space-x-8 flex-1 justify-center">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.name}
+                  to={cat.path}
+                  className={`text-sm font-medium transition-colors hover:text-gray-600 ${
+                    cat.highlight ? 'text-red-600 hover:text-red-700' : ''
+                  }`}
+                  data-cursor="explore"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </nav>
 
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2.5 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95"
-              aria-label="Search"
-            >
-              {isSearchOpen ? (
-                <X className="w-5 h-5 text-slate-700 transition-transform duration-300 rotate-0 hover:rotate-90" />
-              ) : (
-                <Search className="w-5 h-5 text-slate-700 transition-transform duration-300 hover:rotate-12" />
+            <div className="flex items-center space-x-4">
+              <button
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={() => setSearchOpen(!searchOpen)}
+                data-cursor="explore"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              {user && (
+                <Link
+                  to="/wishlist"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block"
+                  data-cursor="star"
+                >
+                  <Heart className="w-5 h-5" />
+                </Link>
               )}
-            </button>
-            <button
-              className="p-2.5 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
-              aria-label="Wishlist"
-            >
-              <Heart className="w-5 h-5 text-slate-700 transition-all duration-300 group-hover:fill-red-500 group-hover:text-red-500" />
-            </button>
-            <button
-              className="p-2.5 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95 relative"
-              aria-label="Cart"
-            >
-              <ShoppingCart className="w-5 h-5 text-slate-700 transition-transform duration-300 hover:-rotate-12" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-            <button
-              className="md:hidden p-2.5 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95 ml-1"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Menu"
-            >
-              {isMenuOpen ? (
-                <X className="w-5 h-5 text-slate-700 transition-transform duration-300 rotate-0" />
-              ) : (
-                <Menu className="w-5 h-5 text-slate-700 transition-transform duration-300" />
-              )}
-            </button>
+
+              <button
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                onClick={onCartOpen}
+                data-cursor="cart"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {itemCount}
+                  </span>
+                )}
+              </button>
+
+              <div className="relative group">
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  data-cursor="explore"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  {user ? (
+                    <>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+                        data-cursor="explore"
+                      >
+                        My Account
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+                        data-cursor="explore"
+                      >
+                        My Orders
+                      </Link>
+                      <Link
+                        to="/wishlist"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors sm:hidden"
+                        data-cursor="explore"
+                      >
+                        Wishlist
+                      </Link>
+                      <button
+                        onClick={() => signOut()}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+                        data-cursor="explore"
+                      >
+                        Sign Out
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={onAuthOpen}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+                        data-cursor="explore"
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        onClick={onAuthOpen}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+                        data-cursor="explore"
+                      >
+                        Create Account
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {isSearchOpen && (
-          <div className="py-4 border-t border-gray-200 animate-in fade-in slide-in-from-top-2 duration-200">
-            <input
-              type="search"
-              placeholder="Tìm kiếm sản phẩm..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
-              autoFocus
-            />
-          </div>
-        )}
-
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col space-y-1">
-              <Link
-                to="/"
-                className={`px-4 py-3 rounded-lg font-medium transition-all ${
-                  isActive('/')
-                    ? 'text-slate-900 bg-slate-100'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Trang Chủ
-              </Link>
-              <Link
-                to="/products"
-                className={`px-4 py-3 rounded-lg font-medium transition-all ${
-                  isActive('/products')
-                    ? 'text-slate-900 bg-slate-100'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sản Phẩm
-              </Link>
-              <Link
-                to="/about"
-                className={`px-4 py-3 rounded-lg font-medium transition-all ${
-                  isActive('/about')
-                    ? 'text-slate-900 bg-slate-100'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Về Chúng Tôi
-              </Link>
-              <Link
-                to="/contact"
-                className={`px-4 py-3 rounded-lg font-medium transition-all ${
-                  isActive('/contact')
-                    ? 'text-slate-900 bg-slate-100'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Liên Hệ
-              </Link>
+        {searchOpen && (
+          <div className="border-t border-gray-200 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search furniture, rooms, styles..."
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  autoFocus
+                />
+              </div>
             </div>
           </div>
         )}
-      </nav>
-    </header>
+      </header>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-30 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+          <div className="absolute top-20 left-0 right-0 bg-white border-b border-gray-200 shadow-lg">
+            <nav className="py-4">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.name}
+                  to={cat.path}
+                  className={`block px-6 py-3 text-sm font-medium hover:bg-gray-100 transition-colors ${
+                    cat.highlight ? 'text-red-600' : ''
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
