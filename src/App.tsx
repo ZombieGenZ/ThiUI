@@ -14,6 +14,7 @@ import { DiningPage } from './pages/DiningPage';
 import { OfficePage } from './pages/OfficePage';
 import { OutdoorPage } from './pages/OutdoorPage';
 import { SalePage } from './pages/SalePage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
 import { Header } from './components/Header';
 
 function App() {
@@ -60,6 +61,7 @@ function App() {
                     <Route path="/shop/office" element={<OfficePage />} />
                     <Route path="/shop/outdoor" element={<OutdoorPage />} />
                     <Route path="/sale" element={<SalePage />} />
+                    <Route path="/product/:slug" element={<ProductDetailPage />} />
                   </Routes>
                 </main>
                 <Footer />

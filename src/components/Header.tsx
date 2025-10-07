@@ -16,11 +16,10 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const categories = [
-    { name: 'Living Room', path: '/shop/living-room' },
-    { name: 'Bedroom', path: '/shop/bedroom' },
-    { name: 'Dining', path: '/shop/dining' },
-    { name: 'Office', path: '/shop/office' },
-    { name: 'Outdoor', path: '/shop/outdoor' },
+    { name: 'Home', path: '/' },
+    { name: 'About Us', path: '/about' },
+    { name: 'Products', path: '/products' },
+    { name: 'Contact', path: '/contact' },
     { name: 'Sale', path: '/sale', highlight: true },
   ];
 

@@ -70,14 +70,14 @@ export function SalePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="relative h-80 bg-gradient-to-r from-red-600 to-orange-500">
-        <div className="absolute inset-0 bg-black/20" />
+      <div className="relative h-80 bg-gradient-to-r from-neutral-900 to-neutral-700">
+        <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <Flame className="w-12 h-12 text-white animate-pulse" />
+              <Flame className="w-12 h-12 text-accent-400 animate-pulse" />
               <h1 className="font-serif text-5xl text-white">Sale</h1>
-              <Flame className="w-12 h-12 text-white animate-pulse" />
+              <Flame className="w-12 h-12 text-accent-400 animate-pulse" />
             </div>
             <p className="text-xl text-white/90">Up to 50% off on selected items</p>
           </div>
@@ -96,7 +96,7 @@ export function SalePage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600"
               >
                 <option value="discount">Highest Discount</option>
                 <option value="price-low">Price: Low to High</option>
@@ -117,7 +117,7 @@ export function SalePage() {
         {filteredProducts.length === 0 && (
           <div className="text-center py-20">
             <p className="text-xl text-gray-600">No products on sale at the moment</p>
-            <a href="/" className="mt-4 inline-block text-red-600 font-semibold hover:underline">
+            <a href="/" className="mt-4 inline-block text-brand-600 font-semibold hover:underline">
               Browse all products
             </a>
           </div>
@@ -132,36 +132,42 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
   const discountPercent = Math.round(((product.base_price - price) / product.base_price) * 100);
 
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 border-red-500">
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
-        <div className="absolute top-4 right-4 z-10 bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
+    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft">
+      <div className="relative aspect-square overflow-hidden bg-neutral-100">
+        <div className="absolute top-4 right-4 z-10 bg-accent-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-medium">
           -{discountPercent}%
         </div>
         <img
           src={product.images[0] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-cover image-scale"
         />
+        <button
+          onClick={onAddToCart}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-neutral-900 px-6 py-3 rounded-full font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 shadow-strong flex items-center space-x-2 hover:bg-brand-600 hover:text-white"
+        >
+          <span>Add to Cart</span>
+        </button>
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
+      <div className="p-5">
+        <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">{product.name}</h3>
         {product.rating > 0 && (
-          <div className="flex items-center space-x-1 mb-2">
+          <div className="flex items-center space-x-1 mb-3">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
                 className={`w-4 h-4 ${
-                  i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                  i < Math.floor(product.rating) ? 'fill-accent-400 text-accent-400' : 'text-neutral-300'
                 }`}
               />
             ))}
-            <span className="text-sm text-gray-600">({product.review_count})</span>
+            <span className="text-sm text-neutral-600">({product.review_count})</span>
           </div>
         )}
         <div className="flex items-center space-x-2">
-          <span className="font-bold text-lg text-red-600">${price.toFixed(2)}</span>
-          <span className="text-sm text-gray-500 line-through">${product.base_price.toFixed(2)}</span>
-          <span className="text-xs font-semibold text-red-600">Save ${(product.base_price - price).toFixed(2)}</span>
+          <span className="font-bold text-lg text-accent-600">${price.toFixed(2)}</span>
+          <span className="text-sm text-neutral-500 line-through">${product.base_price.toFixed(2)}</span>
+          <span className="text-xs font-semibold text-accent-600">Save ${(product.base_price - price).toFixed(2)}</span>
         </div>
       </div>
     </div>

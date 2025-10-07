@@ -1,4 +1,5 @@
-import { Star, ShoppingBag } from 'lucide-react';
+import { Star, ShoppingBag, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -45,22 +46,34 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           className="w-full h-full object-cover image-scale"
         />
 
-        {onAddToCart && (
-          <button
-            onClick={onAddToCart}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-neutral-900 px-6 py-3 rounded-full font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 shadow-strong flex items-center space-x-2 hover:bg-brand-600 hover:text-white"
-            data-cursor="cart"
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+          <Link
+            to={`/product/${product.slug}`}
+            className="bg-white text-neutral-900 px-5 py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100"
+            data-cursor="explore"
           >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Add to Cart</span>
-          </button>
-        )}
+            <Eye className="w-4 h-4" />
+            <span>View</span>
+          </Link>
+          {onAddToCart && (
+            <button
+              onClick={onAddToCart}
+              className="bg-brand-600 text-white px-5 py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700"
+              data-cursor="cart"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Add</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="p-5">
-        <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
-          {product.name}
-        </h3>
+        <Link to={`/product/${product.slug}`}>
+          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
+            {product.name}
+          </h3>
+        </Link>
 
         {product.rating > 0 && (
           <div className="flex items-center space-x-1 mb-3">
