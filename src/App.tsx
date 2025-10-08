@@ -3,6 +3,7 @@ import AOS from 'aos';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
@@ -49,15 +50,17 @@ function App() {
   }, [cartOpen]);
 
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-          {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+            {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
@@ -71,7 +74,7 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
 
   return (
     <>
-      <div className="min-h-screen flex flex-col transition-opacity duration-300">
+      <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white dark:bg-neutral-900">
         <Header onCartOpen={() => setCartOpen(true)} />
         <main className="flex-1 pt-20 transition-all duration-300">
                   <Routes>
