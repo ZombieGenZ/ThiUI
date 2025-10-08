@@ -87,17 +87,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
 
       if (existingItem) {
-        await updateQuantity(existingItem.id, existingItem.quantity + quantity);
-      } else {
-        const { error } = await supabase.from('cart_items').insert({
-          user_id: user.id,
-          product_id: productId,
-          variant_id: variantId || null,
-          quantity,
-        });
+        const newQuantity = existingItem.quantity + quantity;
+        const { error } = await supabase
+          .from('cart_items')
+          .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
+          .eq('id', existingItem.id);
 
         if (error) throw error;
-        await refreshCart();
+
+        setItems(prevItems =>
+          prevItems.map(item =>
+            item.id === existingItem.id ? { ...item, quantity: newQuantity } : item
+          )
+        );
+      } else {
+        const { data, error } = await supabase
+          .from('cart_items')
+          .insert({
+            user_id: user.id,
+            product_id: productId,
+            variant_id: variantId || null,
+            quantity,
+          })
+          .select(`
+            id,
+            product_id,
+            variant_id,
+            quantity,
+            product:products(name, base_price, sale_price, images, slug)
+          `)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setItems(prevItems => [...prevItems, { ...data as any, selected: true }]);
+        }
       }
     } catch (error) {
       console.error('Error adding to cart:', error);

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 interface Product {
   id: string;
@@ -31,6 +32,7 @@ export function ProductDetailPage() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -85,6 +87,28 @@ export function ProductDetailPage() {
       toast.error(error.message || 'Failed to add item to cart');
     } finally {
       setAddingToCart(false);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!product) return;
+
+    if (!user) {
+      toast.error('Please sign in to save favorites');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await toggleFavorite(product.id);
+      if (isFavorite(product.id)) {
+        toast.success('Removed from favorites');
+      } else {
+        toast.success('Added to favorites');
+      }
+    } catch (error: any) {
+      console.error('Error toggling favorite:', error);
+      toast.error(error.message || 'Failed to update favorites');
     }
   };
 
@@ -267,8 +291,15 @@ export function ProductDetailPage() {
                   <span>{addingToCart ? 'Adding...' : product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
                 </button>
                 {user && (
-                  <button className="w-14 h-14 border-2 border-neutral-300 rounded-lg flex items-center justify-center hover:border-brand-600 hover:text-brand-600 transition-colors">
-                    <Heart className="w-6 h-6" />
+                  <button
+                    onClick={handleToggleFavorite}
+                    className={`w-14 h-14 border-2 rounded-lg flex items-center justify-center transition-all ${
+                      isFavorite(product.id)
+                        ? 'border-red-500 bg-red-50 text-red-500'
+                        : 'border-neutral-300 hover:border-red-500 hover:text-red-500'
+                    }`}
+                  >
+                    <Heart className={`w-6 h-6 ${isFavorite(product.id) ? 'fill-red-500' : ''}`} />
                   </button>
                 )}
               </div>

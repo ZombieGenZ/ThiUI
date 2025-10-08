@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
@@ -22,6 +23,8 @@ import { SalePage } from './pages/SalePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CheckoutPage } from './pages/CheckoutPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { FavoritesPage } from './pages/FavoritesPage';
 import { Header } from './components/Header';
 
 function App() {
@@ -55,23 +58,25 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <CartProvider>
-          <Router>
-            {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+          <FavoritesProvider>
+            <Router>
+              {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-            {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-          </Router>
+              {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
+            </Router>
+          </FavoritesProvider>
         </CartProvider>
       </AuthProvider>
     </ThemeProvider>
@@ -106,6 +111,8 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/favorites" element={<FavoritesPage />} />
           </Routes>
         </main>
         <Footer />

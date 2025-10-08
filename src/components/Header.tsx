@@ -106,7 +106,7 @@ export function Header({ onCartOpen }: HeaderProps) {
 
               {user && (
                 <Link
-                  to="/wishlist"
+                  to="/favorites"
                   className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors hidden sm:block"
                 >
                   <Heart className="w-5 h-5 dark:text-gray-200" />
@@ -140,16 +140,10 @@ export function Header({ onCartOpen }: HeaderProps) {
                         My Account
                       </Link>
                       <Link
-                        to="/orders"
-                        className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
-                      >
-                        My Orders
-                      </Link>
-                      <Link
-                        to="/wishlist"
+                        to="/favorites"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors sm:hidden"
                       >
-                        Wishlist
+                        Favorites
                       </Link>
                       <button
                         onClick={() => signOut()}
