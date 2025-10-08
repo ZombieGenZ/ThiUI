@@ -1,4 +1,5 @@
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -8,6 +9,7 @@ interface CartSidebarProps {
 }
 
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
+  const navigate = useNavigate();
   const { items, total, loading, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
 
@@ -120,8 +122,11 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             </div>
 
             <button
+              onClick={() => {
+                onClose();
+                navigate('/checkout');
+              }}
               className="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors font-semibold"
-             
             >
               Proceed to Checkout
             </button>

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AlertProvider } from './contexts/AlertContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
@@ -20,6 +21,7 @@ import { ContactPage } from './pages/ContactPage';
 import { SalePage } from './pages/SalePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { CheckoutPage } from './pages/CheckoutPage';
 import { Header } from './components/Header';
 
 function App() {
@@ -52,13 +54,15 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <CartProvider>
-          <Router>
-            {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+        <AlertProvider>
+          <CartProvider>
+            <Router>
+              {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-            {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-          </Router>
-        </CartProvider>
+              {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+            </Router>
+          </CartProvider>
+        </AlertProvider>
       </AuthProvider>
     </ThemeProvider>
   );
@@ -74,7 +78,7 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
 
   return (
     <>
-      <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white dark:bg-neutral-900">
+      <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white">
         <Header onCartOpen={() => setCartOpen(true)} />
         <main className="flex-1 pt-20 transition-all duration-300">
                   <Routes>
@@ -91,6 +95,7 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
                     <Route path="/sale" element={<SalePage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
           </Routes>
         </main>
         <Footer />

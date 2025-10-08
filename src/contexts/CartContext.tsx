@@ -69,8 +69,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = async (productId: string, quantity: number, variantId?: string) => {
     if (!user) {
-      alert('Please sign in to add items to cart');
-      return;
+      throw new Error('Please sign in to add items to cart');
     }
 
     try {
