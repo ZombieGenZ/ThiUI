@@ -7,6 +7,7 @@ interface CartItem {
   product_id: string;
   variant_id: string | null;
   quantity: number;
+  selected?: boolean;
   product?: {
     name: string;
     base_price: number;
@@ -20,12 +21,16 @@ interface CartContextType {
   items: CartItem[];
   itemCount: number;
   total: number;
+  selectedTotal: number;
   loading: boolean;
   addToCart: (productId: string, quantity: number, variantId?: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeFromCart: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  toggleItemSelection: (itemId: string) => void;
+  selectAll: () => void;
+  deselectAll: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,6 +39,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setItems(prevItems => prevItems.map(item => ({ ...item, selected: true })));
+  }, [user]);
 
   const refreshCart = async () => {
     if (!user) {
@@ -55,7 +64,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      setItems(data as any || []);
+      setItems((data as any || []).map((item: CartItem) => ({ ...item, selected: true })));
     } catch (error) {
       console.error('Error fetching cart:', error);
     } finally {
@@ -140,6 +149,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const toggleItemSelection = (itemId: string) => {
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === itemId ? { ...item, selected: !item.selected } : item
+      )
+    );
+  };
+
+  const selectAll = () => {
+    setItems(prevItems => prevItems.map(item => ({ ...item, selected: true })));
+  };
+
+  const deselectAll = () => {
+    setItems(prevItems => prevItems.map(item => ({ ...item, selected: false })));
+  };
+
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const total = items.reduce((sum, item) => {
@@ -147,18 +172,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return sum + price * item.quantity;
   }, 0);
 
+  const selectedTotal = items
+    .filter(item => item.selected)
+    .reduce((sum, item) => {
+      const price = item.product?.sale_price || item.product?.base_price || 0;
+      return sum + price * item.quantity;
+    }, 0);
+
   return (
     <CartContext.Provider
       value={{
         items,
         itemCount,
         total,
+        selectedTotal,
         loading,
         addToCart,
         updateQuantity,
         removeFromCart,
         clearCart,
         refreshCart,
+        toggleItemSelection,
+        selectAll,
+        deselectAll,
       }}
     >
       {children}

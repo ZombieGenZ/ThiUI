@@ -49,23 +49,21 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           className="w-full h-full object-cover image-scale"
         />
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-0 sm:translate-y-2 group-hover:translate-y-0">
           <Link
             to={`/product/${product.slug}`}
-            className="bg-white text-neutral-900 px-5 py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100"
-           
+            className="bg-white text-neutral-900 px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100"
           >
             <Eye className="w-4 h-4" />
-            <span>View</span>
+            <span className="hidden sm:inline">View</span>
           </Link>
           {onAddToCart && (
             <button
               onClick={onAddToCart}
-              className="bg-brand-600 text-white px-5 py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700"
-             
+              className="bg-brand-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700"
             >
               <ShoppingBag className="w-4 h-4" />
-              <span>Add</span>
+              <span className="hidden sm:inline">Add</span>
             </button>
           )}
         </div>

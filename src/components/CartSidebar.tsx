@@ -1,4 +1,4 @@
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,8 +10,10 @@ interface CartSidebarProps {
 
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const navigate = useNavigate();
-  const { items, total, loading, updateQuantity, removeFromCart } = useCart();
+  const { items, total, selectedTotal, loading, updateQuantity, removeFromCart, toggleItemSelection, selectAll, deselectAll } = useCart();
   const { user } = useAuth();
+  const allSelected = items.length > 0 && items.every(item => item.selected);
+  const selectedCount = items.filter(item => item.selected).length;
 
   if (!isOpen) return null;
 
@@ -23,15 +25,28 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       />
 
       <div className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold">Shopping Cart ({items.length})</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-           
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="p-6 border-b space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Shopping Cart ({items.length})</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {items.length > 0 && (
+            <div className="flex items-center justify-between">
+              <button
+                onClick={allSelected ? deselectAll : selectAll}
+                className="flex items-center space-x-2 text-sm font-medium text-brand-600 hover:text-brand-700"
+              >
+                {allSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                <span>{allSelected ? 'Deselect All' : 'Select All'}</span>
+              </button>
+              <span className="text-sm text-gray-600">{selectedCount} selected</span>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
@@ -55,7 +70,17 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item.id} className="flex space-x-4 pb-4 border-b">
+                <div key={item.id} className="flex space-x-3 pb-4 border-b">
+                  <button
+                    onClick={() => toggleItemSelection(item.id)}
+                    className="flex-shrink-0 mt-1"
+                  >
+                    {item.selected ? (
+                      <CheckSquare className="w-5 h-5 text-brand-600" />
+                    ) : (
+                      <Square className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
                   <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={item.product?.images[0] || ''}
@@ -109,8 +134,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         {items.length > 0 && (
           <div className="border-t p-6 space-y-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="font-medium">${total.toFixed(2)}</span>
+              <span className="text-gray-600">Subtotal ({selectedCount} items)</span>
+              <span className="font-medium">${selectedTotal.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Shipping</span>
@@ -118,17 +143,19 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             </div>
             <div className="flex items-center justify-between text-lg font-semibold pt-4 border-t">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${selectedTotal.toFixed(2)}</span>
             </div>
 
             <button
               onClick={() => {
+                if (selectedCount === 0) return;
                 onClose();
                 navigate('/checkout');
               }}
-              className="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors font-semibold"
+              disabled={selectedCount === 0}
+              className="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Proceed to Checkout
+              Proceed to Checkout ({selectedCount} items)
             </button>
 
             <button
