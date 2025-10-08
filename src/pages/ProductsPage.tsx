@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { SlidersHorizontal, Grid3x3, List, X, Star, Check } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ProductCard } from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import { createAddToCartHandler } from '../utils/cartHelpers';
 
 interface Product {
   id: string;
@@ -21,6 +23,7 @@ interface Product {
 }
 
 export function ProductsPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -33,7 +36,9 @@ export function ProductsPage() {
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [minRating, setMinRating] = useState(0);
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const searchQuery = searchParams.get('search') || '';
+  const handleAddToCart = createAddToCartHandler(addToCart, user, navigate);
 
   useEffect(() => {
     loadProducts();
@@ -331,7 +336,7 @@ export function ProductsPage() {
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
               {filteredProducts.map((product, index) => (
                 <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-                  <ProductCard product={product} onAddToCart={() => addToCart(product.id, 1)} />
+                  <ProductCard product={product} onAddToCart={() => handleAddToCart(product.id, product.name, 1)} />
                 </div>
               ))}
             </div>

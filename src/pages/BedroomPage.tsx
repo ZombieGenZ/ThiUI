@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ProductCard } from '../components/ProductCard';
+import { createAddToCartHandler } from '../utils/cartHelpers';
 
 interface Product {
   id: string;
@@ -18,10 +21,13 @@ interface Product {
 }
 
 export function BedroomPage() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState('featured');
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const handleAddToCart = createAddToCartHandler(addToCart, user, navigate);
 
   useEffect(() => {
     loadProducts();
@@ -107,7 +113,7 @@ export function BedroomPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product, index) => (
             <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-              <ProductCard product={product} onAddToCart={() => addToCart(product.id, 1)} />
+              <ProductCard product={product} onAddToCart={() => handleAddToCart(product.id, product.name, 1)} />
             </div>
           ))}
         </div>

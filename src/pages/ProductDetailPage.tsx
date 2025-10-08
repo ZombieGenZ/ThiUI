@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -68,12 +69,20 @@ export function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!product) return;
 
+    if (!user) {
+      toast.error('Please sign in to add items to cart');
+      navigate('/login');
+      return;
+    }
+
     setAddingToCart(true);
     try {
       await addToCart(product.id, quantity);
-      alert('Product added to cart successfully!');
-    } catch (error) {
+      toast.success(`${product.name} added to cart!`);
+      setQuantity(1);
+    } catch (error: any) {
       console.error('Error adding to cart:', error);
+      toast.error(error.message || 'Failed to add item to cart');
     } finally {
       setAddingToCart(false);
     }
