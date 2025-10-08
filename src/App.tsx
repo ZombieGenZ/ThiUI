@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import AOS from 'aos';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AlertProvider } from './contexts/AlertContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
@@ -54,15 +54,25 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AlertProvider>
-          <CartProvider>
-            <Router>
-              {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+        <CartProvider>
+          <Router>
+            {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-              {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-            </Router>
-          </CartProvider>
-        </AlertProvider>
+            {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+          </Router>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   );

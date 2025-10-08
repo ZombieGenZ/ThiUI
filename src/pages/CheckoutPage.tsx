@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { CreditCard, MapPin, User, Mail, Phone, Lock } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { useAlert } from '../contexts/AlertContext';
 import { useAuth } from '../contexts/AuthContext';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const { items, total, clearCart } = useCart();
-  const { showSuccess, showError } = useAlert();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +35,7 @@ export function CheckoutPage() {
     e.preventDefault();
 
     if (items.length === 0) {
-      showError('Your cart is empty');
+      toast.error('Your cart is empty');
       return;
     }
 
@@ -58,7 +57,7 @@ export function CheckoutPage() {
     const emptyFields = requiredFields.filter((field) => !formData[field as keyof typeof formData]);
 
     if (emptyFields.length > 0) {
-      showError('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -69,13 +68,13 @@ export function CheckoutPage() {
 
       await clearCart();
 
-      showSuccess('Order placed successfully! Thank you for your purchase.');
+      toast.success('Order placed successfully! Thank you for your purchase.');
 
       setTimeout(() => {
         navigate('/');
       }, 2000);
     } catch (error) {
-      showError('Failed to place order. Please try again.');
+      toast.error('Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }

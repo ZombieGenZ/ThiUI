@@ -46,11 +46,11 @@ export function RegisterPage() {
   };
 
   const getPasswordStrengthText = () => {
-    if (passwordStrength <= 1) return 'Yếu';
-    if (passwordStrength <= 2) return 'Trung bình';
-    if (passwordStrength <= 3) return 'Khá';
-    if (passwordStrength <= 4) return 'Mạnh';
-    return 'Rất mạnh';
+    if (passwordStrength <= 1) return 'Weak';
+    if (passwordStrength <= 2) return 'Fair';
+    if (passwordStrength <= 3) return 'Good';
+    if (passwordStrength <= 4) return 'Strong';
+    return 'Very Strong';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,24 +61,24 @@ export function RegisterPage() {
 
     try {
       if (!fullName.trim()) {
-        throw new Error('Vui lòng nhập họ tên');
+        throw new Error('Please enter your full name');
       }
       if (password.length < 8) {
-        throw new Error('Mật khẩu phải có ít nhất 8 ký tự');
+        throw new Error('Password must be at least 8 characters');
       }
       if (password !== confirmPassword) {
-        throw new Error('Mật khẩu xác nhận không khớp');
+        throw new Error('Passwords do not match');
       }
 
       const { error } = await signUp(email, password, fullName);
       if (error) throw error;
 
-      setSuccess('Tạo tài khoản thành công! Đang chuyển đến trang đăng nhập...');
+      setSuccess('Account created successfully! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Có lỗi xảy ra');
+      setError(err.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -106,10 +106,10 @@ export function RegisterPage() {
               </div>
 
               <h1 className="font-serif text-4xl mb-2 font-bold text-neutral-900 animate-slide-up">
-                Đăng ký
+                Sign Up
               </h1>
               <p className="text-gray-600 animate-slide-up" style={{ animationDelay: '100ms' }}>
-                Tạo tài khoản mới để bắt đầu
+                Create a new account to get started
               </p>
             </div>
 
@@ -129,7 +129,7 @@ export function RegisterPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="group animate-slide-up" style={{ animationDelay: '200ms' }}>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Họ và tên</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-600 transition-colors duration-300" />
                   <input
@@ -137,7 +137,7 @@ export function RegisterPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all duration-300 bg-white/50 backdrop-blur-sm hover:bg-white focus:bg-white"
-                    placeholder="Nguyễn Văn A"
+                    placeholder="John Doe"
                     required
                   />
                 </div>
@@ -159,7 +159,7 @@ export function RegisterPage() {
               </div>
 
               <div className="group animate-slide-up" style={{ animationDelay: '400ms' }}>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Mật khẩu</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">Password</label>
                 <div>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-600 transition-colors duration-300" />
@@ -183,7 +183,7 @@ export function RegisterPage() {
                   {password && (
                     <div className="mt-3 animate-fade-in">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-600 font-medium">Độ mạnh mật khẩu</span>
+                        <span className="text-xs text-gray-600 font-medium">Password strength</span>
                         <span className={`text-xs font-bold ${
                           passwordStrength <= 1 ? 'text-red-600' :
                           passwordStrength <= 2 ? 'text-orange-600' :
@@ -203,7 +203,7 @@ export function RegisterPage() {
               </div>
 
               <div className="group animate-slide-up" style={{ animationDelay: '500ms' }}>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Xác nhận mật khẩu</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">Confirm Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-600 transition-colors duration-300" />
                   <input
@@ -226,13 +226,13 @@ export function RegisterPage() {
                 {confirmPassword && password !== confirmPassword && (
                   <p className="mt-2 text-xs text-red-600 flex items-center space-x-1 animate-shake">
                     <AlertCircle className="w-3 h-3" />
-                    <span>Mật khẩu không khớp</span>
+                    <span>Passwords do not match</span>
                   </p>
                 )}
                 {confirmPassword && password === confirmPassword && (
                   <p className="mt-2 text-xs text-green-600 flex items-center space-x-1 animate-fade-in">
                     <CheckCircle2 className="w-3 h-3" />
-                    <span>Mật khẩu khớp</span>
+                    <span>Passwords match</span>
                   </p>
                 )}
               </div>
@@ -250,10 +250,10 @@ export function RegisterPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    <span>Đang xử lý...</span>
+                    <span>Processing...</span>
                   </span>
                 ) : (
-                  <span className="relative z-10">Đăng ký</span>
+                  <span className="relative z-10">Sign Up</span>
                 )}
               </button>
             </form>
@@ -264,17 +264,17 @@ export function RegisterPage() {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">hoặc</span>
+                  <span className="px-4 bg-white text-gray-500">or</span>
                 </div>
               </div>
 
               <p className="text-gray-600 mt-6">
-                Đã có tài khoản?{' '}
+                Already have an account?{' '}
                 <Link
                   to="/login"
                   className="text-brand-600 font-bold hover:text-brand-700 hover:underline transition-all inline-flex items-center gap-1"
                 >
-                  Đăng nhập ngay
+                  Sign in now
                   <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -289,7 +289,7 @@ export function RegisterPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Về trang chủ
+            Back to home
           </Link>
         </div>
       </div>

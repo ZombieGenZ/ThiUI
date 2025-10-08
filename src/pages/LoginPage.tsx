@@ -55,10 +55,10 @@ export function LoginPage() {
               </div>
 
               <h1 className="font-serif text-4xl mb-2 font-bold text-neutral-900 animate-slide-up">
-                Đăng nhập
+                Sign In
               </h1>
               <p className="text-gray-600 animate-slide-up" style={{ animationDelay: '100ms' }}>
-                Chào mừng bạn trở lại
+                Welcome back
               </p>
             </div>
 
@@ -86,7 +86,7 @@ export function LoginPage() {
               </div>
 
               <div className="group animate-slide-up" style={{ animationDelay: '300ms' }}>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Mật khẩu</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-600 transition-colors duration-300" />
                   <input
@@ -111,13 +111,13 @@ export function LoginPage() {
               <div className="flex items-center justify-between text-sm animate-slide-up" style={{ animationDelay: '400ms' }}>
                 <label className="flex items-center space-x-2 cursor-pointer group/check">
                   <input type="checkbox" className="rounded border-gray-300 text-brand-600 focus:ring-brand-500 transition-all" />
-                  <span className="group-hover/check:text-brand-600 transition-colors">Ghi nhớ đăng nhập</span>
+                  <span className="group-hover/check:text-brand-600 transition-colors">Remember me</span>
                 </label>
                 <Link
                   to="/forgot-password"
                   className="text-brand-600 hover:text-brand-700 font-semibold hover:underline transition-all"
                 >
-                  Quên mật khẩu?
+                  Forgot password?
                 </Link>
               </div>
 
@@ -134,10 +134,10 @@ export function LoginPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    <span>Đang xử lý...</span>
+                    <span>Processing...</span>
                   </span>
                 ) : (
-                  <span className="relative z-10">Đăng nhập</span>
+                  <span className="relative z-10">Sign In</span>
                 )}
               </button>
             </form>
@@ -148,17 +148,17 @@ export function LoginPage() {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">hoặc</span>
+                  <span className="px-4 bg-white text-gray-500">or</span>
                 </div>
               </div>
 
               <p className="text-gray-600 mt-6">
-                Chưa có tài khoản?{' '}
+                Don't have an account?{' '}
                 <Link
                   to="/register"
                   className="text-brand-600 font-bold hover:text-brand-700 hover:underline transition-all inline-flex items-center gap-1"
                 >
-                  Đăng ký ngay
+                  Sign up now
                   <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -173,7 +173,7 @@ export function LoginPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Về trang chủ
+            Back to home
           </Link>
         </div>
       </div>
