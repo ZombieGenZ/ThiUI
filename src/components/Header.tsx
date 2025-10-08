@@ -6,10 +6,9 @@ import { useCart } from '../contexts/CartContext';
 
 interface HeaderProps {
   onCartOpen: () => void;
-  onAuthOpen: () => void;
 }
 
-export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
+export function Header({ onCartOpen }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const navigate = useNavigate();
@@ -145,48 +144,48 @@ export function Header({ onCartOpen, onAuthOpen }: HeaderProps) {
                       <Link
                         to="/profile"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-                       
+
                       >
                         My Account
                       </Link>
                       <Link
                         to="/orders"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-                       
+
                       >
                         My Orders
                       </Link>
                       <Link
                         to="/wishlist"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors sm:hidden"
-                       
+
                       >
                         Wishlist
                       </Link>
                       <button
                         onClick={() => signOut()}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-                       
+
                       >
                         Sign Out
                       </button>
                     </>
                   ) : (
                     <>
-                      <button
-                        onClick={onAuthOpen}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-                       
+                      <Link
+                        to="/login"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+
                       >
-                        Sign In
-                      </button>
-                      <button
-                        onClick={onAuthOpen}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-                       
+                        Đăng nhập
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+
                       >
-                        Create Account
-                      </button>
+                        Đăng ký
+                      </Link>
                     </>
                   )}
                 </div>
