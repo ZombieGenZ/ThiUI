@@ -20,6 +20,28 @@
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
   }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+  }
 }
 
 @layer utilities {
@@ -133,6 +155,21 @@
     }
   }
 
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
   button, a, input, select {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -143,5 +180,23 @@
 
   input:focus, select:focus, textarea:focus {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

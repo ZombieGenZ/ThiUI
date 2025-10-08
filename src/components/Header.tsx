@@ -195,11 +195,12 @@ export function Header({ onCartOpen }: HeaderProps) {
         </div>
 
         {searchOpen && (
-          <div className="border-t border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-600" />
+          <div className="border-t border-gray-200 bg-gradient-to-b from-white via-brand-50/30 to-white shadow-xl backdrop-blur-sm animate-slide-down">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="space-y-6">
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-500/10 to-transparent rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-brand-600 z-10 transition-transform group-focus-within:scale-110 duration-300" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -211,8 +212,8 @@ export function Header({ onCartOpen }: HeaderProps) {
                         setSearchQuery('');
                       }
                     }}
-                    placeholder="Search for furniture, styles, rooms..."
-                    className="w-full pl-12 pr-32 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 text-base transition-all"
+                    placeholder="Tìm kiếm sản phẩm, phong cách, phòng..."
+                    className="w-full pl-16 pr-36 py-5 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-base transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl focus:shadow-brand-100 relative z-10"
                     autoFocus
                   />
                   <button
@@ -223,31 +224,50 @@ export function Header({ onCartOpen }: HeaderProps) {
                         setSearchQuery('');
                       }
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-600 text-white px-6 py-2.5 rounded-lg hover:bg-brand-700 transition-colors font-medium flex items-center space-x-2"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-brand-600 to-brand-700 text-white px-7 py-3 rounded-xl hover:from-brand-700 hover:to-brand-800 transition-all duration-300 font-semibold flex items-center space-x-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 z-10"
                   >
-                    <Search className="w-4 h-4" />
-                    <span>Search</span>
+                    <Search className="w-5 h-5" />
+                    <span>Tìm kiếm</span>
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <SlidersHorizontal className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600 font-medium">Popular:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {['Sofa', 'Bed', 'Dining Table', 'Office Chair', 'Outdoor'].map((term) => (
-                        <button
-                          key={term}
-                          onClick={() => {
-                            navigate(`/products?search=${term}`);
-                            setSearchOpen(false);
-                          }}
-                          className="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm hover:border-brand-600 hover:text-brand-600 transition-colors"
-                        >
-                          {term}
-                        </button>
-                      ))}
-                    </div>
+                    <SlidersHorizontal className="w-5 h-5 text-brand-600" />
+                    <span className="text-sm text-gray-700 font-semibold">Tìm kiếm phổ biến:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { name: 'Sofa', icon: '🛋️' },
+                      { name: 'Giường', icon: '🛏️' },
+                      { name: 'Bàn ăn', icon: '🪑' },
+                      { name: 'Ghế văn phòng', icon: '💺' },
+                      { name: 'Ngoài trời', icon: '🌿' }
+                    ].map((term) => (
+                      <button
+                        key={term.name}
+                        onClick={() => {
+                          navigate(`/products?search=${term.name}`);
+                          setSearchOpen(false);
+                        }}
+                        className="px-5 py-2.5 bg-white border-2 border-gray-200 rounded-xl text-sm hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 transition-all duration-300 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+                      >
+                        <span className="text-lg">{term.icon}</span>
+                        <span>{term.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>💡 Tip: Nhấn Enter để tìm kiếm nhanh</span>
+                    <button
+                      onClick={() => setSearchOpen(false)}
+                      className="text-brand-600 hover:text-brand-700 font-medium hover:underline"
+                    >
+                      Đóng
+                    </button>
                   </div>
                 </div>
               </div>

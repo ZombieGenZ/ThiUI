@@ -30,14 +30,14 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft flex flex-col h-full">
-      <div className="relative aspect-square overflow-hidden bg-neutral-100 flex-shrink-0">
+      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 flex-shrink-0">
         {product.is_new && (
-          <div className="absolute top-4 left-4 z-10 bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-medium">
+          <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-brand-600 to-brand-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
             NEW
           </div>
         )}
         {hasDiscount && (
-          <div className="absolute top-4 right-4 z-10 bg-accent-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-medium">
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
             -{discountPercent}%
           </div>
         )}
@@ -45,6 +45,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           src={product.images[0] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
           alt={product.name}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover image-scale"
         />
 
