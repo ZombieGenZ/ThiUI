@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS orders (
   order_number text UNIQUE NOT NULL DEFAULT generate_order_number(),
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')),
   
-  -- Các cột tiền tệ (đã thêm NOT NULL DEFAULT 0 để fix lỗi)
+  -- Các cột tiền tệ (Đã thêm NOT NULL DEFAULT 0 để fix lỗi)
   subtotal decimal(10, 2) NOT NULL DEFAULT 0, -- Tổng giá trị sản phẩm trước phí/thuế/giảm giá
   shipping_cost decimal(10, 2) NOT NULL DEFAULT 0, -- Phí vận chuyển
   tax decimal(10, 2) NOT NULL DEFAULT 0,
@@ -727,26 +727,29 @@ INSERT INTO products (name, slug, description, base_price, sale_price, images, r
 ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
--- 16. INSERT SAMPLE USERS FOR REVIEWS
+-- 16. DISABLE FOREIGN KEY CONSTRAINTS FOR SAMPLE DATA
 -- ============================================================================
 
--- Note: Users will be created through auth.users, profiles will reference them
--- This section creates sample profiles that will be used for sample reviews
--- In production, actual user registration would create these profiles
+-- Tạm thời disable foreign key constraints để insert sample reviews
+ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_user_id_fkey;
+ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_order_id_fkey;
+
+-- Cho phép NULL cho sample data
+ALTER TABLE reviews ALTER COLUMN user_id DROP NOT NULL;
+ALTER TABLE reviews ALTER COLUMN order_id DROP NOT NULL;
 
 -- ============================================================================
 -- 17. INSERT SAMPLE REVIEWS (15-30 per product)
 -- ============================================================================
 
--- Sample reviews for Modern Velvet Sectional Sofa
 DO $$
 DECLARE
   product_slug text;
   product_id uuid;
   sample_comments text[];
-  sample_names text[];
   sample_ratings integer[];
   i integer;
+  num_reviews integer;
 BEGIN
   -- Define sample data
   sample_comments := ARRAY[
@@ -782,15 +785,6 @@ BEGIN
     'Outstanding quality. Exceeds expectations in every way.'
   ];
 
-  sample_names := ARRAY[
-    'Michael Chen', 'Sarah Johnson', 'David Williams', 'Emily Brown', 'James Davis',
-    'Jessica Miller', 'Robert Wilson', 'Amanda Taylor', 'Christopher Moore', 'Jennifer Anderson',
-    'Matthew Thomas', 'Lisa Jackson', 'Daniel White', 'Karen Harris', 'Joseph Martin',
-    'Nancy Thompson', 'Ryan Garcia', 'Michelle Martinez', 'Kevin Robinson', 'Laura Clark',
-    'Brian Rodriguez', 'Elizabeth Lewis', 'Jason Lee', 'Ashley Walker', 'Andrew Hall',
-    'Stephanie Allen', 'Nicholas Young', 'Rebecca King', 'Eric Wright', 'Samantha Lopez'
-  ];
-
   sample_ratings := ARRAY[5, 5, 4, 5, 4, 5, 5, 3, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5];
 
   -- Insert reviews for each product
@@ -798,40 +792,66 @@ BEGIN
     SELECT slug FROM products LIMIT 20
   LOOP
     SELECT id INTO product_id FROM products WHERE slug = product_slug;
+    
+    -- Random number of reviews (15-25)
+    num_reviews := 15 + floor(random() * 11)::integer;
 
-    -- Create 15-25 reviews per product (random number)
-    FOR i IN 1..(15 + floor(random() * 11)::integer)
+    -- Create reviews for this product
+    FOR i IN 1..LEAST(num_reviews, array_length(sample_comments, 1))
     LOOP
-      -- Create a fake user_id (in production, these would be real users)
-      -- Using gen_random_uuid() to simulate different users
-      INSERT INTO reviews (product_id, user_id, order_id, rating, comment, is_verified_purchase, status, created_at)
+      INSERT INTO reviews (
+        product_id, 
+        user_id, 
+        order_id, 
+        rating, 
+        comment, 
+        is_verified_purchase, 
+        status, 
+        created_at
+      )
       VALUES (
         product_id,
-        gen_random_uuid(), -- Fake user_id for sample data
-        gen_random_uuid(), -- Fake order_id for sample data
+        NULL, -- NULL user_id for sample data
+        NULL, -- NULL order_id for sample data
         sample_ratings[i],
         sample_comments[i],
-        true,
+        false, -- Not verified since no real user
         'approved',
-        now() - (random() * interval '180 days') -- Random date within last 6 months
+        now() - (random() * interval '180 days')
       )
       ON CONFLICT DO NOTHING;
     END LOOP;
 
-    -- Update product rating and review_count based on actual reviews
-    UPDATE products
+    -- Update product rating and review_count
+    UPDATE products p
     SET
-      rating = (SELECT ROUND(AVG(rating)::numeric, 2) FROM reviews WHERE product_id = products.id),
-      review_count = (SELECT COUNT(*) FROM reviews WHERE product_id = products.id)
-    WHERE id = product_id;
+      rating = (SELECT ROUND(AVG(rating)::numeric, 2) FROM reviews r WHERE r.product_id = p.id),
+      review_count = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id)
+    WHERE p.id = product_id;
   END LOOP;
-END $$;
+END $$ LANGUAGE plpgsql;
 
 -- ============================================================================
--- 18. UPDATE PRODUCTS - MARK SOME AS FEATURED (BEST SELLERS)
+-- 18. RE-ENABLE FOREIGN KEY CONSTRAINTS (Optional - for production)
 -- ============================================================================
 
--- Mark top-rated products with most reviews as featured (best sellers)
+-- Uncomment these if you want to restore constraints after sample data
+-- Note: This will prevent adding more sample reviews without real users
+/*
+ALTER TABLE reviews ALTER COLUMN user_id SET NOT NULL;
+ALTER TABLE reviews ALTER COLUMN order_id SET NOT NULL;
+
+ALTER TABLE reviews ADD CONSTRAINT reviews_user_id_fkey 
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  
+ALTER TABLE reviews ADD CONSTRAINT reviews_order_id_fkey 
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE;
+*/
+
+-- ============================================================================
+-- 19. UPDATE PRODUCTS - MARK SOME AS FEATURED (BEST SELLERS)
+-- ============================================================================
+
 UPDATE products
 SET is_featured = true
 WHERE id IN (
