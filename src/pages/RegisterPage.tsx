@@ -73,10 +73,10 @@ export function RegisterPage() {
       const { error } = await signUp(email, password, fullName);
       if (error) throw error;
 
-      setSuccess('Account created successfully! Redirecting to login...');
+      setSuccess('Registration successful! Please check your email to verify your account before logging in.');
       setTimeout(() => {
         navigate('/login');
-      }, 2000);
+      }, 3000);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {

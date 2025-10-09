@@ -41,20 +41,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
       });
 
       if (error) throw error;
-
-      if (data.user) {
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: data.user.id,
-          full_name: fullName,
-          loyalty_points: 0,
-          loyalty_tier: 'Silver',
-        });
-
-        if (profileError) throw profileError;
-      }
 
       return { error: null };
     } catch (error) {

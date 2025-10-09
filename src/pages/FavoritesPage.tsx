@@ -76,38 +76,23 @@ export function FavoritesPage() {
                 if (!product) return null;
 
                 return (
-                  <div key={favorite.id} className="relative">
-                    <ProductCard
-                      product={{
-                        id: product.id,
-                        name: product.name,
-                        slug: product.slug,
-                        base_price: product.base_price,
-                        sale_price: product.sale_price,
-                        images: product.images,
-                        rating: product.rating,
-                        review_count: product.review_count,
-                        is_new: product.is_new,
-                        room_type: null,
-                        stock_quantity: product.stock_quantity,
-                      }}
-                      onAddToCart={() => handleAddToCart(product.id, product.name)}
-                    />
-                    <button
-                      onClick={async () => {
-                        try {
-                          await toggleFavorite(product.id);
-                          toast.success('Removed from favorites');
-                        } catch (error) {
-                          toast.error('Failed to remove from favorites');
-                        }
-                      }}
-                      className="absolute top-4 right-4 z-20 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-red-50 transition-colors group"
-                      title="Remove from favorites"
-                    >
-                      <Heart className="w-5 h-5 text-red-500 fill-red-500 group-hover:scale-110 transition-transform" />
-                    </button>
-                  </div>
+                  <ProductCard
+                    key={favorite.id}
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      slug: product.slug,
+                      base_price: product.base_price,
+                      sale_price: product.sale_price,
+                      images: product.images,
+                      rating: product.rating,
+                      review_count: product.review_count,
+                      is_new: product.is_new,
+                      room_type: null,
+                      stock_quantity: product.stock_quantity,
+                    }}
+                    onAddToCart={() => handleAddToCart(product.id, product.name)}
+                  />
                 );
               })}
             </div>

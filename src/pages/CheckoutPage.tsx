@@ -49,7 +49,9 @@ export function CheckoutPage() {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading profile:', error);
+      }
 
       if (data) {
         setFormData(prev => ({
