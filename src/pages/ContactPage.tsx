@@ -14,17 +14,18 @@ export function ContactPage() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
 
     try {
       const { error } = await supabase.from('contact_messages').insert({
         user_id: user?.id || null,
         name: formData.name,
         email: formData.email,
+        phone: formData.phone,
         subject: formData.subject,
         message: formData.message,
         status: 'pending',
@@ -43,7 +44,7 @@ export function ContactPage() {
       console.error('Error sending message:', error);
       toast.error(error.message || 'Failed to send message. Please try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -246,9 +247,10 @@ export function ContactPage() {
 
                   <button
                     type="submit"
-                    className="w-full bg-brand-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-brand-700 transition-colors flex items-center justify-center space-x-2"
+                    disabled={isLoading}
+                    className="w-full bg-brand-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-brand-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>Send Message</span>
+                    <span>{isLoading ? 'Sending...' : 'Send Message'}</span>
                     <Send className="w-5 h-5" />
                   </button>
                 </form>

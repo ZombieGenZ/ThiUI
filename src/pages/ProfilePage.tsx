@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Phone, Camera, Save, Package, Heart, Lock, Shield, MapPin } from 'lucide-react';
+import { User, Mail, Phone, Save, Package, Heart, Lock, Shield, MapPin } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';

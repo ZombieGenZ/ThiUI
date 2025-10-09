@@ -127,7 +127,7 @@ export function OutdoorPage() {
   );
 }
 
-function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: () => void }) {
+function ProductCard({ product }: { product: Product; onAddToCart: () => void }) {
   const price = product.sale_price || product.base_price;
   const hasDiscount = product.sale_price && product.sale_price < product.base_price;
   const discountPercent = hasDiscount

@@ -94,8 +94,7 @@ export function ProductsPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(query) ||
-        p.room_type?.toLowerCase().includes(query) ||
-        p.description?.toLowerCase().includes(query)
+        p.room_type?.toLowerCase().includes(query)
       );
     }
 

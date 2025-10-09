@@ -1,7 +1,6 @@
 import { X, Plus, Minus, ShoppingBag, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -10,8 +9,7 @@ interface CartSidebarProps {
 
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const navigate = useNavigate();
-  const { items, total, selectedTotal, loading, updateQuantity, removeFromCart, toggleItemSelection, selectAll, deselectAll } = useCart();
-  const { user } = useAuth();
+  const { items, selectedTotal, loading, updateQuantity, removeFromCart, toggleItemSelection, selectAll, deselectAll } = useCart();
   const allSelected = items.length > 0 && items.every(item => item.selected);
   const selectedCount = items.filter(item => item.selected).length;
 

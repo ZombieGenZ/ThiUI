@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Tag, Filter, SortAsc } from 'lucide-react';
+import { Tag, SortAsc } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { supabase } from '../lib/supabase';
 
