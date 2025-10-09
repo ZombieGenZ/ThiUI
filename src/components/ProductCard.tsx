@@ -29,15 +29,15 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft flex flex-col h-full">
+    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft flex flex-col h-full will-change-transform">
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 flex-shrink-0">
         {product.is_new && (
-          <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-brand-600 to-brand-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+          <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-brand-600 to-brand-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-fade-in-scale">
             NEW
           </div>
         )}
         {hasDiscount && (
-          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+          <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-fade-in-scale">
             -{discountPercent}%
           </div>
         )}
@@ -49,10 +49,10 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           className="w-full h-full object-cover image-scale"
         />
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-0 sm:translate-y-2 group-hover:translate-y-0">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-400 transform translate-y-0 sm:translate-y-4 group-hover:translate-y-0">
           <Link
             to={`/product/${product.slug}`}
-            className="bg-white text-neutral-900 px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100"
+            className="bg-white text-neutral-900 px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100 smooth-transition hover-scale"
           >
             <Eye className="w-4 h-4" />
             <span className="hidden sm:inline">View</span>
@@ -60,7 +60,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           {onAddToCart && (
             <button
               onClick={onAddToCart}
-              className="bg-brand-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700"
+              className="bg-brand-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700 smooth-transition hover-scale"
             >
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden sm:inline">Add</span>
@@ -71,7 +71,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
       <div className="p-5 flex flex-col flex-1">
         <Link to={`/product/${product.slug}`} className="flex-1">
-          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors min-h-[3rem]">
+          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 smooth-transition min-h-[3rem]">
             {product.name}
           </h3>
         </Link>

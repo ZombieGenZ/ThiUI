@@ -34,12 +34,14 @@ function App() {
 
   useEffect(() => {
     AOS.init({
-      duration: 400,
-      easing: 'ease-out',
+      duration: 600,
+      easing: 'ease-out-cubic',
       once: true,
-      offset: 20,
-      delay: 0,
+      offset: 50,
+      delay: 50,
       disable: false,
+      mirror: false,
+      anchorPlacement: 'top-bottom',
     });
   }, []);
 

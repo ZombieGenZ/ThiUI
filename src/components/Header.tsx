@@ -27,18 +27,18 @@ export function Header({ onCartOpen }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-700 transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-700/50 transition-all duration-500 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <button
-              className="lg:hidden p-2"
+              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg smooth-transition"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6 dark:text-gray-200" /> : <Menu className="w-6 h-6 dark:text-gray-200" />}
             </button>
 
             <div className="flex-1 lg:flex-initial">
-              <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide font-bold">
+              <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide font-bold smooth-transition hover-scale">
                 <span className="text-brand-600">Zombie</span><span className="text-neutral-900 dark:text-white">Shop</span>
               </Link>
             </div>
@@ -46,20 +46,20 @@ export function Header({ onCartOpen }: HeaderProps) {
             <nav className="hidden lg:flex items-center space-x-8 flex-1 justify-center">
               <Link
                 to="/"
-                className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200"
+                className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
                 Home
               </Link>
 
               <div className="relative group">
-                <button className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
+                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
                   <span>Products</span>
                   <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-lg shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-100 dark:border-neutral-700">
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
                   {productCategories.map((cat) => (
                     <Link
                       key={cat.name}
@@ -74,14 +74,14 @@ export function Header({ onCartOpen }: HeaderProps) {
 
               <Link
                 to="/about"
-                className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200"
+                className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
                 About Us
               </Link>
 
               <Link
                 to="/contact"
-                className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200"
+                className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
                 Contact
               </Link>
@@ -98,7 +98,7 @@ export function Header({ onCartOpen }: HeaderProps) {
             <div className="flex items-center space-x-4">
 
               <button
-                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale"
                 onClick={() => setSearchOpen(!searchOpen)}
               >
                 <Search className="w-5 h-5 dark:text-gray-200" />
@@ -107,30 +107,30 @@ export function Header({ onCartOpen }: HeaderProps) {
               {user && (
                 <Link
                   to="/favorites"
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors hidden sm:block"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale hidden sm:block"
                 >
                   <Heart className="w-5 h-5 dark:text-gray-200" />
                 </Link>
               )}
 
               <button
-                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors relative"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale relative"
                 onClick={onCartOpen}
               >
                 <ShoppingCart className="w-5 h-5 dark:text-gray-200" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-fade-in-scale">
                     {itemCount}
                   </span>
                 )}
               </button>
 
               <div className="relative group">
-                <button className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors">
+                <button className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale">
                   <User className="w-5 h-5 dark:text-gray-200" />
                 </button>
 
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-50 border border-gray-100 dark:border-neutral-700">
                   {user ? (
                     <>
                       <Link
@@ -181,7 +181,7 @@ export function Header({ onCartOpen }: HeaderProps) {
         </div>
 
         {searchOpen && (
-          <div className="border-t border-gray-200 dark:border-neutral-700 bg-gradient-to-b from-white via-brand-50/30 to-white dark:from-neutral-800 dark:via-neutral-800 dark:to-neutral-800 shadow-xl backdrop-blur-sm animate-slide-down">
+          <div className="border-t border-gray-200 dark:border-neutral-700 bg-gradient-to-b from-white via-brand-50/20 to-white dark:from-neutral-800 dark:via-neutral-800 dark:to-neutral-800 shadow-xl backdrop-blur-md animate-slide-down">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="space-y-6">
                 <div className="relative group">

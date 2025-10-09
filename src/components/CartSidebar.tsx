@@ -20,17 +20,17 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 z-50 transition-opacity"
+        className="fixed inset-0 bg-black/60 z-50 transition-opacity backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
 
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl transform transition-all duration-400 flex flex-col animate-slide-in-right">
         <div className="p-6 border-b space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Shopping Cart ({items.length})</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale"
             >
               <X className="w-5 h-5" />
             </button>
@@ -39,7 +39,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             <div className="flex items-center justify-between">
               <button
                 onClick={allSelected ? deselectAll : selectAll}
-                className="flex items-center space-x-2 text-sm font-medium text-brand-600 hover:text-brand-700"
+                className="flex items-center space-x-2 text-sm font-medium text-brand-600 hover:text-brand-700 smooth-transition"
               >
                 {allSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
                 <span>{allSelected ? 'Deselect All' : 'Select All'}</span>
