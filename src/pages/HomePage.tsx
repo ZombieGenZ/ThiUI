@@ -168,9 +168,8 @@ export function HomePage() {
             <h2 className="font-display text-3xl md:text-4xl text-neutral-900">Best Sellers</h2>
           </div>
           <a
-            href="/shop"
+            href="/best-sellers"
             className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
-           
           >
             <span>View All</span>
             <ArrowRight className="w-4 h-4" />
@@ -193,27 +192,92 @@ export function HomePage() {
             <p className="text-neutral-600">Find everything you need for every space</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map((category, index) => (
-              <a
-                key={category.id}
-                href={`/shop/${category.slug}`}
-                className="group relative aspect-square rounded-lg overflow-hidden"
-               
-                data-aos="zoom-in"
-                data-aos-delay={index * 50}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-                <img
-                  src={category.image_url || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
-                  alt={category.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute bottom-4 left-4 z-20">
-                  <h3 className="text-white font-semibold">{category.name}</h3>
-                </div>
-              </a>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <a
+              href="/shop/living"
+              className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
+              data-aos="zoom-in"
+              data-aos-delay="0"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
+              <img
+                src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg"
+                alt="Living Room"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute bottom-6 left-6 z-20">
+                <h3 className="text-white font-bold text-lg mb-1">Living Room</h3>
+                <p className="text-white/80 text-sm">Sofas, Tables & More</p>
+              </div>
+            </a>
+            <a
+              href="/shop/bedroom"
+              className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
+              data-aos="zoom-in"
+              data-aos-delay="50"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
+              <img
+                src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg"
+                alt="Bedroom"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute bottom-6 left-6 z-20">
+                <h3 className="text-white font-bold text-lg mb-1">Bedroom</h3>
+                <p className="text-white/80 text-sm">Beds, Dressers & More</p>
+              </div>
+            </a>
+            <a
+              href="/shop/dining"
+              className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
+              data-aos="zoom-in"
+              data-aos-delay="100"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
+              <img
+                src="https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg"
+                alt="Dining"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute bottom-6 left-6 z-20">
+                <h3 className="text-white font-bold text-lg mb-1">Dining</h3>
+                <p className="text-white/80 text-sm">Tables, Chairs & More</p>
+              </div>
+            </a>
+            <a
+              href="/shop/office"
+              className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
+              data-aos="zoom-in"
+              data-aos-delay="150"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
+              <img
+                src="https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg"
+                alt="Office"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute bottom-6 left-6 z-20">
+                <h3 className="text-white font-bold text-lg mb-1">Office</h3>
+                <p className="text-white/80 text-sm">Desks, Chairs & More</p>
+              </div>
+            </a>
+            <a
+              href="/shop/outdoor"
+              className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
+              data-aos="zoom-in"
+              data-aos-delay="200"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
+              <img
+                src="https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg"
+                alt="Outdoor"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute bottom-6 left-6 z-20">
+                <h3 className="text-white font-bold text-lg mb-1">Outdoor</h3>
+                <p className="text-white/80 text-sm">Patio, Garden & More</p>
+              </div>
+            </a>
           </div>
         </div>
       </section>

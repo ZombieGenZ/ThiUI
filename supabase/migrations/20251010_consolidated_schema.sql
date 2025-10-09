@@ -500,14 +500,16 @@ CREATE TABLE IF NOT EXISTS reviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
   rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title text,
   comment text NOT NULL,
   images text[] DEFAULT ARRAY[]::text[],
-  is_verified_purchase boolean DEFAULT false,
-  status text DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  is_verified_purchase boolean DEFAULT true,
+  status text DEFAULT 'approved' CHECK (status IN ('pending', 'approved', 'rejected')),
   helpful_count integer DEFAULT 0,
-  created_at timestamptz DEFAULT now()
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, product_id, order_id)
 );
 
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
@@ -515,6 +517,8 @@ ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status);
+CREATE INDEX IF NOT EXISTS idx_reviews_user ON reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_order ON reviews(order_id);
 
 -- Policies
 DROP POLICY IF EXISTS "Approved reviews are viewable by everyone" ON reviews;
@@ -721,3 +725,118 @@ INSERT INTO products (name, slug, description, base_price, sale_price, images, r
   'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
 ], 4.9, 145, true, 'Outdoor', '{"width": "280cm", "height": "75cm", "depth": "180cm"}', ARRAY['All-Weather Wicker', 'Powder-Coated Aluminum', 'Olefin Fabric'], 85, 'OD-SEC-004', 10, 'Modern')
 ON CONFLICT (slug) DO NOTHING;
+
+-- ============================================================================
+-- 16. INSERT SAMPLE USERS FOR REVIEWS
+-- ============================================================================
+
+-- Note: Users will be created through auth.users, profiles will reference them
+-- This section creates sample profiles that will be used for sample reviews
+-- In production, actual user registration would create these profiles
+
+-- ============================================================================
+-- 17. INSERT SAMPLE REVIEWS (15-30 per product)
+-- ============================================================================
+
+-- Sample reviews for Modern Velvet Sectional Sofa
+DO $$
+DECLARE
+  product_slug text;
+  product_id uuid;
+  sample_comments text[];
+  sample_names text[];
+  sample_ratings integer[];
+  i integer;
+BEGIN
+  -- Define sample data
+  sample_comments := ARRAY[
+    'Absolutely love this piece! The quality is outstanding and it fits perfectly in my living room.',
+    'Great value for money. Very comfortable and looks exactly like the pictures.',
+    'Delivery was smooth and the assembly was straightforward. Highly recommend!',
+    'The fabric is luxurious and the color is even better in person.',
+    'Comfortable seating, modern design. Perfect for entertaining guests.',
+    'Very happy with this purchase. The quality exceeded my expectations.',
+    'Beautiful furniture piece. Adds elegance to any room.',
+    'Good quality but took longer to deliver than expected.',
+    'Exactly what I was looking for. The craftsmanship is impressive.',
+    'Sturdy and well-made. Worth every penny.',
+    'Love the design and comfort. My family enjoys it every day.',
+    'Premium quality materials. Looks great in my home.',
+    'Easy to assemble and very comfortable. Great purchase!',
+    'The attention to detail is remarkable. Highly satisfied.',
+    'Perfect size and very comfortable. Would buy again.',
+    'Elegant and functional. Matches my decor perfectly.',
+    'Great addition to my home. Very pleased with the quality.',
+    'Comfortable and stylish. Gets lots of compliments.',
+    'Excellent craftsmanship. Built to last.',
+    'Very comfortable for daily use. Love it!',
+    'Beautiful piece of furniture. Exactly as described.',
+    'High quality and great design. Totally worth it.',
+    'Impressed with the build quality. Very satisfied.',
+    'Perfect for my space. Comfortable and elegant.',
+    'Great value. Looks and feels premium.',
+    'Wonderful addition to my home. Love the style.',
+    'Very pleased with this purchase. Excellent quality.',
+    'Comfortable, stylish, and well-made. Highly recommend.',
+    'Beautiful design and great comfort. Perfect choice.',
+    'Outstanding quality. Exceeds expectations in every way.'
+  ];
+
+  sample_names := ARRAY[
+    'Michael Chen', 'Sarah Johnson', 'David Williams', 'Emily Brown', 'James Davis',
+    'Jessica Miller', 'Robert Wilson', 'Amanda Taylor', 'Christopher Moore', 'Jennifer Anderson',
+    'Matthew Thomas', 'Lisa Jackson', 'Daniel White', 'Karen Harris', 'Joseph Martin',
+    'Nancy Thompson', 'Ryan Garcia', 'Michelle Martinez', 'Kevin Robinson', 'Laura Clark',
+    'Brian Rodriguez', 'Elizabeth Lewis', 'Jason Lee', 'Ashley Walker', 'Andrew Hall',
+    'Stephanie Allen', 'Nicholas Young', 'Rebecca King', 'Eric Wright', 'Samantha Lopez'
+  ];
+
+  sample_ratings := ARRAY[5, 5, 4, 5, 4, 5, 5, 3, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5];
+
+  -- Insert reviews for each product
+  FOR product_slug IN
+    SELECT slug FROM products LIMIT 20
+  LOOP
+    SELECT id INTO product_id FROM products WHERE slug = product_slug;
+
+    -- Create 15-25 reviews per product (random number)
+    FOR i IN 1..(15 + floor(random() * 11)::integer)
+    LOOP
+      -- Create a fake user_id (in production, these would be real users)
+      -- Using gen_random_uuid() to simulate different users
+      INSERT INTO reviews (product_id, user_id, order_id, rating, comment, is_verified_purchase, status, created_at)
+      VALUES (
+        product_id,
+        gen_random_uuid(), -- Fake user_id for sample data
+        gen_random_uuid(), -- Fake order_id for sample data
+        sample_ratings[i],
+        sample_comments[i],
+        true,
+        'approved',
+        now() - (random() * interval '180 days') -- Random date within last 6 months
+      )
+      ON CONFLICT DO NOTHING;
+    END LOOP;
+
+    -- Update product rating and review_count based on actual reviews
+    UPDATE products
+    SET
+      rating = (SELECT ROUND(AVG(rating)::numeric, 2) FROM reviews WHERE product_id = products.id),
+      review_count = (SELECT COUNT(*) FROM reviews WHERE product_id = products.id)
+    WHERE id = product_id;
+  END LOOP;
+END $$;
+
+-- ============================================================================
+-- 18. UPDATE PRODUCTS - MARK SOME AS FEATURED (BEST SELLERS)
+-- ============================================================================
+
+-- Mark top-rated products with most reviews as featured (best sellers)
+UPDATE products
+SET is_featured = true
+WHERE id IN (
+  SELECT id FROM products
+  WHERE review_count > 0
+  ORDER BY review_count DESC, rating DESC
+  LIMIT 12
+);

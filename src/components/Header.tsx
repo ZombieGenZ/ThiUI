@@ -87,6 +87,13 @@ export function Header({ onCartOpen }: HeaderProps) {
               </Link>
 
               <Link
+                to="/best-sellers"
+                className="text-sm font-medium transition-colors text-amber-600 hover:text-amber-700 flex items-center space-x-1"
+              >
+                <span>Best Sellers</span>
+              </Link>
+
+              <Link
                 to="/sale"
                 className="text-sm font-medium transition-colors text-red-600 hover:text-red-700 flex items-center space-x-1"
               >

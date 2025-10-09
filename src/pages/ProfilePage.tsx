@@ -135,6 +135,11 @@ export function ProfilePage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!passwordData.currentPassword) {
+      toast.error('Please enter your current password');
+      return;
+    }
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('New passwords do not match');
       return;
@@ -145,17 +150,38 @@ export function ProfilePage() {
       return;
     }
 
+    if (passwordData.newPassword === passwordData.currentPassword) {
+      toast.error('New password must be different from current password');
+      return;
+    }
+
     setChangingPassword(true);
     try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: passwordData.currentPassword,
+      });
+
+      if (signInError) {
+        toast.error('Current password is incorrect');
+        setChangingPassword(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword,
       });
 
       if (error) throw error;
 
-      toast.success('Password changed successfully!');
+      toast.success('Password changed successfully! You will be signed out for security.');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordForm(false);
+
+      setTimeout(async () => {
+        await supabase.auth.signOut({ scope: 'global' });
+        navigate('/login');
+      }, 2000);
     } catch (error: any) {
       console.error('Error changing password:', error);
       toast.error(error.message || 'Failed to change password');
@@ -337,6 +363,23 @@ export function ProfilePage() {
               <form onSubmit={handleChangePassword} className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-neutral-700 mb-2">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                    <input
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      placeholder="Enter current password"
+                      className="w-full pl-12 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-700 mb-2">
                     New Password
                   </label>
                   <div className="relative">
@@ -350,6 +393,7 @@ export function ProfilePage() {
                       required
                     />
                   </div>
+                  <p className="mt-1 text-xs text-neutral-500">Minimum 6 characters</p>
                 </div>
 
                 <div>

@@ -22,6 +22,7 @@ const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m
 const ProductsPage = lazy(() => import('./pages/ProductsPage').then(m => ({ default: m.ProductsPage })));
 const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const SalePage = lazy(() => import('./pages/SalePage').then(m => ({ default: m.SalePage })));
+const BestSellersPage = lazy(() => import('./pages/BestSellersPage').then(m => ({ default: m.BestSellersPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
@@ -129,6 +130,7 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
               <Route path="/shop/outdoor" element={<OutdoorPage />} />
               <Route path="/product/:slug" element={<ProductDetailPage />} />
               <Route path="/sale" element={<SalePage />} />
+              <Route path="/best-sellers" element={<BestSellersPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
