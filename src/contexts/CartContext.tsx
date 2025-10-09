@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -190,19 +190,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(prevItems => prevItems.map(item => ({ ...item, selected: false })));
   };
 
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = useMemo(() =>
+    items.reduce((sum, item) => sum + item.quantity, 0),
+    [items]
+  );
 
-  const total = items.reduce((sum, item) => {
-    const price = item.product?.sale_price || item.product?.base_price || 0;
-    return sum + price * item.quantity;
-  }, 0);
-
-  const selectedTotal = items
-    .filter(item => item.selected)
-    .reduce((sum, item) => {
+  const total = useMemo(() =>
+    items.reduce((sum, item) => {
       const price = item.product?.sale_price || item.product?.base_price || 0;
       return sum + price * item.quantity;
-    }, 0);
+    }, 0),
+    [items]
+  );
+
+  const selectedTotal = useMemo(() =>
+    items
+      .filter(item => item.selected)
+      .reduce((sum, item) => {
+        const price = item.product?.sale_price || item.product?.base_price || 0;
+        return sum + price * item.quantity;
+      }, 0),
+    [items]
+  );
 
   return (
     <CartContext.Provider

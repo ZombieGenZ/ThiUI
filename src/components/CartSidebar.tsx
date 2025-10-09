@@ -22,13 +22,13 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         onClick={onClose}
       />
 
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl transform transition-all duration-400 flex flex-col animate-slide-in-right">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl transform transition-all duration-400 flex flex-col animate-slide-in-right will-change-transform">
         <div className="p-6 border-b space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Shopping Cart ({items.length})</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale"
+              className="p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale active:scale-90 ripple-effect"
             >
               <X className="w-5 h-5" />
             </button>
@@ -99,16 +99,14 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-                         
+                          className="w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors hover:scale-110 active:scale-95"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="w-8 text-center font-medium">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-                         
+                          className="w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors hover:scale-110 active:scale-95"
                         >
                           <Plus className="w-3 h-3" />
                         </button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import AOS from 'aos';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
@@ -9,25 +9,26 @@ import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
-import { HomePage } from './pages/HomePage';
-import { BedroomPage } from './pages/BedroomPage';
-import { LivingRoomPage } from './pages/LivingRoomPage';
-import { DiningPage } from './pages/DiningPage';
-import { OfficePage } from './pages/OfficePage';
-import { OutdoorPage } from './pages/OutdoorPage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { AboutPage } from './pages/AboutPage';
-import { ProductsPage } from './pages/ProductsPage';
-import { ContactPage } from './pages/ContactPage';
-import { SalePage } from './pages/SalePage';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { FavoritesPage } from './pages/FavoritesPage';
-import { OrdersPage } from './pages/OrdersPage';
 import { Header } from './components/Header';
+import { HomePage } from './pages/HomePage';
+
+const BedroomPage = lazy(() => import('./pages/BedroomPage').then(m => ({ default: m.BedroomPage })));
+const LivingRoomPage = lazy(() => import('./pages/LivingRoomPage').then(m => ({ default: m.LivingRoomPage })));
+const DiningPage = lazy(() => import('./pages/DiningPage').then(m => ({ default: m.DiningPage })));
+const OfficePage = lazy(() => import('./pages/OfficePage').then(m => ({ default: m.OfficePage })));
+const OutdoorPage = lazy(() => import('./pages/OutdoorPage').then(m => ({ default: m.OutdoorPage })));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const ProductsPage = lazy(() => import('./pages/ProductsPage').then(m => ({ default: m.ProductsPage })));
+const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const SalePage = lazy(() => import('./pages/SalePage').then(m => ({ default: m.SalePage })));
+const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage').then(m => ({ default: m.FavoritesPage })));
+const OrdersPage = lazy(() => import('./pages/OrdersPage').then(m => ({ default: m.OrdersPage })));
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -35,15 +36,20 @@ function App() {
 
   useEffect(() => {
     AOS.init({
-      duration: 600,
+      duration: 800,
       easing: 'ease-out-cubic',
       once: true,
-      offset: 50,
-      delay: 50,
-      disable: false,
+      offset: 100,
+      delay: 100,
+      disable: 'mobile',
       mirror: false,
       anchorPlacement: 'top-bottom',
     });
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      AOS.init({ disable: true });
+    }
   }, []);
 
   const handleLoadComplete = () => {
@@ -69,15 +75,19 @@ function App() {
               {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
               <ToastContainer
                 position="top-right"
-                autoClose={5000}
+                autoClose={3500}
                 hideProgressBar={false}
-                newestOnTop={false}
+                newestOnTop
                 closeOnClick
                 rtl={false}
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
                 theme="light"
+                style={{ zIndex: 9999 }}
+                toastClassName="bg-white rounded-xl shadow-strong border border-neutral-200"
+                bodyClassName="text-sm font-medium text-neutral-900"
+                progressClassName="bg-gradient-to-r from-brand-600 to-brand-700"
               />
             </Router>
           </FavoritesProvider>
@@ -100,26 +110,32 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
       <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white">
         <Header onCartOpen={() => setCartOpen(true)} />
         <main className="flex-1 pt-20 transition-all duration-300">
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/products" element={<ProductsPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
-                    <Route path="/shop/living" element={<LivingRoomPage />} />
-                    <Route path="/shop/bedroom" element={<BedroomPage />} />
-                    <Route path="/shop/dining" element={<DiningPage />} />
-                    <Route path="/shop/office" element={<OfficePage />} />
-                    <Route path="/shop/outdoor" element={<OutdoorPage />} />
-                    <Route path="/product/:slug" element={<ProductDetailPage />} />
-                    <Route path="/sale" element={<SalePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/favorites" element={<FavoritesPage />} />
-                    <Route path="/orders" element={<OrdersPage />} />
-          </Routes>
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-600"></div>
+            </div>
+          }>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/shop/living" element={<LivingRoomPage />} />
+              <Route path="/shop/bedroom" element={<BedroomPage />} />
+              <Route path="/shop/dining" element={<DiningPage />} />
+              <Route path="/shop/office" element={<OfficePage />} />
+              <Route path="/shop/outdoor" element={<OutdoorPage />} />
+              <Route path="/product/:slug" element={<ProductDetailPage />} />
+              <Route path="/sale" element={<SalePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/favorites" element={<FavoritesPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+            </Routes>
+          </Suspense>
         </main>
         <Footer />
       </div>

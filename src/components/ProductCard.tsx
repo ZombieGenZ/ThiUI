@@ -40,17 +40,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft flex flex-col h-full will-change-transform">
+    <div className="group relative bg-white rounded-xl overflow-hidden card-hover shadow-soft flex flex-col h-full will-change-transform hover:shadow-strong">
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 flex-shrink-0">
         {user && (
           <button
             onClick={handleToggleFavorite}
-            className="absolute top-4 left-4 z-20 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 smooth-transition"
+            className="absolute top-4 left-4 z-20 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-125 smooth-transition hover:shadow-lg active:scale-95"
           >
             <Heart
               className={`w-5 h-5 smooth-transition ${
                 isFavorite
-                  ? 'fill-red-500 text-red-500'
+                  ? 'fill-red-500 text-red-500 animate-bounce-in'
                   : 'text-neutral-600 hover:text-red-500'
               }`}
             />
@@ -77,17 +77,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-400 transform translate-y-0 sm:translate-y-4 group-hover:translate-y-0">
           <Link
             to={`/product/${product.slug}`}
-            className="bg-white text-neutral-900 px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100 smooth-transition hover-scale"
+            className="bg-white text-neutral-900 px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-neutral-100 smooth-transition hover:scale-110 hover:shadow-xl active:scale-95"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-4 h-4 transition-transform group-hover:rotate-12" />
             <span className="hidden sm:inline">View</span>
           </Link>
           {onAddToCart && (
             <button
               onClick={onAddToCart}
-              className="bg-brand-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700 smooth-transition hover-scale"
+              className="bg-brand-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-full font-semibold shadow-strong flex items-center space-x-2 hover:bg-brand-700 smooth-transition hover:scale-110 hover:shadow-xl active:scale-95"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4 transition-transform hover:-rotate-12" />
               <span className="hidden sm:inline">Add</span>
             </button>
           )}
@@ -96,7 +96,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
       <div className="p-5 flex flex-col flex-1">
         <Link to={`/product/${product.slug}`} className="flex-1">
-          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 smooth-transition min-h-[3rem]">
+          <h3 className="font-semibold text-neutral-900 mb-2 line-clamp-2 group-hover:text-brand-600 smooth-transition min-h-[3rem] hover:underline decoration-brand-600 decoration-2 underline-offset-4">
             {product.name}
           </h3>
         </Link>
