@@ -12,7 +12,7 @@ interface Order {
   created_at: string;
   order_items: {
     quantity: number;
-    price: number;
+    unit_price: number;
     product: {
       name: string;
       images: string[];
@@ -46,7 +46,7 @@ export function OrdersPage() {
           *,
           order_items (
             quantity,
-            price,
+            unit_price,
             product:products (
               name,
               images
@@ -196,11 +196,11 @@ export function OrdersPage() {
                             {item.product?.name || 'Product'}
                           </h4>
                           <p className="text-sm text-neutral-600">
-                            Quantity: {item.quantity} × ${item.price.toFixed(2)}
+                            Quantity: {item.quantity} × ${item.unit_price.toFixed(2)}
                           </p>
                         </div>
                         <p className="font-semibold text-neutral-900">
-                          ${(item.quantity * item.price).toFixed(2)}
+                          ${(item.quantity * item.unit_price).toFixed(2)}
                         </p>
                       </div>
                     ))}

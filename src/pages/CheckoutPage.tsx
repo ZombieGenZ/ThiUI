@@ -110,9 +110,6 @@ export function CheckoutPage() {
         city: formData.city,
         state: formData.state,
         zipCode: formData.zipCode,
-      };
-
-      const contactInfo = {
         fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -125,22 +122,28 @@ export function CheckoutPage() {
           total_amount: finalTotal,
           shipping_cost: shippingCost,
           tax: tax,
+          subtotal: selectedTotal,
           status: 'pending',
           payment_method: paymentMethod,
+          payment_status: 'pending',
           shipping_address: shippingAddress,
-          contact_info: contactInfo,
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
 
-      const orderItems = selectedItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.product?.sale_price || item.product?.base_price || 0,
-      }));
+      const orderItems = selectedItems.map(item => {
+        const unitPrice = item.product?.sale_price || item.product?.base_price || 0;
+        return {
+          order_id: order.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: unitPrice,
+          price: unitPrice,
+          subtotal: unitPrice * item.quantity,
+        };
+      });
 
       const { error: itemsError } = await supabase
         .from('order_items')
