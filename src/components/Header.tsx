@@ -181,12 +181,11 @@ export function Header({ onCartOpen }: HeaderProps) {
         </div>
 
         {searchOpen && (
-          <div className="border-t border-gray-200 dark:border-neutral-700 bg-gradient-to-b from-white via-brand-50/20 to-white dark:from-neutral-800 dark:via-neutral-800 dark:to-neutral-800 shadow-xl backdrop-blur-md animate-slide-down">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="space-y-6">
+          <div className="border-t border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg animate-slide-down">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="space-y-3">
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-brand-500/10 to-transparent rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-brand-600 z-10 transition-transform group-focus-within:scale-110 duration-300" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-brand-600 transition-colors" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -198,8 +197,8 @@ export function Header({ onCartOpen }: HeaderProps) {
                         setSearchQuery('');
                       }
                     }}
-                    placeholder="Search products, styles, rooms..."
-                    className="w-full pl-16 pr-36 py-5 border-2 border-gray-200 dark:border-neutral-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-base transition-all duration-300 bg-white/90 dark:bg-neutral-800/90 dark:text-white backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl focus:shadow-brand-100 relative z-10"
+                    placeholder="Search for furniture..."
+                    className="w-full pl-10 pr-20 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm transition-all bg-white dark:bg-neutral-700 dark:text-white"
                     autoFocus
                   />
                   <button
@@ -210,50 +209,27 @@ export function Header({ onCartOpen }: HeaderProps) {
                         setSearchQuery('');
                       }
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-brand-600 to-brand-700 text-white px-7 py-3 rounded-xl hover:from-brand-700 hover:to-brand-800 transition-all duration-300 font-semibold flex items-center space-x-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 z-10"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-600 text-white px-4 py-1.5 rounded-md hover:bg-brand-700 transition-colors text-sm font-medium"
                   >
-                    <Search className="w-5 h-5" />
-                    <span>Search</span>
+                    Search
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <SlidersHorizontal className="w-5 h-5 text-brand-600" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Popular Searches:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {[
-                      { name: 'Sofa', icon: '🛋️' },
-                      { name: 'Bed', icon: '🛏️' },
-                      { name: 'Dining Table', icon: '🪑' },
-                      { name: 'Office Chair', icon: '💺' },
-                      { name: 'Outdoor', icon: '🌿' }
-                    ].map((term) => (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Quick:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['Sofa', 'Bed', 'Table', 'Chair', 'Outdoor'].map((term) => (
                       <button
-                        key={term.name}
+                        key={term}
                         onClick={() => {
-                          navigate(`/products?search=${term.name}`);
+                          navigate(`/products?search=${term}`);
                           setSearchOpen(false);
                         }}
-                        className="px-5 py-2.5 bg-white dark:bg-neutral-800 dark:text-gray-200 border-2 border-gray-200 dark:border-neutral-700 rounded-xl text-sm hover:border-brand-600 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-neutral-700 transition-all duration-300 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+                        className="px-2.5 py-1 bg-gray-100 dark:bg-neutral-700 dark:text-gray-200 rounded-md text-xs hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-neutral-600 transition-colors"
                       >
-                        <span className="text-lg">{term.icon}</span>
-                        <span>{term.name}</span>
+                        {term}
                       </button>
                     ))}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200 dark:border-neutral-700">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span className="dark:text-gray-400">💡 Tip: Press Enter to search quickly</span>
-                    <button
-                      onClick={() => setSearchOpen(false)}
-                      className="text-brand-600 hover:text-brand-700 font-medium hover:underline"
-                    >
-                      Close
-                    </button>
                   </div>
                 </div>
               </div>
