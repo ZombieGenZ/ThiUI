@@ -83,26 +83,26 @@ export function HomePage() {
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60 z-10" />
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover scale-105 animate-ken-burns"
             />
             <div className="absolute inset-0 z-20 flex items-center justify-center text-center px-4">
               <div className="max-w-4xl">
-                <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white mb-6 animate-fade-in">
+                <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-6 animate-fade-in-scale drop-shadow-2xl">
                   {slide.title}
                 </h1>
-                <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-in-delay">
+                <p className="text-xl md:text-3xl text-white/95 mb-10 animate-fade-in-delay font-light tracking-wide drop-shadow-lg">
                   {slide.subtitle}
                 </p>
                 <button
-                  className="bg-white text-black px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 inline-flex items-center space-x-2"
-                 
+                  className="bg-white text-black px-10 py-5 rounded-full font-bold hover:bg-brand-500 hover:text-white transition-all duration-300 transform hover:scale-110 hover:shadow-2xl inline-flex items-center space-x-3 text-lg"
+
                 >
                   <span>{slide.cta}</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </div>
@@ -111,35 +111,35 @@ export function HomePage() {
 
         <button
           onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors"
-         
+          className="absolute left-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center transition-all transform hover:scale-110 border border-white/30"
+
         >
-          <ChevronLeft className="w-6 h-6 text-white" />
+          <ChevronLeft className="w-7 h-7 text-white" />
         </button>
         <button
           onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors"
-         
+          className="absolute right-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center transition-all transform hover:scale-110 border border-white/30"
+
         >
-          <ChevronRight className="w-6 h-6 text-white" />
+          <ChevronRight className="w-7 h-7 text-white" />
         </button>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex space-x-3">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
+              className={`h-1 rounded-full transition-all duration-300 ${
+                index === currentSlide ? 'bg-white w-12' : 'bg-white/40 w-8 hover:bg-white/60'
               }`}
-             
+
             />
           ))}
         </div>
 
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
-          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center pt-2">
-            <div className="w-1.5 h-3 bg-white rounded-full animate-scroll" />
+        <div className="absolute bottom-28 left-1/2 -translate-x-1/2 animate-bounce z-30 hidden md:block">
+          <div className="w-7 h-12 border-2 border-white/60 rounded-full flex justify-center pt-2 backdrop-blur-sm">
+            <div className="w-1.5 h-4 bg-white rounded-full animate-scroll" />
           </div>
         </div>
       </section>
@@ -267,28 +267,35 @@ export function HomePage() {
       </section>
 
       <style>{`
-        @keyframes fade-in {
+        @keyframes fade-in-scale {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px) scale(0.95);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
-        .animate-fade-in {
-          animation: fade-in 1s ease-out;
+        @keyframes ken-burns {
+          0% { transform: scale(1.05); }
+          100% { transform: scale(1.15); }
+        }
+        .animate-fade-in-scale {
+          animation: fade-in-scale 1.2s ease-out;
         }
         .animate-fade-in-delay {
-          animation: fade-in 1s ease-out 0.3s both;
+          animation: fade-in-scale 1.2s ease-out 0.3s both;
+        }
+        .animate-ken-burns {
+          animation: ken-burns 20s ease-out forwards;
         }
         @keyframes scroll {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(8px); }
+          50% { transform: translateY(10px); }
         }
         .animate-scroll {
-          animation: scroll 1.5s ease-in-out infinite;
+          animation: scroll 2s ease-in-out infinite;
         }
       `}</style>
     </div>
