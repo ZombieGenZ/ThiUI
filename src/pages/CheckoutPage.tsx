@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { CreditCard, MapPin, User, Mail, Phone, Lock, Wallet, Building2, Smartphone } from 'lucide-react';
+import { CreditCard, MapPin, User, Mail, Phone, Lock, Wallet, Building2, Smartphone, Tag, X } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
 type PaymentMethod = 'credit-card' | 'debit-card' | 'paypal' | 'bank-transfer' | 'cash-on-delivery';
+
+interface Voucher {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_order_amount: number;
+  max_discount_amount: number | null;
+  description: string;
+}
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -14,6 +24,9 @@ export function CheckoutPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit-card');
+  const [voucherCode, setVoucherCode] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
   const selectedItems = items.filter(item => item.selected);
 
   const [formData, setFormData] = useState({
@@ -122,16 +135,33 @@ export function CheckoutPage() {
           total_amount: finalTotal,
           shipping_cost: shippingCost,
           tax: tax,
+          discount: voucherDiscount,
           subtotal: selectedTotal,
           status: 'pending',
           payment_method: paymentMethod,
           payment_status: 'pending',
           shipping_address: shippingAddress,
+          voucher_id: appliedVoucher?.id || null,
+          voucher_discount: voucherDiscount,
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
+
+      if (appliedVoucher) {
+        await supabase.from('voucher_usage').insert({
+          voucher_id: appliedVoucher.id,
+          user_id: user.id,
+          order_id: order.id,
+          discount_amount: voucherDiscount,
+        });
+
+        await supabase
+          .from('vouchers')
+          .update({ usage_count: appliedVoucher.usage_count + 1 })
+          .eq('id', appliedVoucher.id);
+      }
 
       const orderItems = selectedItems.map(item => {
         const unitPrice = item.product?.sale_price || item.product?.base_price || 0;
@@ -168,7 +198,76 @@ export function CheckoutPage() {
 
   const shippingCost = selectedTotal > 500 ? 0 : 50;
   const tax = selectedTotal * 0.1;
-  const finalTotal = selectedTotal + shippingCost + tax;
+  const voucherDiscount = calculateVoucherDiscount();
+  const finalTotal = selectedTotal + shippingCost + tax - voucherDiscount;
+
+  function calculateVoucherDiscount(): number {
+    if (!appliedVoucher) return 0;
+
+    if (appliedVoucher.discount_type === 'percentage') {
+      const discount = (selectedTotal * appliedVoucher.discount_value) / 100;
+      if (appliedVoucher.max_discount_amount) {
+        return Math.min(discount, appliedVoucher.max_discount_amount);
+      }
+      return discount;
+    } else {
+      return appliedVoucher.discount_value;
+    }
+  }
+
+  const applyVoucher = async () => {
+    if (!voucherCode.trim()) {
+      toast.error('Please enter a voucher code');
+      return;
+    }
+
+    setVoucherLoading(true);
+
+    try {
+      const { data: voucher, error } = await supabase
+        .from('vouchers')
+        .select('*')
+        .eq('code', voucherCode.toUpperCase())
+        .eq('active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!voucher) {
+        toast.error('Invalid voucher code');
+        return;
+      }
+
+      if (voucher.valid_until && new Date(voucher.valid_until) < new Date()) {
+        toast.error('This voucher has expired');
+        return;
+      }
+
+      if (voucher.min_order_amount > selectedTotal) {
+        toast.error(`Minimum order amount of $${voucher.min_order_amount} required`);
+        return;
+      }
+
+      if (voucher.usage_limit && voucher.usage_count >= voucher.usage_limit) {
+        toast.error('This voucher has reached its usage limit');
+        return;
+      }
+
+      setAppliedVoucher(voucher);
+      toast.success(`Voucher applied! ${voucher.description}`);
+    } catch (error) {
+      console.error('Error applying voucher:', error);
+      toast.error('Failed to apply voucher');
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherCode('');
+    toast.info('Voucher removed');
+  };
 
   if (!user) {
     return (
@@ -560,24 +659,74 @@ export function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">${selectedTotal.toFixed(2)}</span>
+              <div className="border-t pt-4 space-y-4">
+                <div>
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Tag className="w-4 h-4 text-brand-600" />
+                    <span className="text-sm font-medium">Have a voucher?</span>
+                  </div>
+
+                  {appliedVoucher ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-green-800">{appliedVoucher.code}</p>
+                          <p className="text-xs text-green-600">{appliedVoucher.description}</p>
+                        </div>
+                        <button
+                          onClick={removeVoucher}
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={voucherCode}
+                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                        placeholder="Enter voucher code"
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyVoucher}
+                        disabled={voucherLoading}
+                        className="px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50"
+                      >
+                        {voucherLoading ? 'Checking...' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">
-                    {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
-                </div>
-                <div className="border-t pt-2 flex justify-between text-lg font-semibold">
-                  <span>Total</span>
-                  <span>${finalTotal.toFixed(2)}</span>
+
+                <div className="space-y-2 pt-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">${selectedTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="font-medium">
+                      {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Tax</span>
+                    <span className="font-medium">${tax.toFixed(2)}</span>
+                  </div>
+                  {voucherDiscount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-600">Voucher Discount</span>
+                      <span className="font-medium text-green-600">-${voucherDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="border-t pt-2 flex justify-between text-lg font-semibold">
+                    <span>Total</span>
+                    <span>${finalTotal.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
 
