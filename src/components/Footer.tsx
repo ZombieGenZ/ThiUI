@@ -53,17 +53,17 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-gray-900 text-gray-300 transition-all duration-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-          <div className="lg:col-span-1">
-            <h3 className="font-display text-2xl text-white mb-4 font-bold">
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8 mb-10">
+          <div className="col-span-2 md:col-span-3 lg:col-span-1">
+            <h3 className="font-display text-xl text-white mb-3 font-bold">
               <span className="text-brand-500">Zombie</span>Shop
             </h3>
-            <p className="text-sm mb-6">
-              Crafting beautiful spaces with premium furniture and expert design services.
+            <p className="text-sm mb-4 text-gray-400">
+              Premium furniture for beautiful spaces.
             </p>
-            <div className="flex space-x-3">
+            <div className="flex gap-2">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
@@ -72,10 +72,10 @@ export function Footer() {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="social-button"
+                    className="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-brand-600 transition-all duration-300 hover:scale-110"
                     title={social.name}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4" />
                   </a>
                 );
               })}
@@ -84,13 +84,13 @@ export function Footer() {
 
           {sections.map((section) => (
             <div key={section.title}>
-              <h4 className="text-white font-semibold mb-4">{section.title}</h4>
-              <ul className="space-y-2">
+              <h4 className="text-white font-semibold mb-3 text-sm">{section.title}</h4>
+              <ul className="space-y-1.5">
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.path}
-                      className="text-sm hover:text-white transition-colors"
+                      className="text-xs text-gray-400 hover:text-white transition-colors block"
                     >
                       {link.name}
                     </a>
@@ -101,94 +101,37 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-4">
-              <Mail className="w-5 h-5" />
+        <div className="border-t border-gray-800 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Mail className="w-4 h-4 text-brand-500" />
               <div>
-                <p className="text-sm font-semibold text-white">Subscribe to our newsletter</p>
-                <p className="text-xs">Get updates on new arrivals and exclusive offers</p>
+                <p className="text-sm font-medium text-white">Newsletter</p>
+                <p className="text-xs text-gray-400">Get exclusive offers</p>
               </div>
             </div>
 
             <form className="flex w-full md:w-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
-                className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-white text-sm w-full md:w-64"
+                placeholder="Your email"
+                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm w-full md:w-56"
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-white text-gray-900 rounded-r-lg hover:bg-gray-100 transition-colors font-medium text-sm"
+                className="px-4 py-2 bg-brand-600 text-white rounded-r-md hover:bg-brand-700 transition-colors font-medium text-sm"
               >
                 Subscribe
               </button>
             </form>
           </div>
 
-          <div className="mt-8 text-center text-sm">
+          <div className="mt-6 text-center text-xs text-gray-500">
             <p>&copy; 2024 ZombieShop. All rights reserved.</p>
           </div>
         </div>
       </div>
 
-      <style>{`
-        .social-button {
-          width: 44px;
-          height: 44px;
-          min-width: 44px;
-          min-height: 44px;
-          border-radius: 50%;
-          background: linear-gradient(145deg, #1f2937, #111827);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #9ca3af;
-          position: relative;
-          overflow: hidden;
-          transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          flex-shrink: 0;
-        }
-
-        .social-button::before {
-          content: "";
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 0;
-          height: 0;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #16a34a, #22c55e);
-          transform: translate(-50%, -50%);
-          transition: width 0.4s ease, height 0.4s ease;
-        }
-
-        .social-button svg {
-          position: relative;
-          z-index: 1;
-          transition: all 0.3s ease;
-        }
-
-        .social-button:hover {
-          transform: translateY(-3px) scale(1.05);
-          box-shadow: 0 8px 16px rgba(34, 197, 94, 0.3);
-        }
-
-        .social-button:hover::before {
-          width: 100%;
-          height: 100%;
-        }
-
-        .social-button:hover svg {
-          color: #ffffff;
-          transform: scale(1.1) rotate(5deg);
-        }
-
-        .social-button:active {
-          transform: translateY(-1px) scale(1.02);
-        }
-      `}</style>
     </footer>
   );
 }
