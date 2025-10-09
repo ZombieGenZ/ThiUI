@@ -96,7 +96,7 @@ export function RegisterPage() {
             <div className="text-center mb-8 space-y-4">
               <Link to="/" className="inline-block mb-2 transform hover:scale-105 transition-transform duration-300">
                 <span className="font-display text-4xl">
-                  <span className="text-brand-600 inline-block hover:text-brand-700 transition-colors">Zombie</span>
+                  <span className="text-brand-600 inline-block hover:text-brand-700 transition-colors">Z</span>
                   <span className="text-neutral-900">Shop</span>
                 </span>
               </Link>

@@ -64,7 +64,7 @@ export function ForgotPasswordPage() {
           <div className="text-center mb-8">
             <Link to="/" className="inline-block mb-4">
               <span className="font-display text-4xl">
-                <span className="text-brand-600">Zombie</span>
+                <span className="text-brand-600">Z</span>
                 <span className="text-neutral-900">Shop</span>
               </span>
             </Link>

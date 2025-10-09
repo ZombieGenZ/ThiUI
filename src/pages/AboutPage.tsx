@@ -7,7 +7,7 @@ export function AboutPage() {
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
-            <h1 className="font-display text-5xl text-white mb-4">About ZombieShop</h1>
+            <h1 className="font-display text-5xl text-white mb-4">About ZShop</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Crafting beautiful living spaces since 2010
             </p>
@@ -20,7 +20,7 @@ export function AboutPage() {
           <div data-aos="fade-right">
             <h2 className="font-display text-4xl text-neutral-900 mb-6">Our Story</h2>
             <p className="text-neutral-600 leading-relaxed mb-4">
-              ZombieShop was founded with a simple mission: to make high-quality, beautifully designed furniture
+              ZShop was founded with a simple mission: to make high-quality, beautifully designed furniture
               accessible to everyone. What started as a small workshop has grown into a trusted brand serving
               thousands of happy customers across the country.
             </p>
@@ -87,7 +87,7 @@ export function AboutPage() {
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="font-display text-3xl text-neutral-900 mb-6">Our Values</h2>
             <p className="text-neutral-600 leading-relaxed mb-8">
-              At ZombieShop, we're more than just a furniture store. We're a community of design enthusiasts,
+              At ZShop, we're more than just a furniture store. We're a community of design enthusiasts,
               craftspeople, and home lovers who believe in the power of beautiful spaces to transform lives.
               We're committed to sustainability, quality craftsmanship, and exceptional customer service in
               everything we do.

@@ -192,26 +192,65 @@ export function CheckoutPage() {
 
       if (paymentMethod === 'bank-transfer') {
         try {
-          const paymentLink = await payosClient.createPaymentLink({
-            orderCode: order.order_number,
+          // Generate numeric order code (timestamp + random)
+          const numericOrderCode = Math.floor(Date.now() / 1000) * 1000 + Math.floor(Math.random() * 1000);
+          
+          console.log('Creating PayOS payment link with:', {
+            orderCode: numericOrderCode,
+            orderNumber: order.order_number,
             amount: finalTotal * 23000,
-            description: `Payment for order ${order.order_number}`,
+            orderId: order.id
+          });
+
+          const paymentLink = await payosClient.createPaymentLink({
+            orderCode: numericOrderCode,
+            amount: Math.round(finalTotal * 23000),
+            description: `Order ${order.order_number}`,
             returnUrl: `${window.location.origin}/orders?payment=success&order_id=${order.id}`,
             cancelUrl: `${window.location.origin}/checkout?payment=cancelled`,
           });
 
+          console.log('PayOS response:', paymentLink);
+
+          if (!paymentLink || !paymentLink.checkoutUrl) {
+            console.error('Invalid PayOS response - missing checkoutUrl');
+            toast.error('Payment gateway is temporarily unavailable. Please try another payment method.');
+            setLoading(false);
+            return;
+          }
+
+          // Update order with PayOS order code
+          await supabase
+            .from('orders')
+            .update({ 
+              payos_order_code: numericOrderCode 
+            })
+            .eq('id', order.id);
+
           localStorage.setItem('pending_payment', JSON.stringify({
             orderId: order.id,
             orderNumber: order.order_number,
+            payosOrderCode: numericOrderCode,
             checkoutUrl: paymentLink.checkoutUrl,
           }));
 
           toast.info('Redirecting to PayOS payment gateway...');
-          window.location.href = paymentLink.checkoutUrl;
+          
+          setTimeout(() => {
+            window.location.href = paymentLink.checkoutUrl;
+          }, 500);
+          
           return;
-        } catch (error) {
-          console.error('PayOS error:', error);
-          toast.error('Failed to create payment link. Please try again.');
+        } catch (error: any) {
+          console.error('PayOS error details:', {
+            message: error?.message,
+            response: error?.response,
+            data: error?.response?.data,
+            error
+          });
+          
+          toast.error('Payment gateway error. Please try another payment method.');
+          setLoading(false);
           return;
         }
       }

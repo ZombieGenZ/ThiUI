@@ -109,7 +109,7 @@ export function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-neutral-900 mb-1">Email Us</h3>
                   <p className="text-neutral-600">
-                    support@zombieshop.com
+                    support@zshop.com
                     <br />
                     We'll respond within 24 hours
                   </p>
