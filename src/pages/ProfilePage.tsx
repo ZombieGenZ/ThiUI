@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, Camera, Save } from 'lucide-react';
+import { User, Mail, Phone, Camera, Save } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,7 +9,6 @@ interface UserProfile {
   id: string;
   full_name: string;
   phone: string;
-  address: string;
   avatar_url: string;
 }
 
@@ -22,7 +21,6 @@ export function ProfilePage() {
     id: '',
     full_name: '',
     phone: '',
-    address: '',
     avatar_url: '',
   });
 
@@ -41,7 +39,7 @@ export function ProfilePage() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
@@ -55,7 +53,6 @@ export function ProfilePage() {
           id: user.id,
           full_name: '',
           phone: '',
-          address: '',
           avatar_url: '',
         });
       }
@@ -74,31 +71,27 @@ export function ProfilePage() {
     setSaving(true);
     try {
       const { data: existingProfile } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('id')
         .eq('id', user.id)
         .maybeSingle();
 
       if (existingProfile) {
         const { error } = await supabase
-          .from('user_profiles')
+          .from('profiles')
           .update({
             full_name: profile.full_name,
             phone: profile.phone,
-            address: profile.address,
-            avatar_url: profile.avatar_url,
             updated_at: new Date().toISOString(),
           })
           .eq('id', user.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('user_profiles').insert({
+        const { error } = await supabase.from('profiles').insert({
           id: user.id,
           full_name: profile.full_name,
           phone: profile.phone,
-          address: profile.address,
-          avatar_url: profile.avatar_url,
         });
 
         if (error) throw error;
@@ -198,22 +191,6 @@ export function ProfilePage() {
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                   placeholder="Enter your phone number"
                   className="w-full pl-12 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                Address
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-4 w-5 h-5 text-neutral-400" />
-                <textarea
-                  value={profile.address}
-                  onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                  placeholder="Enter your full address"
-                  rows={3}
-                  className="w-full pl-12 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none"
                 />
               </div>
             </div>

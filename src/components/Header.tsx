@@ -145,6 +145,12 @@ export function Header({ onCartOpen }: HeaderProps) {
                       >
                         Favorites
                       </Link>
+                      <Link
+                        to="/orders"
+                        className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
+                      >
+                        My Orders
+                      </Link>
                       <button
                         onClick={() => signOut()}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"

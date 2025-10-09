@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { ReviewSection } from '../components/ReviewSection';
 
 interface Product {
   id: string;
@@ -384,6 +385,8 @@ export function ProductDetailPage() {
             </div>
           </div>
         </div>
+
+        <ReviewSection productId={product.id} onReviewAdded={loadProduct} />
       </div>
     </div>
   );

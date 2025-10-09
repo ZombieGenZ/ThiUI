@@ -7,11 +7,13 @@ interface Product {
   id: string;
   name: string;
   slug: string;
-  price: number;
+  base_price: number;
   sale_price: number | null;
-  image_url: string;
+  images: string[];
   category_id: string;
-  in_stock: boolean;
+  rating: number;
+  review_count: number;
+  is_new: boolean;
 }
 
 export function SalePage() {
@@ -29,7 +31,7 @@ export function SalePage() {
         .from('products')
         .select('*')
         .not('sale_price', 'is', null)
-        .eq('in_stock', true);
+        .eq('status', 'active');
 
       if (error) throw error;
       setProducts(data || []);
@@ -42,13 +44,13 @@ export function SalePage() {
 
   const sortedProducts = [...products].sort((a, b) => {
     if (sortBy === 'discount') {
-      const discountA = a.sale_price ? ((a.price - a.sale_price) / a.price) * 100 : 0;
-      const discountB = b.sale_price ? ((b.price - b.sale_price) / b.price) * 100 : 0;
+      const discountA = a.sale_price ? ((a.base_price - a.sale_price) / a.base_price) * 100 : 0;
+      const discountB = b.sale_price ? ((b.base_price - b.sale_price) / b.base_price) * 100 : 0;
       return discountB - discountA;
     } else if (sortBy === 'price-low') {
-      return (a.sale_price || a.price) - (b.sale_price || b.price);
+      return (a.sale_price || a.base_price) - (b.sale_price || b.base_price);
     } else {
-      return (b.sale_price || b.price) - (a.sale_price || a.price);
+      return (b.sale_price || b.base_price) - (a.sale_price || a.base_price);
     }
   });
 
@@ -111,7 +113,11 @@ export function SalePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {sortedProducts.map((product, index) => (
               <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-                <ProductCard product={product} />
+                <ProductCard product={{
+                  ...product,
+                  room_type: null,
+                  stock_quantity: 0
+                }} />
               </div>
             ))}
           </div>

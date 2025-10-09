@@ -25,6 +25,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { FavoritesPage } from './pages/FavoritesPage';
+import { OrdersPage } from './pages/OrdersPage';
 import { Header } from './components/Header';
 
 function App() {
@@ -113,6 +114,7 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/favorites" element={<FavoritesPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
           </Routes>
         </main>
         <Footer />
