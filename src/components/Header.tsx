@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, ShoppingCart, Heart, User, Menu, X, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -12,9 +12,21 @@ export function Header({ onCartOpen }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+  const isHomePage = location.pathname === '/';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const productCategories = [
     { name: 'All Products', path: '/products' },
@@ -25,34 +37,47 @@ export function Header({ onCartOpen }: HeaderProps) {
     { name: 'Outdoor', path: '/shop/outdoor' },
   ];
 
+  const headerClasses = isHomePage && !scrolled
+    ? "fixed top-0 left-0 right-0 z-40 bg-transparent border-b border-white/10 transition-all duration-500"
+    : "fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-700 transition-all duration-500 shadow-sm";
+
+  const textClasses = isHomePage && !scrolled
+    ? "text-white hover:text-brand-300"
+    : "text-neutral-900 dark:text-gray-200 hover:text-brand-600";
+
+  const iconClasses = isHomePage && !scrolled
+    ? "text-white"
+    : "dark:text-gray-200";
+
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-700 transition-all duration-300">
+      <header className={headerClasses}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <button
               className="lg:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6 dark:text-gray-200" /> : <Menu className="w-6 h-6 dark:text-gray-200" />}
+              {mobileMenuOpen ? <X className={`w-6 h-6 ${iconClasses}`} /> : <Menu className={`w-6 h-6 ${iconClasses}`} />}
             </button>
 
             <div className="flex-1 lg:flex-initial">
               <Link to="/" className="font-serif text-2xl lg:text-3xl tracking-wide font-bold">
-                <span className="text-brand-600">Zombie</span><span className="text-neutral-900 dark:text-white">Shop</span>
+                <span className={isHomePage && !scrolled ? "text-brand-300" : "text-brand-600"}>Zombie</span>
+                <span className={isHomePage && !scrolled ? "text-white" : "text-neutral-900 dark:text-white"}>Shop</span>
               </Link>
             </div>
 
             <nav className="hidden lg:flex items-center space-x-8 flex-1 justify-center">
               <Link
                 to="/"
-                className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200"
+                className={`text-sm font-medium transition-colors ${textClasses}`}
               >
                 Home
               </Link>
 
               <div className="relative group">
-                <button className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
+                <button className={`text-sm font-medium transition-colors ${textClasses} flex items-center space-x-1`}>
                   <span>Products</span>
                   <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -74,60 +99,76 @@ export function Header({ onCartOpen }: HeaderProps) {
 
               <Link
                 to="/about"
-                className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200"
+                className={`text-sm font-medium transition-colors ${textClasses}`}
               >
                 About Us
               </Link>
 
               <Link
                 to="/contact"
-                className="text-sm font-medium transition-colors hover:text-brand-600 dark:text-gray-200"
+                className={`text-sm font-medium transition-colors ${textClasses}`}
               >
                 Contact
               </Link>
 
               <Link
                 to="/sale"
-                className="text-sm font-medium transition-colors text-red-600 hover:text-red-700 flex items-center space-x-1"
+                className="text-sm font-medium transition-colors text-red-400 hover:text-red-300 flex items-center space-x-1"
               >
                 <span>Sale</span>
-                <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">Hot</span>
+                <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">Hot</span>
               </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
 
               <button
-                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors"
+                className={`p-2 rounded-full transition-colors ${
+                  isHomePage && !scrolled
+                    ? 'hover:bg-white/20'
+                    : 'hover:bg-gray-100 dark:hover:bg-neutral-700'
+                }`}
                 onClick={() => setSearchOpen(!searchOpen)}
               >
-                <Search className="w-5 h-5 dark:text-gray-200" />
+                <Search className={`w-5 h-5 ${iconClasses}`} />
               </button>
 
               {user && (
                 <Link
                   to="/favorites"
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors hidden sm:block"
+                  className={`p-2 rounded-full transition-colors hidden sm:block ${
+                    isHomePage && !scrolled
+                      ? 'hover:bg-white/20'
+                      : 'hover:bg-gray-100 dark:hover:bg-neutral-700'
+                  }`}
                 >
-                  <Heart className="w-5 h-5 dark:text-gray-200" />
+                  <Heart className={`w-5 h-5 ${iconClasses}`} />
                 </Link>
               )}
 
               <button
-                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors relative"
+                className={`p-2 rounded-full transition-colors relative ${
+                  isHomePage && !scrolled
+                    ? 'hover:bg-white/20'
+                    : 'hover:bg-gray-100 dark:hover:bg-neutral-700'
+                }`}
                 onClick={onCartOpen}
               >
-                <ShoppingCart className="w-5 h-5 dark:text-gray-200" />
+                <ShoppingCart className={`w-5 h-5 ${iconClasses}`} />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-1 -right-1 bg-brand-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                     {itemCount}
                   </span>
                 )}
               </button>
 
               <div className="relative group">
-                <button className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors">
-                  <User className="w-5 h-5 dark:text-gray-200" />
+                <button className={`p-2 rounded-full transition-colors ${
+                  isHomePage && !scrolled
+                    ? 'hover:bg-white/20'
+                    : 'hover:bg-gray-100 dark:hover:bg-neutral-700'
+                }`}>
+                  <User className={`w-5 h-5 ${iconClasses}`} />
                 </button>
 
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
