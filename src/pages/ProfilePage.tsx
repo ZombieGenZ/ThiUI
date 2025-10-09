@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, Camera, Save } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { User, Mail, Phone, Camera, Save, Package, Heart } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,6 +17,8 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [orderCount, setOrderCount] = useState(0);
+  const [favoriteCount, setFavoriteCount] = useState(0);
   const [profile, setProfile] = useState<UserProfile>({
     id: '',
     full_name: '',
@@ -56,6 +58,19 @@ export function ProfilePage() {
           avatar_url: '',
         });
       }
+
+      const { count: ordersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      const { count: favoritesCount } = await supabase
+        .from('favorites')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      setOrderCount(ordersCount || 0);
+      setFavoriteCount(favoritesCount || 0);
     } catch (error) {
       console.error('Error loading profile:', error);
       toast.error('Failed to load profile');
@@ -116,7 +131,7 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-neutral-50 py-12">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-xl shadow-soft overflow-hidden">
           <div className="bg-gradient-to-r from-brand-600 to-brand-700 px-8 py-12 text-white">
             <div className="flex items-center space-x-6">
@@ -140,8 +155,34 @@ export function ProfilePage() {
                 </button>
               </div>
               <div>
-                <h1 className="text-3xl font-bold mb-2">My Profile</h1>
+                <h1 className="text-3xl font-display font-bold mb-2">My Profile</h1>
                 <p className="text-brand-100">{user?.email}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-neutral-50 border-b border-neutral-200">
+            <div className="grid grid-cols-3 gap-4">
+              <Link
+                to="/orders"
+                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all text-center group"
+              >
+                <Package className="w-8 h-8 text-brand-600 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                <p className="text-2xl font-bold text-neutral-900 mb-1">{orderCount}</p>
+                <p className="text-sm text-neutral-600">Orders</p>
+              </Link>
+              <Link
+                to="/favorites"
+                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all text-center group"
+              >
+                <Heart className="w-8 h-8 text-red-500 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                <p className="text-2xl font-bold text-neutral-900 mb-1">{favoriteCount}</p>
+                <p className="text-sm text-neutral-600">Favorites</p>
+              </Link>
+              <div className="bg-white p-6 rounded-xl shadow-sm text-center">
+                <User className="w-8 h-8 text-neutral-600 mx-auto mb-3" />
+                <p className="text-2xl font-bold text-neutral-900 mb-1">Active</p>
+                <p className="text-sm text-neutral-600">Status</p>
               </div>
             </div>
           </div>

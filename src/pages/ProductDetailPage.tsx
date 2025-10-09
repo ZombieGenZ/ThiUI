@@ -208,7 +208,7 @@ export function ProductDetailPage() {
           </div>
 
           <div>
-            <h1 className="font-serif text-4xl text-neutral-900 mb-4">{product.name}</h1>
+            <h1 className="font-display text-4xl text-neutral-900 mb-4">{product.name}</h1>
 
             {product.rating > 0 && (
               <div className="flex items-center space-x-2 mb-6">

@@ -66,7 +66,7 @@ export function SalePage() {
             <Tag className="w-5 h-5 text-white" />
             <span className="text-white font-semibold">Special Offers</span>
           </div>
-          <h1 className="font-serif text-5xl md:text-6xl text-white mb-4">
+          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">
             Sale & Clearance
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">

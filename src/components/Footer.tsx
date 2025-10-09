@@ -57,7 +57,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div className="lg:col-span-1">
-            <h3 className="font-serif text-2xl text-white mb-4 font-bold">
+            <h3 className="font-display text-2xl text-white mb-4 font-bold">
               <span className="text-brand-500">Zombie</span>Shop
             </h3>
             <p className="text-sm mb-6">

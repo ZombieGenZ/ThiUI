@@ -122,7 +122,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-full mb-4">
                 <User className="w-8 h-8 text-brand-600" />
               </div>
-              <h2 className="font-serif text-3xl mb-2 font-bold text-neutral-900">
+              <h2 className="font-display text-3xl mb-2 font-bold text-neutral-900">
                 {mode === 'signin' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
               </h2>
               <p className="text-gray-600">

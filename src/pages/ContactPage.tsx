@@ -30,7 +30,7 @@ export function ContactPage() {
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
-            <h1 className="font-serif text-5xl text-white mb-4">Contact Us</h1>
+            <h1 className="font-display text-5xl text-white mb-4">Contact Us</h1>
             <p className="text-xl text-white/90">We'd love to hear from you</p>
           </div>
         </div>
@@ -39,7 +39,7 @@ export function ContactPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div data-aos="fade-right">
-            <h2 className="font-serif text-3xl text-neutral-900 mb-6">Get in Touch</h2>
+            <h2 className="font-display text-3xl text-neutral-900 mb-6">Get in Touch</h2>
             <p className="text-neutral-600 leading-relaxed mb-8">
               Have a question about our products? Need help with an order? Or just want to say hello?
               Fill out the form and we'll get back to you as soon as possible.
@@ -118,7 +118,7 @@ export function ContactPage() {
 
           <div data-aos="fade-left">
             <div className="bg-white rounded-xl shadow-lg p-8">
-              <h3 className="font-serif text-2xl text-neutral-900 mb-6">Send us a Message</h3>
+              <h3 className="font-display text-2xl text-neutral-900 mb-6">Send us a Message</h3>
 
               {submitted ? (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
@@ -231,7 +231,7 @@ export function ContactPage() {
         </div>
 
         <div className="mt-20" data-aos="fade-up">
-          <h2 className="font-serif text-3xl text-neutral-900 mb-8 text-center">Find Our Showroom</h2>
+          <h2 className="font-display text-3xl text-neutral-900 mb-8 text-center">Find Our Showroom</h2>
           <div className="bg-neutral-200 rounded-xl h-96 flex items-center justify-center">
             <p className="text-neutral-600">Map integration would go here</p>
           </div>

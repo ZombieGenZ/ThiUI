@@ -7,14 +7,12 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface Order {
   id: string;
-  order_number: string;
   status: string;
-  total: number;
+  total_amount: number;
   created_at: string;
-  payment_status: string;
   order_items: {
     quantity: number;
-    unit_price: number;
+    price: number;
     product: {
       name: string;
       images: string[];
@@ -48,7 +46,7 @@ export function OrdersPage() {
           *,
           order_items (
             quantity,
-            unit_price,
+            price,
             product:products (
               name,
               images
@@ -123,7 +121,7 @@ export function OrdersPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center space-x-3 mb-8">
           <Package className="w-8 h-8 text-brand-600" />
-          <h1 className="text-4xl font-serif font-bold text-neutral-900">My Orders</h1>
+          <h1 className="text-4xl font-display font-bold text-neutral-900">My Orders</h1>
         </div>
 
         {orders.length === 0 ? (
@@ -153,7 +151,7 @@ export function OrdersPage() {
                       {getStatusIcon(order.status)}
                       <div>
                         <h3 className="font-semibold text-neutral-900">
-                          Order #{order.order_number}
+                          Order #{order.id.slice(0, 8).toUpperCase()}
                         </h3>
                         <p className="text-sm text-neutral-600">
                           {new Date(order.created_at).toLocaleDateString('en-US', {
@@ -175,7 +173,7 @@ export function OrdersPage() {
                       <div className="text-right">
                         <p className="text-sm text-neutral-600">Total</p>
                         <p className="text-lg font-bold text-neutral-900">
-                          ${order.total.toFixed(2)}
+                          ${order.total_amount.toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -198,11 +196,11 @@ export function OrdersPage() {
                             {item.product?.name || 'Product'}
                           </h4>
                           <p className="text-sm text-neutral-600">
-                            Quantity: {item.quantity} × ${item.unit_price.toFixed(2)}
+                            Quantity: {item.quantity} × ${item.price.toFixed(2)}
                           </p>
                         </div>
                         <p className="font-semibold text-neutral-900">
-                          ${(item.quantity * item.unit_price).toFixed(2)}
+                          ${(item.quantity * item.price).toFixed(2)}
                         </p>
                       </div>
                     ))}

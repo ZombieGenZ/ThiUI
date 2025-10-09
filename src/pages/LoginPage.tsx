@@ -44,7 +44,7 @@ export function LoginPage() {
           <div className="relative z-10">
             <div className="text-center mb-8 space-y-4">
               <Link to="/" className="inline-block mb-2 transform hover:scale-105 transition-transform duration-300">
-                <span className="font-serif text-4xl">
+                <span className="font-display text-4xl">
                   <span className="text-brand-600 inline-block hover:text-brand-700 transition-colors">Zombie</span>
                   <span className="text-neutral-900">Shop</span>
                 </span>
@@ -54,7 +54,7 @@ export function LoginPage() {
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
 
-              <h1 className="font-serif text-4xl mb-2 font-bold text-neutral-900 animate-slide-up">
+              <h1 className="font-display text-4xl mb-2 font-bold text-neutral-900 animate-slide-up">
                 Sign In
               </h1>
               <p className="text-gray-600 animate-slide-up" style={{ animationDelay: '100ms' }}>

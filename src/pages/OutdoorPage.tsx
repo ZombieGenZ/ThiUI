@@ -80,7 +80,7 @@ export function OutdoorPage() {
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
-            <h1 className="font-serif text-5xl text-white mb-4">Outdoor</h1>
+            <h1 className="font-display text-5xl text-white mb-4">Outdoor</h1>
             <p className="text-xl text-white/90">Enjoy the outdoors in comfort</p>
           </div>
         </div>

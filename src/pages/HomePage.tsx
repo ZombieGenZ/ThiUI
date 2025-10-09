@@ -91,7 +91,7 @@ export function HomePage() {
             />
             <div className="absolute inset-0 z-20 flex items-center justify-center text-center px-4">
               <div className="max-w-4xl">
-                <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white mb-6 animate-fade-in">
+                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl text-white mb-6 animate-fade-in">
                   {slide.title}
                 </h1>
                 <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-in-delay">
@@ -151,7 +151,7 @@ export function HomePage() {
               <Sparkles className="w-6 h-6 text-accent-500" />
               <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">Featured</span>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl text-neutral-900">Best Sellers</h2>
+            <h2 className="font-display text-3xl md:text-4xl text-neutral-900">Best Sellers</h2>
           </div>
           <a
             href="/shop"
@@ -175,7 +175,7 @@ export function HomePage() {
       <section className="gradient-bg py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12" data-aos="fade-up">
-            <h2 className="font-serif text-3xl md:text-4xl text-neutral-900 mb-4">Shop by Room</h2>
+            <h2 className="font-display text-3xl md:text-4xl text-neutral-900 mb-4">Shop by Room</h2>
             <p className="text-neutral-600">Find everything you need for every space</p>
           </div>
 
@@ -211,7 +211,7 @@ export function HomePage() {
               <TrendingUp className="w-6 h-6 text-brand-600" />
               <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">Just In</span>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl text-neutral-900">New Arrivals</h2>
+            <h2 className="font-display text-3xl md:text-4xl text-neutral-900">New Arrivals</h2>
           </div>
           <a
             href="/shop?filter=new"

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { CreditCard, MapPin, User, Mail, Phone, Lock, Wallet, Building2, Smartphone } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 type PaymentMethod = 'credit-card' | 'debit-card' | 'paypal' | 'bank-transfer' | 'cash-on-delivery';
 
@@ -68,16 +69,64 @@ export function CheckoutPage() {
     setLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (!user) {
+        toast.error('Please sign in to place an order');
+        return;
+      }
+
+      const shippingAddress = {
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+      };
+
+      const contactInfo = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total_amount: finalTotal,
+          shipping_cost: shippingCost,
+          tax: tax,
+          status: 'pending',
+          payment_method: paymentMethod,
+          shipping_address: shippingAddress,
+          contact_info: contactInfo,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      const orderItems = selectedItems.map(item => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.product?.sale_price || item.product?.base_price || 0,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
 
       await clearCart();
 
       toast.success('Order placed successfully! Thank you for your purchase.');
 
       setTimeout(() => {
-        navigate('/');
+        navigate('/orders');
       }, 2000);
     } catch (error) {
+      console.error('Error placing order:', error);
       toast.error('Failed to place order. Please try again.');
     } finally {
       setLoading(false);
@@ -126,7 +175,7 @@ export function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-serif font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-display font-bold mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">

@@ -7,7 +7,7 @@ export function AboutPage() {
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
-            <h1 className="font-serif text-5xl text-white mb-4">About ZombieShop</h1>
+            <h1 className="font-display text-5xl text-white mb-4">About ZombieShop</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Crafting beautiful living spaces since 2010
             </p>
@@ -18,7 +18,7 @@ export function AboutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
           <div data-aos="fade-right">
-            <h2 className="font-serif text-4xl text-neutral-900 mb-6">Our Story</h2>
+            <h2 className="font-display text-4xl text-neutral-900 mb-6">Our Story</h2>
             <p className="text-neutral-600 leading-relaxed mb-4">
               ZombieShop was founded with a simple mission: to make high-quality, beautifully designed furniture
               accessible to everyone. What started as a small workshop has grown into a trusted brand serving
@@ -85,7 +85,7 @@ export function AboutPage() {
 
         <div className="bg-neutral-100 rounded-xl p-12" data-aos="fade-up">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="font-serif text-3xl text-neutral-900 mb-6">Our Values</h2>
+            <h2 className="font-display text-3xl text-neutral-900 mb-6">Our Values</h2>
             <p className="text-neutral-600 leading-relaxed mb-8">
               At ZombieShop, we're more than just a furniture store. We're a community of design enthusiasts,
               craftspeople, and home lovers who believe in the power of beautiful spaces to transform lives.
@@ -116,7 +116,7 @@ export function AboutPage() {
         </div>
 
         <div className="mt-20 text-center" data-aos="fade-up">
-          <h2 className="font-serif text-3xl text-neutral-900 mb-4">Visit Our Showroom</h2>
+          <h2 className="font-display text-3xl text-neutral-900 mb-4">Visit Our Showroom</h2>
           <p className="text-neutral-600 mb-8 max-w-2xl mx-auto">
             Experience our furniture in person. Our showroom is open Monday through Saturday,
             and our expert staff are always happy to help you find the perfect pieces for your home.

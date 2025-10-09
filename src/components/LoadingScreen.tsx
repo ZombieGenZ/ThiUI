@@ -46,7 +46,7 @@ export function LoadingScreen({ onLoadComplete }: LoadingScreenProps) {
             <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center transform rotate-12 animate-bounce-subtle">
               <Sofa className="w-10 h-10 text-white" />
             </div>
-            <h1 className="font-serif text-5xl md:text-6xl text-neutral-900 tracking-tight font-bold">
+            <h1 className="font-display text-5xl md:text-6xl text-neutral-900 tracking-tight font-bold">
               FurniCraft
             </h1>
           </div>
