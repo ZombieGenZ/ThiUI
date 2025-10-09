@@ -86,8 +86,6 @@
   - Admin-only access for management operations
 */
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE IF NOT EXISTS profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text NOT NULL,
@@ -118,7 +116,7 @@ CREATE POLICY "Users can insert own profile"
   WITH CHECK (auth.uid() = id);
 
 CREATE TABLE IF NOT EXISTS categories (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   slug text UNIQUE NOT NULL,
   parent_id uuid REFERENCES categories(id) ON DELETE SET NULL,
@@ -136,7 +134,7 @@ CREATE POLICY "Categories are viewable by everyone"
   USING (true);
 
 CREATE TABLE IF NOT EXISTS products (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   slug text UNIQUE NOT NULL,
   description text,
@@ -169,7 +167,7 @@ CREATE POLICY "Products are viewable by everyone"
   USING (status = 'active' OR status = 'out_of_stock');
 
 CREATE TABLE IF NOT EXISTS product_variants (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   variant_type text NOT NULL,
   variant_value text NOT NULL,
@@ -187,7 +185,7 @@ CREATE POLICY "Product variants are viewable by everyone"
   USING (true);
 
 CREATE TABLE IF NOT EXISTS addresses (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text NOT NULL,
   phone text NOT NULL,
@@ -225,7 +223,7 @@ CREATE POLICY "Users can delete own addresses"
   USING (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS orders (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   order_number text UNIQUE NOT NULL,
   status text DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')),
@@ -252,7 +250,7 @@ CREATE POLICY "Users can view own orders"
   USING (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS order_items (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
   product_id uuid REFERENCES products(id) ON DELETE SET NULL,
   variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
@@ -278,7 +276,7 @@ CREATE POLICY "Users can view own order items"
   );
 
 CREATE TABLE IF NOT EXISTS wishlists (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   created_at timestamptz DEFAULT now(),
@@ -303,7 +301,7 @@ CREATE POLICY "Users can delete from own wishlist"
   USING (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS reviews (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
@@ -335,7 +333,7 @@ CREATE POLICY "Users can update own reviews"
   WITH CHECK (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS vouchers (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   code text UNIQUE NOT NULL,
   discount_type text NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
   discount_value decimal(10,2) NOT NULL,
@@ -358,7 +356,7 @@ CREATE POLICY "Active vouchers are viewable by everyone"
   USING (is_active = true AND (valid_until IS NULL OR valid_until > now()));
 
 CREATE TABLE IF NOT EXISTS user_vouchers (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   voucher_id uuid REFERENCES vouchers(id) ON DELETE CASCADE,
   is_used boolean DEFAULT false,
@@ -380,7 +378,7 @@ CREATE POLICY "Users can insert own vouchers"
   WITH CHECK (auth.uid() = user_id);
 
 CREATE TABLE IF NOT EXISTS room_inspirations (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   description text,
   image_url text NOT NULL,
@@ -399,7 +397,7 @@ CREATE POLICY "Room inspirations are viewable by everyone"
   USING (true);
 
 CREATE TABLE IF NOT EXISTS cart_items (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
