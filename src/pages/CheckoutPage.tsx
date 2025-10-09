@@ -5,6 +5,7 @@ import { CreditCard, MapPin, User, Mail, Phone, Lock, Wallet, Building2, Smartph
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { payosClient } from '../lib/payos';
 
 type PaymentMethod = 'credit-card' | 'debit-card' | 'paypal' | 'bank-transfer' | 'cash-on-delivery';
 
@@ -47,8 +48,11 @@ export function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (user) {
-      loadUserProfile();
+    if (user?.email) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || ''
+      }));
     }
   }, [user]);
 
@@ -64,19 +68,24 @@ export function CheckoutPage() {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
+        return;
       }
 
-      if (data) {
-        setFormData(prev => ({
-          ...prev,
-          fullName: data.full_name || '',
-          phone: data.phone || '',
-        }));
-      }
+      setFormData(prev => ({
+        ...prev,
+        fullName: data?.full_name || '',
+        phone: data?.phone || '',
+      }));
     } catch (error) {
       console.error('Error loading profile:', error);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      loadUserProfile();
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -182,24 +191,29 @@ export function CheckoutPage() {
       if (itemsError) throw itemsError;
 
       if (paymentMethod === 'bank-transfer') {
-        const paymentInfo = {
-          bankName: 'MB Bank',
-          accountNumber: '9704229208704436179',
-          accountName: 'NGUYEN VAN A',
-          amount: finalTotal,
-          content: `ORDER ${order.id}`,
-        };
+        try {
+          const paymentLink = await payosClient.createPaymentLink({
+            orderCode: order.order_number,
+            amount: finalTotal * 23000,
+            description: `Payment for order ${order.order_number}`,
+            returnUrl: `${window.location.origin}/orders?payment=success&order_id=${order.id}`,
+            cancelUrl: `${window.location.origin}/checkout?payment=cancelled`,
+          });
 
-        localStorage.setItem('pending_payment', JSON.stringify({
-          orderId: order.id,
-          paymentInfo,
-        }));
+          localStorage.setItem('pending_payment', JSON.stringify({
+            orderId: order.id,
+            orderNumber: order.order_number,
+            checkoutUrl: paymentLink.checkoutUrl,
+          }));
 
-        toast.info('Redirecting to payment instructions...');
-        setTimeout(() => {
-          navigate(`/payment-instructions/${order.id}`);
-        }, 1000);
-        return;
+          toast.info('Redirecting to PayOS payment gateway...');
+          window.location.href = paymentLink.checkoutUrl;
+          return;
+        } catch (error) {
+          console.error('PayOS error:', error);
+          toast.error('Failed to create payment link. Please try again.');
+          return;
+        }
       }
 
       await clearCart();
@@ -604,35 +618,12 @@ export function CheckoutPage() {
                 )}
 
                 {paymentMethod === 'bank-transfer' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bank Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="bankName"
-                        value={formData.bankName}
-                        onChange={handleInputChange}
-                        placeholder="Enter your bank name"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Account Number *
-                      </label>
-                      <input
-                        type="text"
-                        name="accountNumber"
-                        value={formData.accountNumber}
-                        onChange={handleInputChange}
-                        placeholder="Enter your account number"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-                        required
-                      />
-                    </div>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium mb-2">PayOS Payment Gateway</p>
+                    <p className="text-sm text-blue-700">
+                      You will be redirected to PayOS secure payment page to complete your bank transfer payment.
+                      All major Vietnamese banks are supported.
+                    </p>
                   </div>
                 )}
 

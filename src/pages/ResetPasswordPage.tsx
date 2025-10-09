@@ -15,16 +15,32 @@ export function ResetPasswordPage() {
   const [isValidToken, setIsValidToken] = useState(false);
 
   useEffect(() => {
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type');
+    const checkToken = async () => {
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
 
-    if (type === 'recovery' && accessToken) {
-      setIsValidToken(true);
-    } else {
-      toast.error('Invalid or expired reset link');
-      setTimeout(() => navigate('/forgot-password'), 2000);
-    }
+      if (type === 'recovery' && accessToken) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error || !session) {
+            toast.error('Invalid or expired reset link');
+            setTimeout(() => navigate('/forgot-password'), 2000);
+            return;
+          }
+          setIsValidToken(true);
+        } catch (error) {
+          console.error('Error validating token:', error);
+          toast.error('Invalid or expired reset link');
+          setTimeout(() => navigate('/forgot-password'), 2000);
+        }
+      } else {
+        toast.error('Invalid or expired reset link');
+        setTimeout(() => navigate('/forgot-password'), 2000);
+      }
+    };
+
+    checkToken();
   }, [location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +66,8 @@ export function ResetPasswordPage() {
       if (error) throw error;
 
       toast.success('Password reset successfully! Please sign in with your new password.');
+
+      await supabase.auth.signOut({ scope: 'global' });
 
       setTimeout(() => {
         navigate('/login');

@@ -174,12 +174,14 @@ export function ProfilePage() {
 
       if (error) throw error;
 
-      toast.success('Password changed successfully! You will be signed out for security.');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordForm(false);
 
-      setTimeout(async () => {
-        await supabase.auth.signOut({ scope: 'global' });
+      toast.success('Password changed successfully! You will be signed out for security.');
+
+      await supabase.auth.signOut({ scope: 'global' });
+
+      setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (error: any) {
@@ -223,7 +225,7 @@ export function ProfilePage() {
                       <User className="w-12 h-12" />
                     )}
                   </div>
-                  <h2 className="text-center text-xl font-bold mb-1">{profile.full_name || 'Your Name'}</h2>
+                  <h2 className="text-center text-xl font-bold mb-1">{profile.full_name || 'Full Name'}</h2>
                   <p className="text-center text-brand-100 text-sm">{user?.email}</p>
                 </div>
               </div>

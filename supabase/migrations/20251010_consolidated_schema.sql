@@ -613,6 +613,16 @@ CREATE POLICY "Anonymous users can insert messages"
 -- 15. INSERT DỮ LIỆU MẪU
 -- ============================================================================
 
+-- INSERT CATEGORIES
+INSERT INTO categories (name, slug, description, display_order)
+VALUES
+  ('Living Room', 'living-room', 'Furniture for your living room', 1),
+  ('Bedroom', 'bedroom', 'Furniture for your bedroom', 2),
+  ('Dining', 'dining', 'Dining furniture and accessories', 3),
+  ('Office', 'office', 'Home office furniture', 4),
+  ('Outdoor', 'outdoor', 'Outdoor and patio furniture', 5)
+ON CONFLICT (slug) DO NOTHING;
+
 -- INSERT VOUCHERS
 INSERT INTO vouchers (code, discount_type, discount_value, min_purchase, max_discount, valid_until, is_active, description)
 VALUES
@@ -622,6 +632,12 @@ VALUES
   ('FREESHIP', 'fixed', 50, 200, NULL, now() + interval '120 days', true, 'Free shipping on orders over $200'),
   ('MEGA50', 'fixed', 50, 300, NULL, now() + interval '45 days', true, 'Mega sale - $50 off')
 ON CONFLICT (code) DO NOTHING;
+
+-- UPDATE PRODUCTS WITH CATEGORY_ID (Connect products to categories)
+UPDATE products p
+SET category_id = c.id
+FROM categories c
+WHERE p.room_type = c.name;
 
 -- INSERT PRODUCTS (Đã gộp từ 20251008110000_add_more_products.sql và các file khác)
 INSERT INTO products (name, slug, description, base_price, sale_price, images, rating, review_count, is_new, room_type, dimensions, materials, weight, sku, stock_quantity, style) VALUES
@@ -849,9 +865,17 @@ ALTER TABLE reviews ADD CONSTRAINT reviews_order_id_fkey
 */
 
 -- ============================================================================
--- 19. UPDATE PRODUCTS - MARK SOME AS FEATURED (BEST SELLERS)
+-- 19. UPDATE PRODUCTS - LINK TO CATEGORIES AND MARK AS FEATURED
 -- ============================================================================
 
+-- Link products to categories based on room_type
+UPDATE products p
+SET category_id = c.id
+FROM categories c
+WHERE p.room_type = c.name
+  AND p.category_id IS NULL;
+
+-- Mark best sellers as featured
 UPDATE products
 SET is_featured = true
 WHERE id IN (

@@ -80,17 +80,34 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles (
-            full_name
-          )
-        `)
+        .select('*')
         .eq('product_id', productId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReviews(data || []);
+
+      if (data && data.length > 0) {
+        const reviewsWithProfiles = await Promise.all(
+          data.map(async (review) => {
+            if (review.user_id) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', review.user_id)
+                .maybeSingle();
+
+              return {
+                ...review,
+                profiles: profile
+              };
+            }
+            return review;
+          })
+        );
+        setReviews(reviewsWithProfiles);
+      } else {
+        setReviews([]);
+      }
     } catch (error) {
       console.error('Error loading reviews:', error);
     } finally {
