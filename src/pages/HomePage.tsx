@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { ProductCard } from '../components/ProductCard';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Product {
   id: string;
@@ -24,6 +27,8 @@ interface Category {
 }
 
 export function HomePage() {
+  const { addToCart } = useCart();
+  const { user } = useAuth();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -72,6 +77,15 @@ export function HomePage() {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleAddToCart = async (product: Product) => {
+    if (!user) {
+      toast.error('Please sign in to add items to cart');
+      return;
+    }
+    await addToCart(product.id, 1);
+    toast.success(`${product.name} added to cart`);
+  };
 
   return (
     <div className="min-h-screen">
@@ -166,7 +180,7 @@ export function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {featuredProducts.map((product, index) => (
             <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-              <ProductCard product={product} />
+              <ProductCard product={product} onAddToCart={() => handleAddToCart(product)} />
             </div>
           ))}
         </div>
@@ -226,7 +240,7 @@ export function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {newArrivals.map((product, index) => (
             <div key={product.id} data-aos="fade-up" data-aos-delay={index * 100}>
-              <ProductCard product={product} />
+              <ProductCard product={product} onAddToCart={() => handleAddToCart(product)} />
             </div>
           ))}
         </div>

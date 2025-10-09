@@ -91,6 +91,27 @@ export function ProductDetailPage() {
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!product) return;
+
+    if (!user) {
+      toast.error('Please sign in to checkout');
+      navigate('/login');
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      await addToCart(product.id, quantity);
+      navigate('/checkout');
+    } catch (error: any) {
+      console.error('Error adding to cart:', error);
+      toast.error(error.message || 'Failed to add item to cart');
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
   const handleToggleFavorite = async () => {
     if (!product) return;
 
@@ -278,31 +299,44 @@ export function ProductDetailPage() {
                 </div>
               </div>
 
-              <div className="flex space-x-4">
+              <div className="space-y-3">
+                <div className="flex space-x-4">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={addingToCart || product.stock_quantity === 0}
+                    className={`flex-1 bg-brand-600 text-white px-8 py-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
+                      product.stock_quantity > 0
+                        ? 'hover:bg-brand-700 transform hover:scale-[1.02]'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    <span>{addingToCart ? 'Adding...' : product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
+                  </button>
+                  {user && (
+                    <button
+                      onClick={handleToggleFavorite}
+                      className={`w-14 h-14 border-2 rounded-lg flex items-center justify-center transition-all ${
+                        isFavorite(product.id)
+                          ? 'border-red-500 bg-red-50 text-red-500'
+                          : 'border-neutral-300 hover:border-red-500 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart className={`w-6 h-6 ${isFavorite(product.id) ? 'fill-red-500' : ''}`} />
+                    </button>
+                  )}
+                </div>
                 <button
-                  onClick={handleAddToCart}
+                  onClick={handleBuyNow}
                   disabled={addingToCart || product.stock_quantity === 0}
-                  className={`flex-1 bg-brand-600 text-white px-8 py-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
+                  className={`w-full bg-white text-brand-600 border-2 border-brand-600 px-8 py-4 rounded-lg font-semibold transition-all ${
                     product.stock_quantity > 0
-                      ? 'hover:bg-brand-700 transform hover:scale-[1.02]'
+                      ? 'hover:bg-brand-50 transform hover:scale-[1.02]'
                       : 'opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  <ShoppingCart className="w-5 h-5" />
-                  <span>{addingToCart ? 'Adding...' : product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
+                  {addingToCart ? 'Processing...' : 'Buy Now'}
                 </button>
-                {user && (
-                  <button
-                    onClick={handleToggleFavorite}
-                    className={`w-14 h-14 border-2 rounded-lg flex items-center justify-center transition-all ${
-                      isFavorite(product.id)
-                        ? 'border-red-500 bg-red-50 text-red-500'
-                        : 'border-neutral-300 hover:border-red-500 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart className={`w-6 h-6 ${isFavorite(product.id) ? 'fill-red-500' : ''}`} />
-                  </button>
-                )}
               </div>
             </div>
 

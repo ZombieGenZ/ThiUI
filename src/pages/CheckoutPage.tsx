@@ -99,7 +99,7 @@ export function CheckoutPage() {
     } else if (paymentMethod === 'paypal') {
       paymentFields = ['paypalEmail'];
     } else if (paymentMethod === 'bank-transfer') {
-      paymentFields = ['bankName', 'accountNumber'];
+      paymentFields = [];
     }
 
     const requiredFields = [...baseFields, ...paymentFields];
@@ -181,6 +181,27 @@ export function CheckoutPage() {
 
       if (itemsError) throw itemsError;
 
+      if (paymentMethod === 'bank-transfer') {
+        const paymentInfo = {
+          bankName: 'MB Bank',
+          accountNumber: '9704229208704436179',
+          accountName: 'NGUYEN VAN A',
+          amount: finalTotal,
+          content: `ORDER ${order.id}`,
+        };
+
+        localStorage.setItem('pending_payment', JSON.stringify({
+          orderId: order.id,
+          paymentInfo,
+        }));
+
+        toast.info('Redirecting to payment instructions...');
+        setTimeout(() => {
+          navigate(`/payment-instructions/${order.id}`);
+        }, 1000);
+        return;
+      }
+
       await clearCart();
 
       toast.success('Order placed successfully! Thank you for your purchase.');
@@ -228,7 +249,7 @@ export function CheckoutPage() {
         .from('vouchers')
         .select('*')
         .eq('code', voucherCode.toUpperCase())
-        .eq('active', true)
+        .eq('is_active', true)
         .maybeSingle();
 
       if (error) throw error;

@@ -46,6 +46,13 @@ export function ProductsPage() {
   }, []);
 
   useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     filterAndSortProducts();
   }, [products, selectedCategory, sortBy, priceRange, selectedStyles, minRating, searchQuery]);
 

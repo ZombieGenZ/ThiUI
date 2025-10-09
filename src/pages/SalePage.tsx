@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Tag, SortAsc } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { ProductCard } from '../components/ProductCard';
 import { supabase } from '../lib/supabase';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Product {
   id: string;
@@ -17,6 +20,8 @@ interface Product {
 }
 
 export function SalePage() {
+  const { addToCart } = useCart();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'discount' | 'price-low' | 'price-high'>('discount');
@@ -40,6 +45,15 @@ export function SalePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddToCart = async (product: Product) => {
+    if (!user) {
+      toast.error('Please sign in to add items to cart');
+      return;
+    }
+    await addToCart(product.id, 1);
+    toast.success(`${product.name} added to cart`);
   };
 
   const sortedProducts = [...products].sort((a, b) => {
@@ -117,7 +131,7 @@ export function SalePage() {
                   ...product,
                   room_type: null,
                   stock_quantity: 0
-                }} />
+                }} onAddToCart={() => handleAddToCart(product)} />
               </div>
             ))}
           </div>

@@ -62,7 +62,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           </div>
         )}
         {hasDiscount && (
-          <div className="absolute top-12 left-3 z-10 bg-red-500 text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm">
+          <div className={`absolute ${product.is_new ? 'top-12' : 'top-3'} left-3 z-10 bg-red-500 text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm`}>
             -{discountPercent}%
           </div>
         )}
