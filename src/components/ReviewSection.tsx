@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, ThumbsUp, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,12 +7,10 @@ import { useAuth } from '../contexts/AuthContext';
 interface Review {
   id: string;
   rating: number;
-  title: string;
   comment: string;
   created_at: string;
-  helpful_count: number;
-  is_verified_purchase: boolean;
   user_id: string;
+  order_id: string;
   profiles?: {
     full_name: string;
   };
@@ -29,15 +27,53 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState('');
   const [newReview, setNewReview] = useState({
     rating: 5,
-    title: '',
     comment: '',
   });
 
   useEffect(() => {
     loadReviews();
-  }, [productId]);
+    checkCanReview();
+  }, [productId, user]);
+
+  const checkCanReview = async () => {
+    if (!user) {
+      setCanReview(false);
+      return;
+    }
+
+    try {
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          status,
+          order_items!inner(
+            product_id
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .eq('order_items.product_id', productId);
+
+      if (error) throw error;
+
+      if (orders && orders.length > 0) {
+        setUserOrders(orders);
+        setSelectedOrderId(orders[0].id);
+        setCanReview(true);
+      } else {
+        setCanReview(false);
+      }
+    } catch (error) {
+      console.error('Error checking review eligibility:', error);
+      setCanReview(false);
+    }
+  };
 
   const loadReviews = async () => {
     setLoading(true);
@@ -51,7 +87,6 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
           )
         `)
         .eq('product_id', productId)
-        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -71,6 +106,16 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
       return;
     }
 
+    if (!canReview) {
+      toast.error('You can only review products you have purchased');
+      return;
+    }
+
+    if (!selectedOrderId) {
+      toast.error('Please select an order');
+      return;
+    }
+
     if (!newReview.comment.trim()) {
       toast.error('Please write a comment');
       return;
@@ -81,21 +126,25 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
       const { error } = await supabase.from('reviews').insert({
         product_id: productId,
         user_id: user.id,
+        order_id: selectedOrderId,
         rating: newReview.rating,
-        title: newReview.title,
         comment: newReview.comment,
-        status: 'pending',
       });
 
       if (error) throw error;
 
-      toast.success('Review submitted! It will be visible after approval.');
-      setNewReview({ rating: 5, title: '', comment: '' });
+      toast.success('Review submitted successfully!');
+      setNewReview({ rating: 5, comment: '' });
       setShowForm(false);
+      loadReviews();
       if (onReviewAdded) onReviewAdded();
     } catch (error: any) {
       console.error('Error submitting review:', error);
-      toast.error(error.message || 'Failed to submit review');
+      if (error.code === '23505') {
+        toast.error('You have already reviewed this product');
+      } else {
+        toast.error(error.message || 'Failed to submit review');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -157,7 +206,7 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
           </div>
         </div>
 
-        {user && (
+        {user && canReview && (
           <div className="mb-12">
             {showForm ? (
               <form onSubmit={handleSubmitReview} className="bg-neutral-50 rounded-xl p-6">
@@ -187,18 +236,24 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Title (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={newReview.title}
-                    onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-                    placeholder="Sum up your review"
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  />
-                </div>
+                {userOrders.length > 1 && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      Select Order
+                    </label>
+                    <select
+                      value={selectedOrderId}
+                      onChange={(e) => setSelectedOrderId(e.target.value)}
+                      className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    >
+                      {userOrders.map((order) => (
+                        <option key={order.id} value={order.id}>
+                          Order #{order.id.slice(0, 8)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -278,15 +333,10 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
                           />
                         ))}
                       </div>
-                      {review.is_verified_purchase && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">
-                          Verified Purchase
-                        </span>
-                      )}
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">
+                        Verified Purchase
+                      </span>
                     </div>
-                    {review.title && (
-                      <h4 className="font-semibold text-neutral-900 mb-1">{review.title}</h4>
-                    )}
                     <p className="text-sm text-neutral-600">
                       By {review.profiles?.full_name || 'Anonymous'} on{' '}
                       {new Date(review.created_at).toLocaleDateString('en-US', {
@@ -298,12 +348,6 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
                   </div>
                 </div>
                 <p className="text-neutral-700 leading-relaxed mb-3">{review.comment}</p>
-                <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                  <button className="flex items-center space-x-1 hover:text-brand-600 transition-colors">
-                    <ThumbsUp className="w-4 h-4" />
-                    <span>Helpful ({review.helpful_count})</span>
-                  </button>
-                </div>
               </div>
             ))}
           </div>
