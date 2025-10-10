@@ -11,24 +11,24 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     title: 'Ordering & Payment',
     items: [
       {
-        question: 'Làm sao để đặt hàng?',
+        question: 'How do I place an order?',
         answer:
-          'Bạn có thể đặt hàng trực tuyến bằng cách thêm sản phẩm vào giỏ và hoàn tất quy trình checkout. Bạn cũng có thể đặt qua hotline (800) 555-0199 hoặc ghé showroom để được tư vấn trực tiếp.',
+          'Shop online by adding products to your cart and completing checkout. You can also call (800) 555-0199 or visit the showroom for personalized assistance.',
       },
       {
-        question: 'Phương thức thanh toán nào được chấp nhận?',
+        question: 'Which payment methods do you accept?',
         answer:
-          'Chúng tôi chấp nhận thẻ tín dụng/ghi nợ (Visa, MasterCard, Amex), Apple Pay, Google Pay, PayPal, chuyển khoản ngân hàng và trả góp 0% với Affirm cho đơn trên $300.',
+          'We accept major credit and debit cards (Visa, MasterCard, Amex), Apple Pay, Google Pay, PayPal, bank transfer, and 0% APR financing with Affirm on orders over $300.',
       },
       {
-        question: 'Có được thay đổi/hủy đơn hàng không?',
+        question: 'Can I modify or cancel my order?',
         answer:
-          'Đơn hàng có thể chỉnh sửa hoặc hủy trong vòng 24 giờ kể từ khi đặt. Sau thời gian này, vui lòng liên hệ support@zshop.com để được hỗ trợ. Đơn hàng đã giao cho đơn vị vận chuyển sẽ áp dụng phí hoàn kho.',
+          'Orders can be updated or canceled within 24 hours of purchase. Afterward, please contact support@zshop.com. Orders already handed to the carrier may incur a restocking fee.',
       },
       {
-        question: 'Coupon code áp dụng như thế nào?',
+        question: 'How do I apply a coupon code?',
         answer:
-          'Nhập mã coupon tại bước thanh toán trong mục “Order Summary”. Mỗi đơn hàng chỉ áp dụng 1 mã giảm giá và không áp dụng cho sản phẩm đã giảm giá sâu hoặc gói thiết kế.',
+          'Enter your code during checkout in the Order Summary section. Only one code may be used per order and some exclusions apply to sale items and design services.',
       },
     ],
   },
@@ -36,24 +36,24 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     title: 'Shipping & Delivery',
     items: [
       {
-        question: 'Bao lâu để nhận hàng?',
+        question: 'How long will delivery take?',
         answer:
-          'Standard Delivery mất 5-7 ngày làm việc, Express Delivery 2-3 ngày và White Glove Delivery sẽ được hẹn theo lịch bạn chọn. Hàng đặt theo yêu cầu có thể cần thêm 2-4 tuần.',
+          'Standard Delivery arrives within 5-7 business days, Express Delivery takes 2-3 days, and White Glove Delivery is scheduled at your convenience. Custom items may require an additional 2-4 weeks.',
       },
       {
-        question: 'Có giao hàng quốc tế không?',
+        question: 'Do you ship internationally?',
         answer:
-          'ZShop giao hàng toàn quốc và quốc tế đến hơn 25 quốc gia. Chi phí và thời gian vận chuyển sẽ hiển thị tại bước thanh toán tùy theo địa chỉ.',
+          'Yes. ZShop ships nationwide and to more than 25 international destinations. Shipping costs and timelines are calculated at checkout based on your address.',
       },
       {
-        question: 'Làm thế nào để track đơn hàng?',
+        question: 'How can I track my order?',
         answer:
-          'Sau khi đơn được gửi đi, bạn sẽ nhận email chứa tracking number. Bạn có thể truy cập trang Track Order để theo dõi chi tiết theo thời gian thực.',
+          'Once your order ships you will receive an email with a tracking number. Visit the Track Order page any time to follow the real-time status.',
       },
       {
-        question: 'Điều gì xảy ra nếu tôi không có nhà khi giao hàng?',
+        question: 'What happens if I am not home at delivery?',
         answer:
-          'Đối với Standard/Express, hãng vận chuyển sẽ liên hệ để giao lại hoặc để lại thông báo. Với White Glove Delivery, chúng tôi sẽ sắp xếp lại lịch miễn phí trong 48 giờ.',
+          'For Standard or Express deliveries, the carrier will attempt a re-delivery or leave a notice. For White Glove Delivery we will reschedule at no charge within 48 hours.',
       },
     ],
   },
@@ -61,19 +61,19 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     title: 'Returns & Exchanges',
     items: [
       {
-        question: 'Chính sách đổi trả như thế nào?',
+        question: 'What is your return policy?',
         answer:
-          'Bạn có thể trả hàng trong 30 ngày kể từ ngày nhận hàng nếu sản phẩm còn nguyên vẹn, chưa lắp đặt và đầy đủ bao bì. Custom items, sale items và nệm không áp dụng.',
+          'Returns are accepted within 30 days when items are unused, unassembled, and in their original packaging. Custom items, clearance items, and mattresses are final sale.',
       },
       {
-        question: 'Làm sao để hoàn trả sản phẩm?',
+        question: 'How do I start a return?',
         answer:
-          'Liên hệ đội hỗ trợ để nhận mã RMA và hướng dẫn đóng gói. Chúng tôi sẽ gửi nhãn trả hàng và sắp xếp đơn vị vận chuyển đến lấy.',
+          'Contact our support team to receive an RMA number and packing instructions. We will send a prepaid label and arrange carrier pickup.',
       },
       {
-        question: 'Khi nào tôi nhận được hoàn tiền?',
+        question: 'When will I receive my refund?',
         answer:
-          'Hoàn tiền được xử lý trong 5-7 ngày làm việc sau khi kho nhận và kiểm tra sản phẩm. Nếu sản phẩm bị lỗi do nhà sản xuất, bạn sẽ được hoàn 100% giá trị.',
+          'Refunds are processed within 5-7 business days after the warehouse inspects your return. Defective products qualify for a full refund.',
       },
     ],
   },
@@ -81,24 +81,24 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     title: 'Products',
     items: [
       {
-        question: 'Sản phẩm có bảo hành không?',
+        question: 'Do your products include a warranty?',
         answer:
-          'Mỗi sản phẩm có bảo hành tiêu chuẩn 2 năm cho khung, cấu trúc và lỗi sản xuất. Một số bộ sưu tập cao cấp có bảo hành mở rộng 5 năm.',
+          'All pieces feature a standard two-year warranty covering frames, structure, and manufacturing defects. Select premium collections include extended five-year coverage.',
       },
       {
-        question: 'Tôi có thể order mẫu vải/màu không?',
+        question: 'Can I request material or fabric swatches?',
         answer:
-          'Có. Bạn có thể yêu cầu tối đa 6 mẫu vải, gỗ hoặc da miễn phí. Đăng ký trực tuyến và chúng tôi sẽ gửi trong 3-5 ngày.',
+          'Absolutely. Request up to six complimentary fabric, wood, or leather swatches online and we will ship them within 3-5 days.',
       },
       {
-        question: 'Sản phẩm custom mất bao lâu?',
+        question: 'How long do custom orders take?',
         answer:
-          'Các đơn hàng custom thường cần 6-10 tuần để sản xuất và giao hàng, tùy vào chất liệu và thiết kế yêu cầu.',
+          'Custom projects typically require 6-10 weeks for production and delivery depending on materials and design complexity.',
       },
       {
-        question: 'Hướng dẫn chăm sóc nội thất?',
+        question: 'Where can I find product care instructions?',
         answer:
-          'Mỗi sản phẩm đi kèm hướng dẫn bảo quản chi tiết. Bạn cũng có thể xem hướng dẫn tại mục Product Care trong tài khoản của mình.',
+          'Each item ships with detailed care guidelines. You can also log in to your account and visit Product Care to download maintenance tips.',
       },
     ],
   },
@@ -106,19 +106,19 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
     title: 'Account & Support',
     items: [
       {
-        question: 'Làm sao tạo tài khoản?',
+        question: 'How do I create an account?',
         answer:
-          'Chọn “Sign Up” ở góc phải trên cùng, nhập email, mật khẩu và thông tin liên hệ. Bạn sẽ nhận email xác nhận để kích hoạt tài khoản.',
+          'Select "Sign Up" in the top-right corner, provide your email, password, and contact details, then confirm via the verification email.',
       },
       {
-        question: 'Quên mật khẩu?',
+        question: 'What if I forget my password?',
         answer:
-          'Sử dụng chức năng “Forgot Password”, nhập email đăng ký để nhận liên kết đặt lại mật khẩu mới.',
+          'Use the "Forgot Password" option, enter your registered email, and follow the reset link sent to your inbox.',
       },
       {
-        question: 'Liên hệ customer service?',
+        question: 'How can I contact customer service?',
         answer:
-          'Bạn có thể chat trực tiếp trên website, gửi email support@zshop.com hoặc gọi hotline (800) 555-0199 (8:00-20:00 mỗi ngày).',
+          'Chat with us on the website, email support@zshop.com, or call (800) 555-0199 daily from 8:00 AM to 8:00 PM.',
       },
     ],
   },
@@ -141,7 +141,7 @@ export function FAQPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">FAQ</h1>
               <p className="text-white/80 text-lg">
-                Tổng hợp câu hỏi thường gặp để bạn mua sắm và chăm sóc nội thất ZShop một cách dễ dàng nhất.
+                Browse the most common questions so you can shop for and care for your ZShop furniture with confidence.
               </p>
             </div>
           </div>
@@ -152,9 +152,9 @@ export function FAQPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           <aside className="lg:col-span-1 space-y-4">
             <div className="sticky top-32 p-6 border border-neutral-200 rounded-3xl bg-white shadow-sm">
-              <h2 className="font-semibold text-lg text-neutral-900 mb-2">Cần hỗ trợ thêm?</h2>
+              <h2 className="font-semibold text-lg text-neutral-900 mb-2">Need more help?</h2>
               <p className="text-sm text-neutral-600 mb-4">
-                Chat trực tuyến, gửi email hoặc đặt lịch tư vấn với stylist để được gợi ý phù hợp nhất cho không gian của bạn.
+                Chat live, send us an email, or book a consultation with a stylist for personalized recommendations.
               </p>
               <div className="space-y-2 text-sm">
                 <a href="mailto:support@zshop.com" className="block text-brand-600 font-semibold">

@@ -9,7 +9,7 @@ type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
 const formatPublishedDate = (isoString: string) => {
   try {
-    return new Intl.DateTimeFormat('vi-VN', {
+    return new Intl.DateTimeFormat('en-US', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -22,9 +22,9 @@ const formatPublishedDate = (isoString: string) => {
 
 export function BlogPage() {
   usePageMetadata({
-    title: 'Blog & Tin tức',
+    title: 'Blog & News',
     description:
-      'Khám phá xu hướng thiết kế nội thất, mẹo bài trí không gian và cập nhật mới nhất từ ZShop trong chuyên mục blog.',
+      'Discover interior design trends, styling tips, and the latest updates from ZShop in our editorial hub.',
   });
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -47,7 +47,7 @@ export function BlogPage() {
       if (error) {
         console.error('Error fetching blog posts:', error);
 
-          setErrorMessage('Không thể tải danh sách bài viết. Vui lòng thử lại sau.');
+          setErrorMessage('We couldn\'t load the blog posts. Please try again later.');
           setPosts([]);
       } else {
         setErrorMessage(null);
@@ -75,7 +75,7 @@ export function BlogPage() {
       return `${featuredPost.content.slice(0, 160)}...`;
     }
 
-    return 'Nơi cập nhật những câu chuyện, xu hướng và cảm hứng mới nhất dành cho tổ ấm của bạn.';
+    return 'Stay up to date with stories, trends, and inspiration to elevate your home.';
   }, [featuredPost?.content, featuredPost?.excerpt]);
 
   return (
@@ -84,14 +84,14 @@ export function BlogPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/90 via-neutral-900/70 to-neutral-900/50" />
         <div className="relative z-10 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <Breadcrumb items={[{ label: 'Trang chủ', href: '/' }, { label: 'Blog & Tin tức' }]} />
+            <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Blog & News' }]} />
             <div className="mt-6 max-w-2xl">
               <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-300 uppercase tracking-wide">
                 <PenSquare className="w-4 h-4" />
                 ZShop Insights
               </span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl text-white leading-tight">
-                Cảm hứng nội thất & câu chuyện thương hiệu
+                Interior inspiration & brand stories
               </h1>
               <p className="mt-4 text-lg text-white/80 leading-relaxed">{heroDescription}</p>
             </div>
@@ -111,14 +111,14 @@ export function BlogPage() {
           </div>
         ) : errorMessage ? (
           <div className="bg-red-50 border border-red-200 rounded-3xl p-10 text-center">
-            <h2 className="font-semibold text-red-600 text-lg">Có lỗi xảy ra</h2>
+            <h2 className="font-semibold text-red-600 text-lg">Something went wrong</h2>
             <p className="mt-2 text-red-500 text-sm">{errorMessage}</p>
           </div>
         ) : posts.length === 0 ? (
           <div className="bg-neutral-50 border border-dashed border-neutral-200 rounded-3xl p-12 text-center">
-            <h2 className="font-display text-2xl text-neutral-900 mb-2">Chưa có bài viết nào</h2>
+            <h2 className="font-display text-2xl text-neutral-900 mb-2">No posts yet</h2>
             <p className="text-neutral-600">
-              Chúng tôi đang chuẩn bị những nội dung đặc sắc nhất dành cho bạn. Hãy quay lại trong thời gian tới!
+              We are curating standout stories for you. Please check back soon!
             </p>
           </div>
         ) : (
@@ -148,7 +148,7 @@ export function BlogPage() {
                       {featuredPost.excerpt || featuredPost.content.slice(0, 200)}
                     </p>
                     <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
-                      Đọc bài viết
+                      Read article
                       <svg
                         className="w-4 h-4 transition-transform group-hover:translate-x-1"
                         fill="none"
@@ -165,7 +165,7 @@ export function BlogPage() {
                 <div className="p-8 lg:p-10 bg-white flex flex-col justify-between">
                   <div>
                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold uppercase tracking-wide">
-                      Nổi bật
+                      Featured
                     </span>
                     <h3 className="mt-4 font-display text-3xl text-neutral-900 leading-tight">
                       {featuredPost.title}
@@ -185,8 +185,8 @@ export function BlogPage() {
             {otherPosts.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="font-display text-2xl text-neutral-900">Bài viết mới nhất</h2>
-                  <span className="text-sm text-neutral-500">{otherPosts.length} bài viết</span>
+                  <h2 className="font-display text-2xl text-neutral-900">Latest Posts</h2>
+                  <span className="text-sm text-neutral-500">{otherPosts.length} posts</span>
                 </div>
 
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -218,7 +218,7 @@ export function BlogPage() {
                           {post.excerpt || post.content.slice(0, 150)}
                         </p>
                         <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
-                          Đọc tiếp
+                          Continue reading
                           <svg
                             className="w-4 h-4 transition-transform group-hover:translate-x-1"
                             fill="none"

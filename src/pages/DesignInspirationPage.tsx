@@ -1,11 +1,16 @@
-import { useMemo, useState } from 'react';
-import { Filter, Heart, Layers, Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Filter, Heart, Layers, Loader2, Search } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { toast } from 'react-toastify';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 interface DesignProduct {
   name: string;
   price: string;
+  slug: string;
 }
 
 interface DesignInspiration {
@@ -29,13 +34,13 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $5,000',
     image: 'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Sofa góc màu trung tính kết hợp ghế bành nhung, bàn trà đá cẩm thạch và đèn sàn kim loại tạo nên không gian hiện đại, ấm áp.',
+      'A creamy sectional anchors the lounge with a velvet accent chair, marble coffee table, and warm brass lighting for an inviting modern retreat.',
     totalPrice: '$4,280',
     products: [
-      { name: 'Harper Sectional Sofa', price: '$2,150' },
-      { name: 'Marble Orbit Coffee Table', price: '$780' },
-      { name: 'Atlas Arc Floor Lamp', price: '$390' },
-      { name: 'Tonal Wool Rug 8x10', price: '$960' },
+      { name: 'Harper Sectional Sofa', price: '$2,150', slug: 'harper-sectional-sofa' },
+      { name: 'Marble Orbit Coffee Table', price: '$780', slug: 'marble-orbit-coffee-table' },
+      { name: 'Atlas Arc Floor Lamp', price: '$390', slug: 'atlas-arc-floor-lamp' },
+      { name: 'Tonal Wool Rug 8x10', price: '$960', slug: 'tonal-wool-rug-8x10' },
     ],
   },
   {
@@ -46,13 +51,13 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $3,000',
     image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Tông màu gỗ sáng, ga giường linen và đèn ngủ thủy tinh giúp phòng ngủ nhẹ nhàng, thư thái, chuẩn phong cách Bắc Âu.',
+      'Layered oak tones, breathable linen bedding, and airy glass lighting make this bedroom a serene Scandinavian hideaway.',
     totalPrice: '$2,540',
     products: [
-      { name: 'Nordic Oak Platform Bed (Queen)', price: '$1,290' },
-      { name: 'Linen Bedding Set', price: '$360' },
-      { name: 'Haze Glass Nightstands (Set of 2)', price: '$540' },
-      { name: 'Softloom Area Rug', price: '$350' },
+      { name: 'Nordic Oak Platform Bed (Queen)', price: '$1,290', slug: 'nordic-oak-platform-bed' },
+      { name: 'Linen Bedding Set', price: '$360', slug: 'linen-bedding-set' },
+      { name: 'Haze Glass Nightstands (Set of 2)', price: '$540', slug: 'haze-glass-nightstands-set-of-2' },
+      { name: 'Softloom Area Rug', price: '$350', slug: 'softloom-area-rug' },
     ],
   },
   {
@@ -63,12 +68,12 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $4,000',
     image: 'https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Bàn gỗ nguyên tấm kết hợp ghế kim loại đệm da và hệ đèn trần ống đồng tạo điểm nhấn đậm chất industrial.',
+      'A live-edge dining table, leather and metal seating, and a copper statement chandelier capture an authentic loft mood.',
     totalPrice: '$3,780',
     products: [
-      { name: 'Forge Live-Edge Dining Table', price: '$2,150' },
-      { name: 'Set of 6 Rivet Leather Chairs', price: '$1,140' },
-      { name: 'Copper Cascade Chandelier', price: '$490' },
+      { name: 'Forge Live-Edge Dining Table', price: '$2,150', slug: 'forge-live-edge-dining-table' },
+      { name: 'Set of 6 Rivet Leather Chairs', price: '$1,140', slug: 'rivet-leather-dining-chairs-set-of-6' },
+      { name: 'Copper Cascade Chandelier', price: '$490', slug: 'copper-cascade-chandelier' },
     ],
   },
   {
@@ -79,13 +84,13 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $3,500',
     image: 'https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Bàn làm việc chữ L phủ gỗ óc chó, ghế công thái học và hệ tủ treo giúp tối ưu hiệu quả làm việc tại nhà.',
+      'A walnut L-desk, ergonomic seating, and modular storage deliver a streamlined work-from-home command center.',
     totalPrice: '$3,280',
     products: [
-      { name: 'Walnut Executive Desk', price: '$1,450' },
-      { name: 'ErgoFlex Leather Chair', price: '$620' },
-      { name: 'Modular Wall Storage', price: '$890' },
-      { name: 'Linear Task Lighting', price: '$320' },
+      { name: 'Walnut Executive Desk', price: '$1,450', slug: 'walnut-executive-desk' },
+      { name: 'ErgoFlex Leather Chair', price: '$620', slug: 'ergoflex-leather-chair' },
+      { name: 'Modular Wall Storage', price: '$890', slug: 'modular-wall-storage' },
+      { name: 'Linear Task Lighting', price: '$320', slug: 'linear-task-lighting' },
     ],
   },
   {
@@ -96,13 +101,13 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $2,500',
     image: 'https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Sofa giường đa năng, bàn ăn gấp và kệ treo tường giúp căn studio tối ưu từng mét vuông mà vẫn đẹp mắt.',
+      'Multifunctional pieces like a sleeper sofa, folding dining set, and floating storage keep the studio flexible and clutter-free.',
     totalPrice: '$2,180',
     products: [
-      { name: 'Convertible Sofa Bed', price: '$940' },
-      { name: 'Foldaway Dining Set', price: '$520' },
-      { name: 'Wall-Mounted Shelving System', price: '$390' },
-      { name: 'Soft Glow Pendant', price: '$330' },
+      { name: 'Convertible Sofa Bed', price: '$940', slug: 'convertible-sofa-bed' },
+      { name: 'Foldaway Dining Set', price: '$520', slug: 'foldaway-dining-set' },
+      { name: 'Wall-Mounted Shelving System', price: '$390', slug: 'wall-mounted-shelving-system' },
+      { name: 'Soft Glow Pendant', price: '$330', slug: 'soft-glow-pendant' },
     ],
   },
   {
@@ -113,14 +118,14 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $4,500',
     image: 'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Ghế lounge chống nước, thảm ngoài trời và đèn lồng mây tạo nên patio thư giãn phong cách biển cả.',
+      'Water-resistant lounge seating, textured outdoor rugs, and woven lanterns bring a breezy coastal vibe outside.',
     totalPrice: '$4,320',
     products: [
-      { name: 'Driftwood Outdoor Sofa', price: '$1,980' },
-      { name: 'All-Weather Lounge Chairs (Set of 2)', price: '$1,080' },
-      { name: 'Braided Outdoor Rug', price: '$420' },
-      { name: 'Rattan Lantern Trio', price: '$340' },
-      { name: 'Acacia Coffee Table', price: '$500' },
+      { name: 'Driftwood Outdoor Sofa', price: '$1,980', slug: 'driftwood-outdoor-sofa' },
+      { name: 'All-Weather Lounge Chairs (Set of 2)', price: '$1,080', slug: 'all-weather-lounge-chairs-set-of-2' },
+      { name: 'Braided Outdoor Rug', price: '$420', slug: 'braided-outdoor-rug' },
+      { name: 'Rattan Lantern Trio', price: '$340', slug: 'rattan-lantern-trio' },
+      { name: 'Acacia Coffee Table', price: '$500', slug: 'acacia-coffee-table' },
     ],
   },
   {
@@ -131,16 +136,25 @@ const designIdeas: DesignInspiration[] = [
     budget: 'Under $6,000',
     image: 'https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600',
     description:
-      'Gỗ tự nhiên, lò sưởi đá và phụ kiện len dệt dày mang lại cảm giác ấm áp cho mùa đông.',
+      'Natural wood, stone accents, and chunky knit layers turn the living space into a cozy alpine escape.',
     totalPrice: '$5,640',
     products: [
-      { name: 'Alpine Modular Sofa', price: '$2,480' },
-      { name: 'Stone Hearth Console', price: '$1,120' },
-      { name: 'Chunky Wool Throws', price: '$420' },
-      { name: 'Antler Inspired Chandelier', price: '$1,620' },
+      { name: 'Alpine Modular Sofa', price: '$2,480', slug: 'alpine-modular-sofa' },
+      { name: 'Stone Hearth Console', price: '$1,120', slug: 'stone-hearth-console' },
+      { name: 'Chunky Wool Throws', price: '$420', slug: 'chunky-wool-throws' },
+      { name: 'Antler Inspired Chandelier', price: '$1,620', slug: 'antler-inspired-chandelier' },
     ],
   },
 ];
+
+const designProductSlugs = Array.from(
+  new Set(designIdeas.flatMap(design => design.products.map(product => product.slug)))
+);
+
+interface AvailableProduct {
+  id: string;
+  name: string;
+}
 
 const styles = ['All Styles', 'Modern', 'Scandinavian', 'Industrial', 'Minimalist', 'Seasonal', 'Boho'];
 const rooms = [
@@ -171,10 +185,111 @@ export function DesignInspirationPage() {
       'Discover curated design ideas by room, style, and budget with shoppable product lists to recreate the look at home.',
   });
 
+  const { addToCart } = useCart();
+  const { user } = useAuth();
   const [styleFilter, setStyleFilter] = useState('All Styles');
   const [roomFilter, setRoomFilter] = useState('All Rooms');
   const [budgetFilter, setBudgetFilter] = useState('Any Budget');
   const [searchTerm, setSearchTerm] = useState('');
+  const [productsBySlug, setProductsBySlug] = useState<Record<string, AvailableProduct>>({});
+  const [loadingProductSlug, setLoadingProductSlug] = useState<string | null>(null);
+  const [loadingDesignId, setLoadingDesignId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      if (designProductSlugs.length === 0) {
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, slug, name')
+        .in('slug', designProductSlugs);
+
+      if (error) {
+        console.error('Failed to load shoppable products', error);
+        toast.error('We could not load the shoppable products right now. Please try again later.');
+        return;
+      }
+
+      if (!isMounted) {
+        return;
+      }
+
+      const mapped = (data ?? []).reduce<Record<string, AvailableProduct>>((accumulator, product) => {
+        if (product?.slug && product?.id) {
+          accumulator[product.slug] = {
+            id: product.id,
+            name: product.name,
+          };
+        }
+        return accumulator;
+      }, {});
+
+      setProductsBySlug(mapped);
+    };
+
+    void loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleAddProduct = async (slug: string, fallbackName: string) => {
+    if (!user) {
+      toast.error('Please sign in to add items to your cart.');
+      return;
+    }
+
+    const product = productsBySlug[slug];
+    if (!product) {
+      toast.error(`${fallbackName} is currently unavailable.`);
+      return;
+    }
+
+    try {
+      setLoadingProductSlug(slug);
+      await addToCart(product.id, 1);
+      toast.success(`Added ${product.name} to your cart.`);
+    } catch (error) {
+      console.error('Failed to add product to cart', error);
+      toast.error('We were unable to add that item to your cart. Please try again.');
+    } finally {
+      setLoadingProductSlug(null);
+    }
+  };
+
+  const handleAddDesign = async (design: DesignInspiration) => {
+    if (!user) {
+      toast.error('Please sign in to add items to your cart.');
+      return;
+    }
+
+    const missingProducts = design.products.filter(product => !productsBySlug[product.slug]);
+    if (missingProducts.length > 0) {
+      toast.error('Some items in this look are currently unavailable.');
+      return;
+    }
+
+    try {
+      setLoadingDesignId(design.id);
+      for (const product of design.products) {
+        const availableProduct = productsBySlug[product.slug];
+        if (availableProduct) {
+          await addToCart(availableProduct.id, 1);
+        }
+      }
+      toast.success(`Added the entire ${design.title} look to your cart.`);
+    } catch (error) {
+      console.error('Failed to add look to cart', error);
+      toast.error('We were unable to add the full look to your cart. Please try again.');
+    } finally {
+      setLoadingDesignId(null);
+    }
+  };
 
   const filteredDesigns = useMemo(() => {
     return designIdeas.filter((design) => {
@@ -200,8 +315,7 @@ export function DesignInspirationPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Design Inspiration</h1>
               <p className="text-white/80 text-lg">
-                Khám phá những không gian được tuyển chọn bởi stylist ZShop. Lọc theo phong cách, phòng và ngân sách để tìm ý
-                tưởng phù hợp nhất với bạn.
+                Explore stylist-curated rooms from ZShop. Filter by style, space, and budget to discover ideas you can bring home.
               </p>
             </div>
           </div>
@@ -302,16 +416,47 @@ export function DesignInspirationPage() {
                       <h4 className="text-sm font-semibold text-neutral-900">Shop This Look</h4>
                       <span className="text-sm font-semibold text-brand-600">{design.totalPrice}</span>
                     </div>
-                    <ul className="space-y-2 text-sm text-neutral-600">
-                      {design.products.map((product) => (
-                        <li key={product.name} className="flex items-center justify-between gap-3">
-                          <span>{product.name}</span>
-                          <span className="font-medium text-neutral-900">{product.price}</span>
-                        </li>
-                      ))}
+                    <ul className="space-y-3">
+                      {design.products.map((product) => {
+                        const isProductLoading = loadingProductSlug === product.slug || loadingDesignId === design.id;
+                        return (
+                          <li
+                            key={product.slug}
+                            className="flex flex-col gap-2 rounded-xl border border-transparent bg-white/70 px-3 py-3 text-sm transition-colors hover:border-brand-200"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="font-medium text-neutral-900">{product.name}</span>
+                              <span className="text-neutral-500">{product.price}</span>
+                            </div>
+                            <button
+                              onClick={() => void handleAddProduct(product.slug, product.name)}
+                              disabled={isProductLoading}
+                              className="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-200 bg-white px-3 py-2 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {isProductLoading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" /> Adding...
+                                </>
+                              ) : (
+                                'Add to Cart'
+                              )}
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
-                    <button className="mt-4 w-full rounded-xl bg-brand-600 text-white text-sm font-semibold py-2.5 hover:bg-brand-700 transition-colors">
-                      Add All to Cart
+                    <button
+                      onClick={() => void handleAddDesign(design)}
+                      disabled={loadingDesignId === design.id || loadingProductSlug !== null}
+                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {loadingDesignId === design.id ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" /> Adding Look...
+                        </>
+                      ) : (
+                        'Add Entire Look to Cart'
+                      )}
                     </button>
                   </div>
                   <div className="flex items-center justify-between text-xs text-neutral-500">

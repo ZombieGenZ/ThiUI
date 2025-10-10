@@ -196,7 +196,7 @@ export function OrdersPage() {
                             {item.product?.name || 'Product'}
                           </h4>
                           <p className="text-sm text-neutral-600">
-                            Quantity: {item.quantity} × ${item.unit_price.toFixed(2)}
+                            Quantity: {item.quantity} x ${item.unit_price.toFixed(2)}
                           </p>
                         </div>
                         <p className="font-semibold text-neutral-900">

@@ -3,39 +3,39 @@ import { Breadcrumb } from '../components/Breadcrumb';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 
 const livingRoomSizes = [
-  { label: 'Sofa 2 chỗ', dimensions: 'Chiều dài 60" - 72"', notes: 'Phù hợp căn hộ nhỏ hoặc phòng khách phụ.' },
-  { label: 'Sofa 3 chỗ', dimensions: 'Chiều dài 78" - 90"', notes: 'Kích thước phổ biến cho phòng khách tiêu chuẩn.' },
-  { label: 'Sofa sectional', dimensions: 'Chiều dài 90" - 140"', notes: 'Đảm bảo có lối đi 36" phía trước.' },
-  { label: 'Bàn trà', dimensions: '48" - 54" (cho sofa 84" - 96")', notes: 'Giữ khoảng cách 16"-18" tới sofa.' },
-  { label: 'Kệ TV', dimensions: 'Rộng hơn màn hình 6" mỗi bên', notes: 'Chiều cao mắt nhìn khoảng 42" khi ngồi.' },
-  { label: 'Thảm phòng khách', dimensions: '8 ft x 10 ft', notes: 'Chân trước sofa đặt trên thảm để cố định bố cục.' },
+  { label: 'Loveseat (2-seat sofa)', dimensions: 'Length 60" - 72"', notes: 'Ideal for apartments or secondary seating areas.' },
+  { label: 'Standard 3-seat sofa', dimensions: 'Length 78" - 90"', notes: 'A dependable choice for most living rooms.' },
+  { label: 'Sectional sofa', dimensions: 'Length 90" - 140"', notes: 'Leave at least 36" of walkway in front.' },
+  { label: 'Coffee table', dimensions: '48" - 54" (for sofas 84" - 96")', notes: 'Maintain 16"-18" of clearance from the sofa.' },
+  { label: 'Media console', dimensions: '6" wider than the TV on each side', notes: 'Aim for seated eye height around 42".' },
+  { label: 'Living room rug', dimensions: '8 ft x 10 ft', notes: 'Anchor front legs of seating on the rug.' },
 ];
 
 const bedroomSizes = [
-  { label: 'Twin', dimensions: '39" x 75"', notes: 'Lý tưởng cho phòng trẻ em hoặc giường phụ.' },
-  { label: 'Full', dimensions: '54" x 75"', notes: 'Phù hợp cho phòng khách đơn hoặc studio.' },
-  { label: 'Queen', dimensions: '60" x 80"', notes: 'Lựa chọn đa năng nhất cho cặp đôi.' },
-  { label: 'King', dimensions: '76" x 80"', notes: 'Cần phòng rộng tối thiểu 12 ft x 12 ft.' },
-  { label: 'California King', dimensions: '72" x 84"', notes: 'Chiều dài lớn, phù hợp người cao.' },
-  { label: 'Tủ đầu giường', dimensions: 'Cao 24" - 28"', notes: 'Tương đương chiều cao mặt nệm.' },
-  { label: 'Tủ áo (6 ngăn)', dimensions: '60" W x 18" D x 34" H', notes: 'Khoảng trống mở ngăn kéo tối thiểu 36".' },
+  { label: 'Twin', dimensions: '39" x 75"', notes: 'Great for kids rooms or guest beds.' },
+  { label: 'Full', dimensions: '54" x 75"', notes: 'Works well in single bedrooms or studios.' },
+  { label: 'Queen', dimensions: '60" x 80"', notes: 'The most versatile size for couples.' },
+  { label: 'King', dimensions: '76" x 80"', notes: 'Requires rooms at least 12 ft x 12 ft.' },
+  { label: 'California King', dimensions: '72" x 84"', notes: 'Extra length for taller sleepers.' },
+  { label: 'Nightstand', dimensions: 'Height 24" - 28"', notes: 'Keep level with your mattress top.' },
+  { label: 'Six-drawer dresser', dimensions: '60" W x 18" D x 34" H', notes: 'Leave 36" clear to open drawers comfortably.' },
 ];
 
 const diningSizes = [
-  { label: 'Bàn 4 người', dimensions: '36" x 48"', notes: 'Khoảng cách ghế - tường tối thiểu 36".' },
-  { label: 'Bàn 6 người', dimensions: '36" x 72"', notes: 'Đảm bảo có 24" không gian cho mỗi chỗ ngồi.' },
-  { label: 'Bàn 8 người', dimensions: '40" x 96"', notes: 'Lý tưởng cho phòng ăn lớn và tiệc.' },
-  { label: 'Ghế ăn', dimensions: 'Chiều cao 18" - 20"', notes: 'Khoảng cách mặt bàn - ghế 10" - 12".' },
-  { label: 'Ghế counter height', dimensions: 'Chiều cao 24" - 26"', notes: 'Dùng cho bàn đảo cao 36".' },
-  { label: 'Ghế bar height', dimensions: 'Chiều cao 30" - 32"', notes: 'Phù hợp quầy bar cao 42".' },
+  { label: 'Table for 4', dimensions: '36" x 48"', notes: 'Keep at least 36" between chairs and the wall.' },
+  { label: 'Table for 6', dimensions: '36" x 72"', notes: 'Allow 24" of space for each seat.' },
+  { label: 'Table for 8', dimensions: '40" x 96"', notes: 'Ideal for larger dining rooms and gatherings.' },
+  { label: 'Dining chair', dimensions: 'Seat height 18" - 20"', notes: 'Maintain 10" - 12" between seat and tabletop.' },
+  { label: 'Counter-height stool', dimensions: 'Seat height 24" - 26"', notes: 'Pair with counters that are 36" high.' },
+  { label: 'Bar-height stool', dimensions: 'Seat height 30" - 32"', notes: 'Best for bar tops around 42" high.' },
 ];
 
 const measurementTips = [
-  'Đo chiều dài, chiều rộng và chiều cao phòng, ghi chú vị trí cửa, cửa sổ, ổ điện.',
-  'Để lối đi tối thiểu 30" - 36" quanh đồ nội thất chính để di chuyển thoải mái.',
-  'Chừa 24" không gian cho ghế kéo ra ở bàn ăn hoặc bàn làm việc.',
-  'Sử dụng băng keo giấy dán trên sàn để mô phỏng kích thước đồ nội thất trước khi mua.',
-  'Cân nhắc chiều cao trần và vị trí đèn, quạt khi đặt tủ cao hoặc giường có canopy.',
+  'Measure the length, width, and height of the room and note doors, windows, and outlets.',
+  'Leave 30"-36" of clearance around major furniture for easy movement.',
+  'Reserve 24" behind chairs at dining tables or desks for pull-back space.',
+  'Use painter’s tape on the floor to map furniture footprints before purchasing.',
+  'Consider ceiling height and fixture placement when adding tall pieces or canopy beds.',
 ];
 
 export function SizeGuidePage() {
@@ -55,7 +55,7 @@ export function SizeGuidePage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Size Guide</h1>
               <p className="text-white/80 text-lg">
-                Tham khảo kích thước chuẩn và mẹo đo đạc để đảm bảo nội thất ZShop phù hợp hoàn hảo với không gian của bạn.
+                Explore standard measurements and pro tips to ensure ZShop furniture fits perfectly in your space.
               </p>
             </div>
           </div>
@@ -69,8 +69,7 @@ export function SizeGuidePage() {
             <h2 className="font-display text-3xl text-neutral-900">Living Room Dimensions</h2>
           </div>
           <p className="text-neutral-600 max-w-3xl">
-            Đảm bảo sofa, bàn trà và thảm có tỉ lệ cân đối giúp phòng khách thông thoáng. Hãy đo khoảng cách giữa các điểm
-            chính như TV, sofa và lối đi trước khi chọn mua.
+            Keep sofas, coffee tables, and rugs in proportion to maintain an open, airy feel. Measure the distance between key points like the TV, seating, and walkways before you buy.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {livingRoomSizes.map((item) => (
@@ -89,8 +88,7 @@ export function SizeGuidePage() {
             <h2 className="font-display text-3xl text-neutral-900">Bedroom Dimensions</h2>
           </div>
           <p className="text-neutral-600 max-w-3xl">
-            Cân bằng giữa giường, tủ áo, tủ đầu giường và lối đi để không gian nghỉ ngơi thật thư thái. Đừng quên chừa không
-            gian mở cửa tủ và di chuyển quanh giường.
+            Balance the bed, storage, and pathways so the room stays restful. Leave clearance for opening wardrobes and moving comfortably around the bed.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {bedroomSizes.map((item) => (
@@ -109,8 +107,7 @@ export function SizeGuidePage() {
             <h2 className="font-display text-3xl text-neutral-900">Dining Room Dimensions</h2>
           </div>
           <p className="text-neutral-600 max-w-3xl">
-            Tạo trải nghiệm ăn uống thoải mái bằng cách đảm bảo mỗi người có đủ không gian và ghế phù hợp độ cao bàn. Sử dụng
-            kích thước dưới đây để tính toán số chỗ ngồi tương ứng.
+            Make dining comfortable by giving each guest enough room and pairing chairs with the correct table height. Use these dimensions to plan seating for every gathering.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {diningSizes.map((item) => (
@@ -130,8 +127,7 @@ export function SizeGuidePage() {
               <h2 className="font-display text-3xl text-neutral-900">How to Measure Your Space</h2>
             </div>
             <p className="text-neutral-600">
-              Chuẩn bị bản vẽ tay hoặc sử dụng ứng dụng planner để ghi lại kích thước phòng, vị trí cửa ra vào, cửa sổ, ổ điện
-              và lỗ thông gió. Điều này giúp đội ngũ stylist đề xuất đồ nội thất chính xác.
+              Sketch your room or use a planning app to log dimensions plus doorways, windows, outlets, and vents. Sharing these details helps our stylists recommend the perfect pieces.
             </p>
             <ul className="space-y-3 text-sm text-neutral-600">
               {measurementTips.map((tip) => (
@@ -161,7 +157,7 @@ export function SizeGuidePage() {
               <Maximize className="w-8 h-8 text-brand-600" />
               <div>
                 <p className="text-sm font-semibold text-neutral-900">Tip: Mark furniture footprints</p>
-                <p className="text-xs text-neutral-500">Dùng băng keo giấy để mô phỏng kích thước thực tế trên sàn.</p>
+                <p className="text-xs text-neutral-500">Use painter’s tape to simulate actual furniture footprints on the floor.</p>
               </div>
             </div>
           </div>
