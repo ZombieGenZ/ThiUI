@@ -27,10 +27,20 @@ export function Header({ onCartOpen }: HeaderProps) {
     { label: { en: 'Outdoor', vi: 'Ngoài trời' }, path: '/shop/outdoor' },
   ];
 
+  const companyLinks = [
+    { label: { en: 'About Us', vi: 'Về chúng tôi' }, path: '/about' },
+    { label: { en: 'Design Services', vi: 'Dịch vụ thiết kế' }, path: '/design-services' },
+    { label: { en: 'Careers', vi: 'Tuyển dụng' }, path: '/careers' },
+  ];
+
+  const exploreLinks = [
+    { label: { en: 'Design Inspiration', vi: 'Gợi ý thiết kế' }, path: '/design-inspiration' },
+    { label: { en: 'Virtual Showroom', vi: 'Phòng trưng bày ảo' }, path: '/virtual-showroom' },
+    { label: { en: 'Size Guide', vi: 'Hướng dẫn kích thước' }, path: '/size-guide' },
+  ];
+
   const serviceLinks = [
     { label: { en: 'Assembly Services', vi: 'Dịch vụ lắp đặt' }, path: '/assembly-services' },
-    { label: { en: 'Design Services', vi: 'Dịch vụ thiết kế' }, path: '/design-services' },
-    { label: { en: 'Virtual Showroom', vi: 'Phòng trưng bày ảo' }, path: '/virtual-showroom' },
   ];
 
   const resourceLinks = [
@@ -38,8 +48,6 @@ export function Header({ onCartOpen }: HeaderProps) {
     { label: { en: 'Shipping & Returns', vi: 'Vận chuyển & đổi trả' }, path: '/shipping-returns' },
     { label: { en: 'Track Order', vi: 'Theo dõi đơn hàng' }, path: '/track-order' },
     { label: { en: 'FAQ', vi: 'Câu hỏi thường gặp' }, path: '/faq' },
-    { label: { en: 'Size Guide', vi: 'Hướng dẫn kích thước' }, path: '/size-guide' },
-    { label: { en: 'Design Inspiration', vi: 'Gợi ý thiết kế' }, path: '/design-inspiration' },
   ];
 
   const quickSearchTerms = [
@@ -97,12 +105,47 @@ export function Header({ onCartOpen }: HeaderProps) {
                 </div>
               </div>
 
-              <Link
-                to="/about"
-                className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
-              >
-                {t('common.about')}
-              </Link>
+              <div className="relative group">
+                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
+                  <span>{translate({ en: 'Company', vi: 'Công ty' })}</span>
+                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
+                  {companyLinks.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
+                    >
+                      {translate(item.label)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative group">
+                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
+                  <span>{translate({ en: 'Explore', vi: 'Khám phá' })}</span>
+                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
+                  {exploreLinks.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
+                    >
+                      {translate(item.label)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
 
               <Link
                 to="/contact"
@@ -320,6 +363,30 @@ export function Header({ onCartOpen }: HeaderProps) {
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{translate({ en: 'Company', vi: 'Công ty' })}</div>
+              {companyLinks.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {translate(item.label)}
+                </Link>
+              ))}
+              <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{translate({ en: 'Explore', vi: 'Khám phá' })}</div>
+              {exploreLinks.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {translate(item.label)}
+                </Link>
+              ))}
+              <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
               <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{t('common.services')}</div>
               {serviceLinks.map((item) => (
                 <Link
@@ -344,13 +411,6 @@ export function Header({ onCartOpen }: HeaderProps) {
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
-              <Link
-                to="/about"
-                className="block px-6 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t('common.about')}
-              </Link>
               <Link
                 to="/contact"
                 className="block px-6 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"

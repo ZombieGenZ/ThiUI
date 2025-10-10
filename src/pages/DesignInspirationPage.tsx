@@ -552,9 +552,9 @@ export function DesignInspirationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative h-80 bg-[url('https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=1600')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/90 via-neutral-900/70 to-neutral-900/40" />
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-50">
+      <div className="relative h-96 bg-[url('https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=1600')] bg-cover bg-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-900/95 via-neutral-900/80 to-brand-900/70" />
         <div className="relative z-10 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <Breadcrumb
@@ -563,11 +563,11 @@ export function DesignInspirationPage() {
                 { label: translate({ en: 'Design Inspiration', vi: 'Gợi ý thiết kế' }) }
               ]}
             />
-            <div className="mt-6 max-w-3xl">
-              <h1 className="font-display text-4xl md:text-5xl text-white mb-4">
+            <div className="mt-8 max-w-3xl">
+              <h1 className="font-display text-5xl md:text-6xl text-white mb-6 leading-tight">
                 {translate({ en: 'Design Inspiration', vi: 'Gợi ý thiết kế' })}
               </h1>
-              <p className="text-white/80 text-lg">
+              <p className="text-white/90 text-xl leading-relaxed">
                 {metaDescription}
               </p>
             </div>
@@ -576,23 +576,29 @@ export function DesignInspirationPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
-        <section className="bg-white border border-neutral-200 shadow-md p-6 md:p-8">
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <Filter className="w-5 h-5 text-brand-600" />
-            <h2 className="font-semibold text-lg text-neutral-900">
-              {translate({ en: 'Filter Ideas', vi: 'Lọc ý tưởng' })}
-            </h2>
+        <section className="bg-white border border-neutral-200 shadow-lg rounded-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-brand-600 to-brand-500 p-6 md:p-8">
+            <div className="flex items-center gap-3">
+              <Filter className="w-6 h-6 text-white" />
+              <h2 className="font-display text-2xl text-white">
+                {translate({ en: 'Filter Your Perfect Look', vi: 'Tìm kiếm theo ý tưởng' })}
+              </h2>
+            </div>
+            <p className="text-white/90 mt-2 text-sm">
+              {translate({ en: 'Narrow down by style, room, and budget to find your ideal inspiration', vi: 'Lọc theo phong cách, không gian và ngân sách để tìm gợi ý phù hợp' })}
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase text-neutral-500 mb-2">
-                {translate({ en: 'Style', vi: 'Phong cách' })}
-              </label>
-              <select
-                value={styleFilter}
-                onChange={(event) => setStyleFilter(event.target.value)}
-                className="w-full border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-              >
+          <div className="p-6 md:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wide text-neutral-700 mb-3">
+                  {translate({ en: 'Style', vi: 'Phong cách' })}
+                </label>
+                <select
+                  value={styleFilter}
+                  onChange={(event) => setStyleFilter(event.target.value)}
+                  className="w-full border-2 border-neutral-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+                >
                 {styleOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label[language]}
@@ -600,15 +606,15 @@ export function DesignInspirationPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase text-neutral-500 mb-2">
-                {translate({ en: 'Room', vi: 'Không gian' })}
-              </label>
-              <select
-                value={roomFilter}
-                onChange={(event) => setRoomFilter(event.target.value)}
-                className="w-full border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-              >
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wide text-neutral-700 mb-3">
+                  {translate({ en: 'Room', vi: 'Không gian' })}
+                </label>
+                <select
+                  value={roomFilter}
+                  onChange={(event) => setRoomFilter(event.target.value)}
+                  className="w-full border-2 border-neutral-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+                >
                 {roomOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label[language]}
@@ -616,15 +622,15 @@ export function DesignInspirationPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase text-neutral-500 mb-2">
-                {translate({ en: 'Budget', vi: 'Ngân sách' })}
-              </label>
-              <select
-                value={budgetFilter}
-                onChange={(event) => setBudgetFilter(event.target.value)}
-                className="w-full border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-              >
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wide text-neutral-700 mb-3">
+                  {translate({ en: 'Budget', vi: 'Ngân sách' })}
+                </label>
+                <select
+                  value={budgetFilter}
+                  onChange={(event) => setBudgetFilter(event.target.value)}
+                  className="w-full border-2 border-neutral-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+                >
                 {budgetOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label[language]}
@@ -632,41 +638,42 @@ export function DesignInspirationPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase text-neutral-500 mb-2">
-                {translate({ en: 'Search', vi: 'Tìm kiếm' })}
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder={translate({ en: 'Search by keyword...', vi: 'Tìm theo từ khóa...' })}
-                  className="w-full border border-neutral-300 pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                />
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wide text-neutral-700 mb-3">
+                  {translate({ en: 'Search', vi: 'Tìm kiếm' })}
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder={translate({ en: 'Search by keyword...', vi: 'Tìm theo từ khóa...' })}
+                    className="w-full border-2 border-neutral-300 rounded-lg pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="space-y-6">
+        <section className="space-y-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h2 className="font-display text-3xl text-neutral-900">
-                {translate({ en: 'Gallery', vi: 'Bộ sưu tập ý tưởng' })}
+              <h2 className="font-display text-4xl text-neutral-900">
+                {translate({ en: 'Curated Collections', vi: 'Bộ sưu tập đặc biệt' })}
               </h2>
-              <p className="text-sm text-neutral-500">{designSummaryText}</p>
+              <p className="text-base text-neutral-600 mt-2">{designSummaryText}</p>
             </div>
             <div className="flex items-center gap-3">
-              <label className="text-sm text-neutral-600" htmlFor="design-page-size">
+              <label className="text-sm font-medium text-neutral-700" htmlFor="design-page-size">
                 {translate({ en: 'Per page', vi: 'Mỗi trang' })}
               </label>
               <select
                 id="design-page-size"
                 value={pageSize}
                 onChange={(event) => setPageSize(Number(event.target.value))}
-                className="border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="border-2 border-neutral-300 rounded-lg px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
               >
                 {pageSizeOptions.map(size => (
                   <option key={size} value={size}>{size}</option>
@@ -683,7 +690,7 @@ export function DesignInspirationPage() {
               </span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
               {paginatedDesigns.map((design) => {
               const currency = design.currency ?? 'USD';
               const designTotals = design.products.reduce(
@@ -710,31 +717,31 @@ export function DesignInspirationPage() {
                 return (
                   <article
                     key={design.id}
-                    className="flex h-full flex-col overflow-hidden border border-neutral-200 bg-white shadow-lg"
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                   >
-                  <div className="relative">
-                    <img src={design.image} alt={design.title[language]} className="h-64 w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+                  <div className="relative overflow-hidden">
+                    <img src={design.image} alt={design.title[language]} className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="absolute bottom-6 left-6 right-6 text-white">
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
                           <Layers className="w-4 h-4" /> {styleLabel}
                         </span>
-                        <span className="text-xs bg-white/20 px-2 py-1">{budgetLabel}</span>
+                        <span className="bg-brand-600 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-bold">{budgetLabel}</span>
                       </div>
-                      <h3 className="font-display text-2xl mt-2">{design.title[language]}</h3>
-                      <p className="text-sm text-white/80">{roomLabel}</p>
+                      <h3 className="font-display text-3xl leading-tight mb-1">{design.title[language]}</h3>
+                      <p className="text-sm text-white/90 font-medium">{roomLabel}</p>
                     </div>
                   </div>
-                  <div className="flex flex-1 flex-col gap-4 p-6">
-                    <p className="text-sm text-neutral-600">{design.description[language]}</p>
-                    <div className="flex flex-1 flex-col border border-neutral-200 bg-neutral-50 p-5">
-                      <div className="flex flex-col gap-2 mb-4">
+                  <div className="flex flex-1 flex-col gap-5 p-6">
+                    <p className="text-sm text-neutral-700 leading-relaxed">{design.description[language]}</p>
+                    <div className="flex flex-1 flex-col border-2 border-neutral-200 rounded-xl bg-gradient-to-br from-neutral-50 to-white p-6 shadow-inner">
+                      <div className="flex flex-col gap-3 mb-5">
                         <div className="flex items-center justify-between gap-3">
-                          <h4 className="text-sm font-semibold text-neutral-900">
+                          <h4 className="text-base font-bold text-neutral-900">
                             {translate({ en: 'Shop This Look', vi: 'Mua bộ sản phẩm này' })}
                           </h4>
-                          <span className="text-sm font-semibold text-brand-600">{formattedTotal}</span>
+                          <span className="text-lg font-bold text-brand-600">{formattedTotal}</span>
                         </div>
                         {hasUnavailableProducts && (
                           <p className="text-xs font-medium text-amber-600">
@@ -745,7 +752,7 @@ export function DesignInspirationPage() {
                           </p>
                         )}
                       </div>
-                      <ul className="flex-1 space-y-3">
+                      <ul className="flex-1 space-y-4">
                         {design.products.map((product) => {
                           const availableProduct = productsBySlug[product.slug];
                           const isProductLoading = loadingProductSlug === product.slug || isDesignBusy;
@@ -772,21 +779,21 @@ export function DesignInspirationPage() {
                           return (
                             <li
                               key={product.slug}
-                              className="flex gap-3 border border-neutral-200 bg-white/90 p-3 shadow-sm transition hover:border-brand-200"
+                              className="flex gap-4 border-2 border-neutral-200 rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-all hover:border-brand-300"
                             >
                               {productImage ? (
                                 <img
                                   src={productImage}
                                   alt={productName}
-                                  className="h-16 w-16 flex-none object-cover"
+                                  className="h-20 w-20 flex-none object-cover rounded-lg"
                                 />
                               ) : (
-                                <div className="flex h-16 w-16 flex-none items-center justify-center bg-neutral-100 text-neutral-400">
-                                  <Layers className="h-5 w-5" />
+                                <div className="flex h-20 w-20 flex-none items-center justify-center bg-neutral-100 rounded-lg text-neutral-400">
+                                  <Layers className="h-6 w-6" />
                                 </div>
                               )}
-                              <div className="flex-1 min-w-0 space-y-2">
-                                <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0 space-y-3">
+                                <div className="flex items-start justify-between gap-3">
                                   {productAvailable ? (
                                     <Link
                                       to={`/product/${product.slug}`}
@@ -802,10 +809,10 @@ export function DesignInspirationPage() {
                                     onClick={() => void handleToggleProductFavorite(product)}
                                     disabled={!productAvailable || isFavoriteLoading}
                                     aria-pressed={productAvailable ? isFavorited : false}
-                                    className={`inline-flex h-9 w-9 flex-none items-center justify-center border text-sm transition-colors ${
+                                    className={`inline-flex h-10 w-10 flex-none items-center justify-center border-2 rounded-lg text-sm transition-all ${
                                       isFavorited
-                                        ? 'border-rose-200 bg-rose-50 text-rose-500'
-                                        : 'border-neutral-200 text-neutral-400 hover:border-rose-200 hover:text-rose-500'
+                                        ? 'border-rose-300 bg-rose-50 text-rose-600 hover:bg-rose-100'
+                                        : 'border-neutral-200 text-neutral-400 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-500'
                                     } ${(!productAvailable || isFavoriteLoading) ? 'cursor-not-allowed opacity-60' : ''}`}
                                   >
                                     {isFavoriteLoading ? (
@@ -831,7 +838,7 @@ export function DesignInspirationPage() {
                                     <button
                                       onClick={() => void handleAddProduct(design, product)}
                                       disabled={!productAvailable || isProductLoading}
-                                      className="inline-flex w-full items-center justify-center gap-2 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                                      className="inline-flex w-full items-center justify-center gap-2 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 rounded-lg px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:shadow-xl hover:from-brand-700 hover:via-brand-600 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                       {isProductLoading ? (
                                         <>
@@ -844,7 +851,7 @@ export function DesignInspirationPage() {
                                       )}
                                     </button>
                                   ) : (
-                                    <span className="inline-flex w-full items-center justify-center gap-1 border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-400">
+                                    <span className="inline-flex w-full items-center justify-center gap-1 border-2 border-neutral-200 rounded-lg px-4 py-2.5 text-xs font-semibold text-neutral-500 bg-neutral-50">
                                       {translate({ en: 'Coming soon', vi: 'Sắp ra mắt' })}
                                     </span>
                                   )}
@@ -854,11 +861,11 @@ export function DesignInspirationPage() {
                           );
                         })}
                       </ul>
-                      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                      <div className="mt-6 flex flex-col sm:flex-row gap-4">
                         <button
                           onClick={() => void handleAddDesign(design)}
                           disabled={isDesignBusy || loadingProductSlug !== null}
-                          className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 rounded-xl py-4 text-sm font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:from-brand-800 hover:via-brand-700 hover:to-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {loadingDesignId === design.id ? (
                             <>
@@ -873,7 +880,7 @@ export function DesignInspirationPage() {
                         <button
                           onClick={() => void handleSaveLook(design)}
                           disabled={savingDesignId === design.id || loadingProductSlug !== null}
-                          className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-500 bg-white py-3 text-sm font-semibold text-brand-600 shadow-sm transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-500 bg-white rounded-xl py-4 text-sm font-bold text-brand-600 shadow-lg transition-all hover:bg-brand-50 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {savingDesignId === design.id ? (
                             <>
@@ -895,8 +902,9 @@ export function DesignInspirationPage() {
           )}
 
           {!loadingDesigns && filteredDesigns.length === 0 && (
-            <div className="text-center py-20 border border-dashed border-neutral-200">
-              <p className="text-neutral-500">
+            <div className="text-center py-24 border-2 border-dashed border-neutral-300 rounded-2xl bg-neutral-50">
+              <Layers className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
+              <p className="text-neutral-600 text-lg font-medium">
                 {translate({
                   en: 'No designs match your filters. Try adjusting the criteria.',
                   vi: 'Không có ý tưởng nào phù hợp bộ lọc. Hãy điều chỉnh tiêu chí tìm kiếm.',
@@ -906,19 +914,19 @@ export function DesignInspirationPage() {
           )}
 
           {totalPages > 1 && (
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-neutral-600">
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 p-6 bg-white rounded-2xl border-2 border-neutral-200 shadow-lg">
+              <div className="text-base font-medium text-neutral-700">
                 {translate({ en: `Page ${currentPage} of ${totalPages}`, vi: `Trang ${currentPage}/${totalPages}` })}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100"
+                  className="px-5 py-2.5 border-2 border-neutral-300 rounded-lg text-sm font-bold text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 hover:border-neutral-400 transition-all"
                 >
                   {translate({ en: 'Previous', vi: 'Trước' })}
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   {Array.from({ length: totalPages }).map((_, index) => {
                     const pageNumber = index + 1;
                     const isActive = pageNumber === currentPage;
@@ -926,10 +934,10 @@ export function DesignInspirationPage() {
                       <button
                         key={pageNumber}
                         onClick={() => setCurrentPage(pageNumber)}
-                        className={`min-w-[2.5rem] px-3 py-2 text-sm font-medium transition-colors ${
+                        className={`min-w-[3rem] px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
                           isActive
-                            ? 'bg-brand-600 text-white shadow-sm'
-                            : 'border border-neutral-300 text-neutral-700 hover:bg-neutral-100'
+                            ? 'bg-brand-600 text-white shadow-lg scale-110'
+                            : 'border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
                         }`}
                       >
                         {pageNumber}
@@ -940,7 +948,7 @@ export function DesignInspirationPage() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100"
+                  className="px-5 py-2.5 border-2 border-neutral-300 rounded-lg text-sm font-bold text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 hover:border-neutral-400 transition-all"
                 >
                   {translate({ en: 'Next', vi: 'Sau' })}
                 </button>
