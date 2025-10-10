@@ -18,13 +18,14 @@ interface LocalizedText {
 
 interface DesignProduct {
   slug: string;
-  price: number;
+  price?: number;
   name: LocalizedText;
   currency?: string;
 }
 
 interface DesignInspiration {
   id: string;
+  slug: string;
   title: LocalizedText;
   style: string;
   room: string;
@@ -48,6 +49,29 @@ interface AvailableProduct {
 interface FilterOption {
   value: string;
   label: LocalizedText;
+}
+
+interface RawInspirationRow {
+  id: string;
+  slug?: string | null;
+  title: string;
+  title_i18n?: Record<string, string> | null;
+  description?: string | null;
+  description_i18n?: Record<string, string> | null;
+  image_url: string;
+  style_tags?: string[] | null;
+  room_type?: string | null;
+  budget?: string | null;
+  currency?: string | null;
+  product_slugs?: string[] | null;
+  product_details?: unknown;
+}
+
+interface RawProductDetail {
+  slug?: string;
+  fallback_name?: Record<string, string> | null;
+  fallback_price?: number;
+  currency?: string | null;
 }
 
 const styleOptions: FilterOption[] = [
@@ -82,142 +106,18 @@ const budgetOptions: FilterOption[] = [
   { value: 'under-6000', label: { en: 'Under $6,000', vi: 'Dưới $6,000' } },
 ];
 
-const designIdeas: DesignInspiration[] = [
-  {
-    id: 'living-modern',
-    title: { en: 'Sunlit Modern Lounge', vi: 'Phòng khách hiện đại ngập nắng' },
-    style: 'modern',
-    room: 'living',
-    budget: 'under-5000',
-    image: 'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'A creamy sectional anchors the lounge with a velvet accent chair, marble coffee table, and warm brass lighting for an inviting modern retreat.',
-      vi: 'Ghế sofa chữ L màu kem kết hợp ghế nhung, bàn cà phê mặt đá và đèn đồng ấm áp tạo nên không gian tiếp khách hiện đại, thư thái.',
-    },
-    products: [
-      { slug: 'harper-sectional-sofa', price: 2150, name: { en: 'Harper Sectional Sofa', vi: 'Sofa góc Harper' } },
-      { slug: 'marble-orbit-coffee-table', price: 780, name: { en: 'Marble Orbit Coffee Table', vi: 'Bàn cà phê Marble Orbit' } },
-      { slug: 'atlas-arc-floor-lamp', price: 390, name: { en: 'Atlas Arc Floor Lamp', vi: 'Đèn sàn Atlas Arc' } },
-      { slug: 'tonal-wool-rug-8x10', price: 960, name: { en: 'Tonal Wool Rug 8x10', vi: 'Thảm len Tonal 8x10' } },
-    ],
-  },
-  {
-    id: 'bedroom-scandi',
-    title: { en: 'Scandinavian Calm Bedroom', vi: 'Phòng ngủ phong cách Bắc Âu' },
-    style: 'scandinavian',
-    room: 'bedroom',
-    budget: 'under-3000',
-    image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'Layered oak tones, breathable linen bedding, and airy glass lighting make this bedroom a serene Scandinavian hideaway.',
-      vi: 'Sắc gỗ sồi, chăn ga vải lanh thoáng mát và đèn thủy tinh nhẹ nhàng mang đến phòng ngủ Bắc Âu yên bình.',
-    },
-    products: [
-      { slug: 'nordic-oak-platform-bed', price: 1290, name: { en: 'Nordic Oak Platform Bed (Queen)', vi: 'Giường bệt gỗ sồi Nordic (Queen)' } },
-      { slug: 'linen-bedding-set', price: 360, name: { en: 'Linen Bedding Set', vi: 'Bộ ga giường vải lanh' } },
-      { slug: 'haze-glass-nightstands-set-of-2', price: 540, name: { en: 'Haze Glass Nightstands (Set of 2)', vi: 'Tab đầu giường kính Haze (Bộ 2 chiếc)' } },
-      { slug: 'softloom-area-rug', price: 350, name: { en: 'Softloom Area Rug', vi: 'Thảm Softloom' } },
-    ],
-  },
-  {
-    id: 'dining-industrial',
-    title: { en: 'Industrial Loft Dining', vi: 'Phòng ăn phong cách loft công nghiệp' },
-    style: 'industrial',
-    room: 'dining',
-    budget: 'under-4000',
-    image: 'https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'A live-edge dining table, leather and metal seating, and a copper statement chandelier capture an authentic loft mood.',
-      vi: 'Bàn ăn gỗ nguyên tấm, ghế da kết hợp kim loại và đèn chùm đồng tạo nên sắc thái loft đậm chất công nghiệp.',
-    },
-    products: [
-      { slug: 'forge-live-edge-dining-table', price: 2150, name: { en: 'Forge Live-Edge Dining Table', vi: 'Bàn ăn Forge mép tự nhiên' } },
-      { slug: 'rivet-leather-dining-chairs-set-of-6', price: 1140, name: { en: 'Set of 6 Rivet Leather Chairs', vi: 'Bộ 6 ghế da Rivet' } },
-      { slug: 'copper-cascade-chandelier', price: 490, name: { en: 'Copper Cascade Chandelier', vi: 'Đèn chùm Copper Cascade' } },
-    ],
-  },
-  {
-    id: 'office-modern',
-    title: { en: 'Modern Home Office Suite', vi: 'Góc làm việc hiện đại tại nhà' },
-    style: 'modern',
-    room: 'office',
-    budget: 'under-3500',
-    image: 'https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'A walnut L-desk, ergonomic seating, and modular storage deliver a streamlined work-from-home command center.',
-      vi: 'Bàn chữ L gỗ óc chó, ghế công thái học và tủ lưu trữ mô-đun tạo nên trung tâm làm việc tại nhà gọn gàng.',
-    },
-    products: [
-      { slug: 'walnut-executive-desk', price: 1450, name: { en: 'Walnut Executive Desk', vi: 'Bàn làm việc gỗ óc chó' } },
-      { slug: 'ergoflex-leather-chair', price: 620, name: { en: 'ErgoFlex Leather Chair', vi: 'Ghế da ErgoFlex' } },
-      { slug: 'modular-wall-storage', price: 890, name: { en: 'Modular Wall Storage', vi: 'Tủ lưu trữ treo tường mô-đun' } },
-      { slug: 'linear-task-lighting', price: 320, name: { en: 'Linear Task Lighting', vi: 'Đèn làm việc Linear' } },
-    ],
-  },
-  {
-    id: 'small-space',
-    title: { en: 'Compact Studio Haven', vi: 'Căn hộ studio tiện nghi' },
-    style: 'minimalist',
-    room: 'studio',
-    budget: 'under-2500',
-    image: 'https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'Multifunctional pieces keep the studio flexible and clutter-free, from a sleeper sofa to folding dining set.',
-      vi: 'Nội thất đa năng giúp căn studio linh hoạt và gọn gàng, từ sofa giường đến bộ bàn ăn gấp gọn.',
-    },
-    products: [
-      { slug: 'convertible-sofa-bed', price: 940, name: { en: 'Convertible Sofa Bed', vi: 'Sofa giường đa năng' } },
-      { slug: 'foldaway-dining-set', price: 520, name: { en: 'Foldaway Dining Set', vi: 'Bộ bàn ăn gấp gọn' } },
-      { slug: 'wall-mounted-shelving-system', price: 390, name: { en: 'Wall-Mounted Shelving System', vi: 'Kệ treo tường đa năng' } },
-      { slug: 'soft-glow-pendant', price: 330, name: { en: 'Soft Glow Pendant', vi: 'Đèn thả Soft Glow' } },
-    ],
-  },
-  {
-    id: 'outdoor-coastal',
-    title: { en: 'Coastal Outdoor Retreat', vi: 'Góc thư giãn ngoài trời phong cách biển' },
-    style: 'boho',
-    room: 'outdoor',
-    budget: 'under-4500',
-    image: 'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'Water-resistant lounge seating, textured rugs, and woven lanterns bring a breezy coastal vibe outside.',
-      vi: 'Ghế lounge chống thấm, thảm dệt và lồng đèn mây mang hơi thở biển cả ra không gian ngoài trời.',
-    },
-    products: [
-      { slug: 'driftwood-outdoor-sofa', price: 1980, name: { en: 'Driftwood Outdoor Sofa', vi: 'Sofa ngoài trời Driftwood' } },
-      { slug: 'all-weather-lounge-chairs-set-of-2', price: 1080, name: { en: 'All-Weather Lounge Chairs (Set of 2)', vi: 'Bộ 2 ghế lounge mọi thời tiết' } },
-      { slug: 'braided-outdoor-rug', price: 420, name: { en: 'Braided Outdoor Rug', vi: 'Thảm ngoài trời Braided' } },
-      { slug: 'rattan-lantern-trio', price: 340, name: { en: 'Rattan Lantern Trio', vi: 'Bộ ba đèn mây' } },
-      { slug: 'acacia-coffee-table', price: 500, name: { en: 'Acacia Coffee Table', vi: 'Bàn cà phê gỗ keo' } },
-    ],
-  },
-  {
-    id: 'seasonal-decor',
-    title: { en: 'Winter Chalet Living', vi: 'Phòng khách phong cách chalet mùa đông' },
-    style: 'seasonal',
-    room: 'seasonal',
-    budget: 'under-6000',
-    image: 'https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    description: {
-      en: 'Natural wood, stone accents, and chunky knit layers turn the living space into a cozy alpine escape.',
-      vi: 'Gỗ tự nhiên, điểm nhấn đá và các lớp len dày mang đến cảm giác ấm cúng như nghỉ dưỡng trên núi.',
-    },
-    products: [
-      { slug: 'alpine-modular-sofa', price: 2480, name: { en: 'Alpine Modular Sofa', vi: 'Sofa mô-đun Alpine' } },
-      { slug: 'stone-hearth-console', price: 1120, name: { en: 'Stone Hearth Console', vi: 'Kệ trang trí Stone Hearth' } },
-      { slug: 'chunky-wool-throws', price: 420, name: { en: 'Chunky Wool Throws', vi: 'Chăn len Chunky' } },
-      { slug: 'antler-inspired-chandelier', price: 1620, name: { en: 'Antler Inspired Chandelier', vi: 'Đèn chùm lấy cảm hứng từ gạc nai' } },
-    ],
-  },
-];
-
-const designProductSlugs = Array.from(new Set(designIdeas.flatMap(design => design.products.map(product => product.slug))));
+const normalizeTextObject = (value?: Record<string, string> | null, fallback?: string): LocalizedText => ({
+  en: value?.en ?? fallback ?? '',
+  vi: value?.vi ?? value?.en ?? fallback ?? '',
+});
 
 export function DesignInspirationPage() {
   const { addToCart } = useCart();
   const { addFavorites, isFavorite, toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const { language, translate } = useLanguage();
+  const [designIdeas, setDesignIdeas] = useState<DesignInspiration[]>([]);
+  const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [styleFilter, setStyleFilter] = useState<string>('all');
   const [roomFilter, setRoomFilter] = useState<string>('all');
   const [budgetFilter, setBudgetFilter] = useState<string>('any');
@@ -242,8 +142,110 @@ export function DesignInspirationPage() {
   useEffect(() => {
     let isMounted = true;
 
+    const loadInspirations = async () => {
+      setLoadingDesigns(true);
+      const { data, error } = await supabase
+        .from('room_inspirations')
+        .select(
+          'id, slug, title, title_i18n, description, description_i18n, image_url, style_tags, room_type, budget, currency, product_slugs, product_details'
+        )
+        .order('created_at', { ascending: true });
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (error) {
+        console.error('Failed to load design inspirations', error);
+        toast.error(
+          translate({
+            en: 'We could not load the design inspirations right now. Please try again later.',
+            vi: 'Không thể tải các gợi ý thiết kế. Vui lòng thử lại sau.',
+          })
+        );
+        setDesignIdeas([]);
+        setLoadingDesigns(false);
+        return;
+      }
+
+      const mappedDesigns = (data ?? []).map<DesignInspiration>((row) => {
+        const inspiration = row as RawInspirationRow;
+        const styleValue = inspiration.style_tags?.[0]?.toLowerCase() ?? 'all';
+        const normalizedRoom = inspiration.room_type?.toLowerCase() ?? 'all';
+        const normalizedBudget = inspiration.budget ?? 'any';
+        const currency = inspiration.currency ?? 'USD';
+        const rawDetails = Array.isArray(inspiration.product_details)
+          ? (inspiration.product_details as RawProductDetail[])
+          : [];
+        const detailMap = new Map<string, RawProductDetail>();
+        rawDetails.forEach(detail => {
+          if (detail?.slug) {
+            detailMap.set(detail.slug, detail);
+          }
+        });
+        const uniqueSlugs = Array.from(
+          new Set(
+            (inspiration.product_slugs ?? rawDetails.map(detail => detail.slug ?? '')).filter(
+              (slug): slug is string => Boolean(slug)
+            )
+          )
+        );
+
+        const mappedProducts = uniqueSlugs.map<DesignProduct>((slug) => {
+          const detail = detailMap.get(slug);
+          const fallbackNameObject = (detail?.fallback_name ?? {}) as Record<string, string>;
+          const fallbackNameEn = fallbackNameObject.en ?? fallbackNameObject['en-US'] ?? slug;
+          const fallbackNameVi = fallbackNameObject.vi ?? fallbackNameEn;
+          return {
+            slug,
+            price: typeof detail?.fallback_price === 'number' ? detail?.fallback_price : undefined,
+            currency: detail?.currency ?? currency,
+            name: {
+              en: fallbackNameEn,
+              vi: fallbackNameVi,
+            },
+          };
+        });
+
+        const title = normalizeTextObject(inspiration.title_i18n, inspiration.title);
+        const description = normalizeTextObject(inspiration.description_i18n, inspiration.description ?? inspiration.title);
+
+        return {
+          id: inspiration.id,
+          slug: inspiration.slug ?? inspiration.id,
+          title,
+          style: styleValue,
+          room: normalizedRoom,
+          budget: normalizedBudget,
+          image: inspiration.image_url,
+          description,
+          currency,
+          products: mappedProducts,
+        };
+      });
+
+      setDesignIdeas(mappedDesigns);
+      setLoadingDesigns(false);
+    };
+
+    void loadInspirations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [translate]);
+
+  const designProductSlugs = useMemo(
+    () => Array.from(new Set(designIdeas.flatMap(design => design.products.map(product => product.slug)))),
+    [designIdeas]
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
     const loadProducts = async () => {
       if (designProductSlugs.length === 0) {
+        setProductsBySlug({});
         return;
       }
 
@@ -290,11 +292,11 @@ export function DesignInspirationPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [designProductSlugs, translate]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [styleFilter, roomFilter, budgetFilter, searchTerm, pageSize]);
+  }, [styleFilter, roomFilter, budgetFilter, searchTerm, pageSize, designIdeas.length]);
 
   const styleLabelMap = useMemo(
     () => Object.fromEntries(styleOptions.map(option => [option.value, option.label])),
@@ -341,7 +343,7 @@ export function DesignInspirationPage() {
 
       return matchesStyle && matchesRoom && matchesBudget && matchesSearch;
     });
-  }, [styleFilter, roomFilter, budgetFilter, normalizedSearch, styleLabelMap, roomLabelMap, budgetLabelMap]);
+  }, [designIdeas, styleFilter, roomFilter, budgetFilter, normalizedSearch, styleLabelMap, roomLabelMap, budgetLabelMap]);
 
   const totalPages = Math.max(1, Math.ceil(filteredDesigns.length / pageSize));
 
@@ -358,13 +360,14 @@ export function DesignInspirationPage() {
 
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, filteredDesigns.length);
-  const designSummaryText =
-    filteredDesigns.length > 0
-      ? translate({
-          en: `Showing ${startIndex + 1}-${endIndex} of ${filteredDesigns.length} curated designs`,
-          vi: `Hiển thị ${startIndex + 1}-${endIndex} trong ${filteredDesigns.length} ý tưởng đã tuyển chọn`,
-        })
-      : translate({ en: 'No designs available', vi: 'Không có ý tưởng phù hợp' });
+  const designSummaryText = loadingDesigns
+    ? translate({ en: 'Loading curated inspirations...', vi: 'Đang tải các gợi ý thiết kế...' })
+    : filteredDesigns.length > 0
+        ? translate({
+            en: `Showing ${startIndex + 1}-${endIndex} of ${filteredDesigns.length} curated designs`,
+            vi: `Hiển thị ${startIndex + 1}-${endIndex} trong ${filteredDesigns.length} ý tưởng đã tuyển chọn`,
+          })
+        : translate({ en: 'No designs available', vi: 'Không có ý tưởng phù hợp' });
 
   const ensureAuthenticated = () => {
     if (!user) {
@@ -573,7 +576,7 @@ export function DesignInspirationPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
-        <section className="bg-white border border-neutral-200 rounded-3xl shadow-xl p-6 md:p-8">
+        <section className="bg-white border border-neutral-200 shadow-md p-6 md:p-8">
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <Filter className="w-5 h-5 text-brand-600" />
             <h2 className="font-semibold text-lg text-neutral-900">
@@ -588,7 +591,7 @@ export function DesignInspirationPage() {
               <select
                 value={styleFilter}
                 onChange={(event) => setStyleFilter(event.target.value)}
-                className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 {styleOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -604,7 +607,7 @@ export function DesignInspirationPage() {
               <select
                 value={roomFilter}
                 onChange={(event) => setRoomFilter(event.target.value)}
-                className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 {roomOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -620,7 +623,7 @@ export function DesignInspirationPage() {
               <select
                 value={budgetFilter}
                 onChange={(event) => setBudgetFilter(event.target.value)}
-                className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-neutral-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 {budgetOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -640,7 +643,7 @@ export function DesignInspirationPage() {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder={translate({ en: 'Search by keyword...', vi: 'Tìm theo từ khóa...' })}
-                  className="w-full rounded-xl border border-neutral-300 pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-neutral-300 pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -663,7 +666,7 @@ export function DesignInspirationPage() {
                 id="design-page-size"
                 value={pageSize}
                 onChange={(event) => setPageSize(Number(event.target.value))}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 {pageSizeOptions.map(size => (
                   <option key={size} value={size}>{size}</option>
@@ -672,14 +675,22 @@ export function DesignInspirationPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {paginatedDesigns.map((design) => {
+          {loadingDesigns ? (
+            <div className="py-20 flex items-center justify-center gap-3 text-neutral-500">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>
+                {translate({ en: 'Loading inspirations...', vi: 'Đang tải gợi ý thiết kế...' })}
+              </span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {paginatedDesigns.map((design) => {
               const currency = design.currency ?? 'USD';
               const designTotals = design.products.reduce(
                 (accumulator, product) => {
                   const availableProduct = productsBySlug[product.slug];
                   const priceValue =
-                    availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price;
+                    availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price ?? 0;
 
                   return {
                     total: accumulator.total + priceValue,
@@ -696,8 +707,8 @@ export function DesignInspirationPage() {
 
               const isDesignBusy = loadingDesignId === design.id || savingDesignId === design.id;
 
-              return (
-                <article key={design.id} className="rounded-3xl overflow-hidden border border-neutral-200 bg-white shadow-lg">
+                return (
+                  <article key={design.id} className="overflow-hidden border border-neutral-200 bg-white shadow-lg">
                   <div className="relative">
                     <img src={design.image} alt={design.title[language]} className="h-64 w-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -706,7 +717,7 @@ export function DesignInspirationPage() {
                         <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
                           <Layers className="w-4 h-4" /> {styleLabel}
                         </span>
-                        <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{budgetLabel}</span>
+                        <span className="text-xs bg-white/20 px-2 py-1">{budgetLabel}</span>
                       </div>
                       <h3 className="font-display text-2xl mt-2">{design.title[language]}</h3>
                       <p className="text-sm text-white/80">{roomLabel}</p>
@@ -714,7 +725,7 @@ export function DesignInspirationPage() {
                   </div>
                   <div className="p-6 space-y-4">
                     <p className="text-sm text-neutral-600">{design.description[language]}</p>
-                    <div className="border border-neutral-200 rounded-2xl p-5 bg-neutral-50">
+                    <div className="border border-neutral-200 p-5 bg-neutral-50">
                       <div className="flex flex-col gap-2 mb-4">
                         <div className="flex items-center justify-between gap-3">
                           <h4 className="text-sm font-semibold text-neutral-900">
@@ -742,7 +753,7 @@ export function DesignInspirationPage() {
                           const productAvailable = Boolean(availableProduct);
                           const productImage = availableProduct?.images?.[0] ?? null;
                           const priceValue =
-                            availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price;
+                            availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price ?? 0;
                           const compareAtPrice =
                             availableProduct &&
                             availableProduct.sale_price &&
@@ -758,16 +769,16 @@ export function DesignInspirationPage() {
                           return (
                             <li
                               key={product.slug}
-                              className="flex gap-3 rounded-2xl border border-neutral-200 bg-white/90 p-3 shadow-sm transition hover:border-brand-200"
+                              className="flex gap-3 border border-neutral-200 bg-white/90 p-3 shadow-sm transition hover:border-brand-200"
                             >
                               {productImage ? (
                                 <img
                                   src={productImage}
                                   alt={productName}
-                                  className="h-16 w-16 flex-none rounded-xl object-cover"
+                                  className="h-16 w-16 flex-none object-cover"
                                 />
                               ) : (
-                                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
+                                <div className="flex h-16 w-16 flex-none items-center justify-center bg-neutral-100 text-neutral-400">
                                   <Layers className="h-5 w-5" />
                                 </div>
                               )}
@@ -788,7 +799,7 @@ export function DesignInspirationPage() {
                                     onClick={() => void handleToggleProductFavorite(product)}
                                     disabled={!productAvailable || isFavoriteLoading}
                                     aria-pressed={productAvailable ? isFavorited : false}
-                                    className={`inline-flex h-9 w-9 flex-none items-center justify-center rounded-full border text-sm transition-colors ${
+                                    className={`inline-flex h-9 w-9 flex-none items-center justify-center border text-sm transition-colors ${
                                       isFavorited
                                         ? 'border-rose-200 bg-rose-50 text-rose-500'
                                         : 'border-neutral-200 text-neutral-400 hover:border-rose-200 hover:text-rose-500'
@@ -807,7 +818,7 @@ export function DesignInspirationPage() {
                                     <span className="text-xs text-neutral-400 line-through">{formattedCompare}</span>
                                   )}
                                   {!productAvailable && (
-                                    <span className="ml-auto inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+                                    <span className="ml-auto inline-flex items-center bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
                                       {translate({ en: 'Unavailable', vi: 'Tạm hết hàng' })}
                                     </span>
                                   )}
@@ -816,7 +827,7 @@ export function DesignInspirationPage() {
                                   <button
                                     onClick={() => void handleAddProduct(design, product)}
                                     disabled={!productAvailable || isProductLoading}
-                                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="inline-flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                                   >
                                     {isProductLoading ? (
                                       <>
@@ -831,12 +842,12 @@ export function DesignInspirationPage() {
                                   {productAvailable ? (
                                     <Link
                                       to={`/product/${product.slug}`}
-                                      className="inline-flex items-center justify-center gap-1 rounded-full border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 transition hover:border-brand-200 hover:text-brand-600"
+                                      className="inline-flex items-center justify-center gap-1 border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 transition hover:border-brand-200 hover:text-brand-600"
                                     >
                                       {translate({ en: 'View Details', vi: 'Xem chi tiết' })}
                                     </Link>
                                   ) : (
-                                    <span className="inline-flex items-center justify-center gap-1 rounded-full border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-400">
+                                    <span className="inline-flex items-center justify-center gap-1 border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-400">
                                       {translate({ en: 'Coming soon', vi: 'Sắp ra mắt' })}
                                     </span>
                                   )}
@@ -850,7 +861,7 @@ export function DesignInspirationPage() {
                         <button
                           onClick={() => void handleAddDesign(design)}
                           disabled={isDesignBusy || loadingProductSlug !== null}
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {loadingDesignId === design.id ? (
                             <>
@@ -865,7 +876,7 @@ export function DesignInspirationPage() {
                         <button
                           onClick={() => void handleSaveLook(design)}
                           disabled={savingDesignId === design.id || loadingProductSlug !== null}
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border-2 border-brand-500 bg-white py-3 text-sm font-semibold text-brand-600 shadow-sm transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-500 bg-white py-3 text-sm font-semibold text-brand-600 shadow-sm transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {savingDesignId === design.id ? (
                             <>
@@ -880,13 +891,14 @@ export function DesignInspirationPage() {
                       </div>
                     </div>
                   </div>
-                </article>
-              );
-            })}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
 
-          {filteredDesigns.length === 0 && (
-            <div className="text-center py-20 border border-dashed border-neutral-200 rounded-3xl">
+          {!loadingDesigns && filteredDesigns.length === 0 && (
+            <div className="text-center py-20 border border-dashed border-neutral-200">
               <p className="text-neutral-500">
                 {translate({
                   en: 'No designs match your filters. Try adjusting the criteria.',
@@ -905,7 +917,7 @@ export function DesignInspirationPage() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100"
+                  className="px-3 py-2 border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100"
                 >
                   {translate({ en: 'Previous', vi: 'Trước' })}
                 </button>
@@ -917,7 +929,7 @@ export function DesignInspirationPage() {
                       <button
                         key={pageNumber}
                         onClick={() => setCurrentPage(pageNumber)}
-                        className={`min-w-[2.5rem] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`min-w-[2.5rem] px-3 py-2 text-sm font-medium transition-colors ${
                           isActive
                             ? 'bg-brand-600 text-white shadow-sm'
                             : 'border border-neutral-300 text-neutral-700 hover:bg-neutral-100'
@@ -931,7 +943,7 @@ export function DesignInspirationPage() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100"
+                  className="px-3 py-2 border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100"
                 >
                   {translate({ en: 'Next', vi: 'Sau' })}
                 </button>
