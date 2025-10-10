@@ -5,7 +5,6 @@ import { supabase, type Database } from '../lib/supabase';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { BlogCommentSection } from '../components/BlogCommentSection';
 import { usePageMetadata } from '../hooks/usePageMetadata';
-import { blogPostsFallback } from '../data/blogFallback';
 
 type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
@@ -65,15 +64,8 @@ export function BlogPostPage() {
         console.error('Error fetching blog post:', error);
 
         if (error?.message?.includes("Could not find the table 'public.blog_posts'")) {
-          const fallbackPost = blogPostsFallback.find((item) => item.slug === slug);
-
-          if (fallbackPost) {
-            setPost(fallbackPost);
-            setErrorMessage(null);
-          } else {
             setErrorMessage('The article may not exist or has been removed.');
             setPost(null);
-          }
         } else {
           setErrorMessage('The article may not exist or has been removed.');
           setPost(null);
