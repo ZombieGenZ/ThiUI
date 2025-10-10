@@ -27,7 +27,14 @@ export function LoginPage() {
       if (error) throw error;
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      const message = err?.message ?? 'An error occurred';
+      if (message.includes('Database error querying schema')) {
+        setError('Authentication service is temporarily unavailable. Please try again in a moment.');
+      } else if (message.includes('Invalid login credentials')) {
+        setError('Incorrect email or password. Please check your credentials and try again.');
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
