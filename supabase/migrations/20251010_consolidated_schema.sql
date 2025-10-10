@@ -1,5 +1,5 @@
 /*
-  # SCHEMA TỔNG HỢP: Furniture Store Database Schema (20251010_fixed)
+  # SCHEMA TỔNG HỢP: Furniture Store Database Schema (20251010_fixed_v4)
 
   ## Mục đích
   File này hợp nhất tất cả các file migration đã tạo trước đó thành một script SQL duy nhất,
@@ -10,109 +10,28 @@
   2.  Hệ thống đặt hàng: orders, order_items, hàm generate_order_number().
   3.  Chức năng người dùng: favorites, cart_items, reviews.
   4.  Hệ thống khuyến mãi: vouchers, voucher_usage.
-  5.  Chức năng khác: contact_messages, room_inspirations, blog_posts, comments.
+  5.  Chức năng khác: contact_messages, room_inspirations, blog_posts, comments, design_service_requests, career_applications.
   6.  Tất cả RLS Policies, Constraints, và Indexes.
   7.  Dữ liệu mẫu cho vouchers và products.
 
-  ## FIX LỖI 20251010
-  - Đã sửa lỗi "column reference "slug" is ambiguous" trong khối DO $product_catalog$ bằng cách
-    đổi tên biến PL/pgSQL 'slug' thành 'product_slug'.
+  ## CÁC LỖI ĐÃ FIX
+  1.  **Fixed "column reference "slug" is ambiguous"** (Đã đổi tên biến PL/pgSQL 'slug' thành 'product_slug').
+  2.  **Fixed "function gen_salt(unknown) does not exist"** (Đã chỉ định rõ schema 'extensions' cho các hàm pgcrypto).
+  3.  **Fixed "column "instance_id" is of type uuid but expression is of type text"** (Đã ép kiểu '00000000-0000-0000-0000-000000000000' thành UUID).
+  4.  **Fixed "relation "profiles" does not exist"** (Đã di chuyển phần tạo bảng `profiles` lên trước khối `DO $$`).
+  5.  **FIX LỖI MỚI: "relation "products_to_remove" does not exist"** (Đã hợp nhất các câu lệnh DELETE sử dụng CTE `products_to_remove` thành một khối CTE duy nhất).
 */
 
 -- Đảm bảo các tiện ích mật mã cần thiết luôn khả dụng
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- Các hàm này (crypt, gen_salt) thường được truy cập qua schema 'extensions' trong Supabase.
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+-- Đảm bảo các hàm này có thể được gọi mà không cần chỉ định schema
+GRANT EXECUTE ON FUNCTION extensions.gen_salt(text) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION extensions.crypt(text, text) TO PUBLIC;
+
 
 -- ============================================================================
--- -1. KHỞI TẠO TÀI KHOẢN QUẢN TRỊ
--- ============================================================================
-
-DO $$
-DECLARE
-  admin_email constant text := 'administrator@furnicraft.com';
-  admin_id uuid := gen_random_uuid();
-  password_hash text;
-  password_column text;
-  insert_sql text;
-  is_existing boolean;
-BEGIN
-  SELECT EXISTS (SELECT 1 FROM auth.users WHERE email = admin_email) INTO is_existing;
-  IF is_existing THEN
-    RETURN;
-  END IF;
-
-  password_hash := crypt('Abc123123_', gen_salt('bf'));
-
-  IF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'auth'
-      AND table_name = 'users'
-      AND column_name = 'encrypted_password'
-  ) THEN
-    password_column := 'encrypted_password';
-  ELSIF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'auth'
-      AND table_name = 'users'
-      AND column_name = 'hashed_password'
-  ) THEN
-    password_column := 'hashed_password';
-  ELSE
-    RAISE EXCEPTION 'Không tìm thấy cột mật khẩu trong auth.users';
-  END IF;
-
-  insert_sql := format(
-    'INSERT INTO auth.users (id, instance_id, email, %s, email_confirmed_at, created_at, updated_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-     VALUES ($1, $2, $3, $4, now(), now(), now(), now(), $5, $6, ''authenticated'', ''authenticated'')',
-    password_column
-  );
-
-  EXECUTE insert_sql
-    USING
-      admin_id,
-      '00000000-0000-0000-0000-000000000000',
-      admin_email,
-      password_hash,
-      jsonb_build_object('provider', 'email', 'providers', ARRAY['email'], 'role', 'admin'),
-      jsonb_build_object('full_name', 'Administrator', 'is_admin', true);
-
-  INSERT INTO profiles (id, full_name, created_at, updated_at)
-  VALUES (admin_id, 'Administrator', now(), now())
-  ON CONFLICT (id) DO UPDATE
-    SET full_name = EXCLUDED.full_name,
-        updated_at = now();
-END $$;
-
--- ============================================================================
--- 0. HÀM HỖ TRỢ
--- ============================================================================
-
-CREATE OR REPLACE FUNCTION generate_order_number()
-RETURNS text AS $$
-DECLARE
-  new_order_number text;
-  counter integer := 0;
-BEGIN
-  LOOP
-    new_order_number := 'ORD-' ||
-                        to_char(now(), 'YYYYMMDD') || '-' ||
-                        upper(substring(md5(random()::text || clock_timestamp()::text) from 1 for 5));
-
-    IF NOT EXISTS (SELECT 1 FROM orders WHERE order_number = new_order_number) THEN
-      RETURN new_order_number;
-    END IF;
-
-    counter := counter + 1;
-    IF counter > 100 THEN
-      RETURN 'ORD-' || upper(substring(gen_random_uuid()::text from 1 for 13));
-    END IF;
-  END LOOP;
-END;
-$$ LANGUAGE plpgsql;
-
--- ============================================================================
--- 1. PROFILES TABLE
+-- 1. PROFILES TABLE (ĐÃ DI CHUYỂN LÊN TRƯỚC KHỐI DO $$)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS profiles (
@@ -158,12 +77,110 @@ CREATE POLICY "Admins manage profiles"
   USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
   WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
 
+
+-- ============================================================================
+-- -1. KHỞI TẠO TÀI KHOẢN QUẢN TRỊ (CHẠY SAU KHI TẠO BẢNG PROFILES)
+-- ============================================================================
+
+-- Bắt buộc phải chạy khối này với SECURITY INVOKER để có quyền truy cập đầy đủ vào Auth schema
+DO $$
+DECLARE
+  admin_email constant text := 'administrator@furnicraft.com';
+  admin_id uuid := extensions.gen_random_uuid(); -- Dùng extensions.gen_random_uuid() để đảm bảo
+  password_hash text;
+  password_column text;
+  insert_sql text;
+  is_existing boolean;
+BEGIN
+  -- Kiểm tra xem người dùng tồn tại chưa
+  SELECT EXISTS (SELECT 1 FROM auth.users WHERE email = admin_email) INTO is_existing;
+  IF is_existing THEN
+    RETURN;
+  END IF;
+
+  -- FIX: Gọi rõ ràng hàm pgcrypto từ schema extensions để tránh lỗi "function gen_salt(unknown) does not exist"
+  password_hash := extensions.crypt('Abc123123_', extensions.gen_salt('bf'));
+
+  -- Xác định cột mật khẩu ('encrypted_password' hoặc 'hashed_password')
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'auth'
+      AND table_name = 'users'
+      AND column_name = 'encrypted_password'
+  ) THEN
+    password_column := 'encrypted_password';
+  ELSIF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'auth'
+      AND table_name = 'users'
+      AND column_name = 'hashed_password'
+  ) THEN
+    password_column := 'hashed_password';
+  ELSE
+    RAISE EXCEPTION 'Không tìm thấy cột mật khẩu trong auth.users';
+  END IF;
+
+  -- Chèn tài khoản vào auth.users
+  insert_sql := format(
+    'INSERT INTO auth.users (id, instance_id, email, %s, email_confirmed_at, created_at, updated_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+     VALUES ($1, $2, $3, $4, now(), now(), now(), now(), $5, $6, ''authenticated'', ''authenticated'')',
+    password_column
+  );
+
+  EXECUTE insert_sql
+    USING
+      admin_id,
+      '00000000-0000-0000-0000-000000000000'::uuid, -- FIX LỖI: Ép kiểu chuỗi thành UUID
+      admin_email,
+      password_hash,
+      jsonb_build_object('provider', 'email', 'providers', ARRAY['email'], 'role', 'admin'),
+      jsonb_build_object('full_name', 'Administrator', 'is_admin', true);
+
+  -- Cập nhật profile liên quan (Bây giờ bảng profiles đã tồn tại)
+  INSERT INTO profiles (id, full_name, created_at, updated_at)
+  VALUES (admin_id, 'Administrator', now(), now())
+  ON CONFLICT (id) DO UPDATE
+    SET full_name = EXCLUDED.full_name,
+        updated_at = now();
+END $$;
+
+
+-- ============================================================================
+-- 0. HÀM HỖ TRỢ
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION generate_order_number()
+RETURNS text AS $$
+DECLARE
+  new_order_number text;
+  counter integer := 0;
+BEGIN
+  LOOP
+    new_order_number := 'ORD-' ||
+                        to_char(now(), 'YYYYMMDD') || '-' ||
+                        upper(substring(md5(random()::text || clock_timestamp()::text) from 1 for 5));
+
+    IF NOT EXISTS (SELECT 1 FROM orders WHERE order_number = new_order_number) THEN
+      RETURN new_order_number;
+    END IF;
+
+    counter := counter + 1;
+    IF counter > 100 THEN
+      -- Dùng extensions.gen_random_uuid() để đảm bảo
+      RETURN 'ORD-' || upper(substring(extensions.gen_random_uuid()::text from 1 for 13));
+    END IF;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================================================
 -- 2. CATEGORIES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS categories (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   name text NOT NULL,
   slug text UNIQUE NOT NULL,
   parent_id uuid REFERENCES categories(id) ON DELETE SET NULL,
@@ -196,7 +213,7 @@ CREATE POLICY "Admins manage categories"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS products (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   name text NOT NULL,
   slug text UNIQUE NOT NULL,
   description text,
@@ -252,7 +269,7 @@ CREATE POLICY "Admins manage products"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS product_variants (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   variant_type text NOT NULL,
   variant_value text NOT NULL,
@@ -285,7 +302,7 @@ CREATE POLICY "Admins manage product variants"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS addresses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text NOT NULL,
   phone text NOT NULL,
@@ -332,7 +349,7 @@ CREATE POLICY "Users can delete own addresses"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS vouchers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   code text UNIQUE NOT NULL,
   description text DEFAULT '',
   discount_type text NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
@@ -374,7 +391,7 @@ CREATE POLICY "Admins manage vouchers"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS orders (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   order_number text UNIQUE NOT NULL DEFAULT generate_order_number(),
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')),
@@ -442,7 +459,7 @@ CREATE POLICY "Admins manage orders"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS order_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   product_id uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
   variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
@@ -501,7 +518,7 @@ CREATE POLICY "Admins manage order items"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS voucher_usage (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   voucher_id uuid NOT NULL REFERENCES vouchers(id) ON DELETE CASCADE,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
@@ -533,7 +550,7 @@ CREATE POLICY "Users can create voucher usage"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS favorites (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   created_at timestamptz DEFAULT now(),
@@ -570,7 +587,7 @@ CREATE POLICY "Users can remove favorites"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS cart_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
@@ -617,7 +634,7 @@ CREATE POLICY "Users can delete from own cart"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS reviews (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   product_id uuid REFERENCES products(id) ON DELETE CASCADE,
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
@@ -682,7 +699,7 @@ CREATE POLICY "Users can update own reviews"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS room_inspirations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   title text NOT NULL,
   description text,
   image_url text NOT NULL,
@@ -721,7 +738,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS room_inspirations_slug_unique ON room_inspirat
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS contact_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   name text NOT NULL,
   email text NOT NULL,
@@ -772,7 +789,7 @@ CREATE POLICY "Admins manage contact messages"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS design_service_requests (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   name text NOT NULL,
   email text NOT NULL,
@@ -829,7 +846,7 @@ CREATE POLICY "Admins manage design requests"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS career_applications (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   full_name text NOT NULL,
   email text NOT NULL,
@@ -886,7 +903,7 @@ CREATE POLICY "Admins manage career applications"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS blog_posts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   title text NOT NULL,
   slug text UNIQUE NOT NULL,
   excerpt text,
@@ -926,7 +943,7 @@ CREATE POLICY "Admins manage blog posts"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS comments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   post_id uuid NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
   name text NOT NULL,
   email text NOT NULL,
@@ -1105,7 +1122,8 @@ BEGIN
       english_description := format('Piece %s highlights %s design for the %s with layered textures, smart storage, and adaptable proportions.', product_index, style_value, lower(cat.name));
       vietnamese_description := format('Thiết kế số %s mang tinh thần %s cho %s với chất liệu bền bỉ và công năng linh hoạt.', product_index, style_value_vi, lower(cat_vi));
 
-      product_slug := regexp_replace(lower(format('%s %s signature %s', cat.slug, style_value, product_index)), '[^a-z0-9]+', '-', 'g'); -- Use product_slug
+      -- FIX: Đã đổi tên biến local 'slug' thành 'product_slug'
+      product_slug := regexp_replace(lower(format('%s %s signature %s', cat.slug, style_value, product_index)), '[^a-z0-9]+', '-', 'g');
 
       base_price := round(((520 + product_index * 14) * cat_price_factor + random() * 160)::numeric, 2);
       IF product_index % 4 = 0 THEN
@@ -1143,7 +1161,7 @@ BEGIN
 
       INSERT INTO products (
         name,
-        slug, -- Column name is still 'slug'
+        slug, -- column reference
         description,
         name_i18n,
         description_i18n,
@@ -1195,7 +1213,7 @@ BEGIN
         now() - ((product_index % 45) || ' days')::interval,
         now()
       )
-      ON CONFLICT (slug) DO UPDATE SET -- Now 'slug' here clearly refers to the column
+      ON CONFLICT (slug) DO UPDATE SET -- column reference
         name = EXCLUDED.name,
         description = EXCLUDED.description,
         name_i18n = EXCLUDED.name_i18n,
@@ -1658,7 +1676,7 @@ INSERT INTO blog_posts (
   excerpt_i18n
 )
 SELECT
-  gen_random_uuid(),
+  extensions.gen_random_uuid(),
   format('%s Style Guide #%s for %s', style_en, idx, focus_en),
   regexp_replace(lower(format('%s style guide %s %s', style_en, focus_en, idx)), '[^a-z0-9]+', '-', 'g'),
   format('Learn how to layer %s elements into %s with materials, lighting, and styling cues from our design team.', style_en, focus_en),
@@ -1694,7 +1712,7 @@ FROM series;
 
 INSERT INTO comments (id, post_id, name, email, content, is_approved, created_at)
 SELECT
-  gen_random_uuid(),
+  extensions.gen_random_uuid(),
   p.id,
   c.name,
   c.email,
@@ -1749,6 +1767,7 @@ END;
 -- 25. GIẢM MẪU DỮ LIỆU
 -- ============================================================================
 
+-- BƯỚC FIX LỖI: Hợp nhất tất cả các lệnh DELETE sử dụng products_to_remove vào một CTE duy nhất
 WITH keep_slugs AS (
   SELECT DISTINCT unnest(product_slugs) AS slug
   FROM room_inspirations
@@ -1775,24 +1794,36 @@ delete_limit AS (
   LEFT JOIN reserved_products ON TRUE
   LEFT JOIN eligible_products ON TRUE
 ),
-product_candidates AS (
-  SELECT id, ROW_NUMBER() OVER (ORDER BY created_at, id) AS rn
-  FROM products
-  WHERE slug NOT IN (SELECT slug FROM keep_slugs)
-),
 products_to_remove AS (
   SELECT pc.id
-  FROM product_candidates pc
+  FROM (
+      SELECT id, ROW_NUMBER() OVER (ORDER BY created_at, id) AS rn
+      FROM products
+      WHERE slug NOT IN (SELECT slug FROM keep_slugs)
+  ) pc
   CROSS JOIN delete_limit dl
   WHERE pc.rn <= dl.limit_value
+),
+-- Thực hiện DELETE dựa trên CTE products_to_remove và trả về số lượng các bản ghi bị xóa (để làm cho câu lệnh hợp lệ)
+deleted_reviews AS (
+    DELETE FROM reviews WHERE product_id IN (SELECT id FROM products_to_remove) RETURNING 1
+),
+deleted_variants AS (
+    DELETE FROM product_variants WHERE product_id IN (SELECT id FROM products_to_remove) RETURNING 1
+),
+deleted_favorites AS (
+    DELETE FROM favorites WHERE product_id IN (SELECT id FROM products_to_remove) RETURNING 1
+),
+deleted_cart_items AS (
+    DELETE FROM cart_items WHERE product_id IN (SELECT id FROM products_to_remove) RETURNING 1
+),
+deleted_order_items AS (
+    DELETE FROM order_items WHERE product_id IN (SELECT id FROM products_to_remove) RETURNING 1
 )
-DELETE FROM reviews WHERE product_id IN (SELECT id FROM products_to_remove);
-
-DELETE FROM product_variants WHERE product_id IN (SELECT id FROM products_to_remove);
-DELETE FROM favorites WHERE product_id IN (SELECT id FROM products_to_remove);
-DELETE FROM cart_items WHERE product_id IN (SELECT id FROM products_to_remove);
-DELETE FROM order_items WHERE product_id IN (SELECT id FROM products_to_remove);
+-- Câu lệnh chính phải là một lệnh SELECT hoặc một lệnh thao tác dữ liệu cuối cùng.
+-- Chúng ta thực hiện DELETE cuối cùng trên bảng cha (products).
 DELETE FROM products WHERE id IN (SELECT id FROM products_to_remove);
+
 
 WITH ranked_reviews AS (
   SELECT
