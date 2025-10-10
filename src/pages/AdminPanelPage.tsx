@@ -824,6 +824,7 @@ function CrudManager({
   pageSize = PAGE_SIZE,
   readOnly = false,
 }: CrudManagerProps) {
+  const { user } = useAuth();
   const [items, setItems] = useState<Record<string, any>[]>([]);
   const [count, setCount] = useState(0);
   const [search, setSearch] = useState('');
@@ -980,6 +981,22 @@ function CrudManager({
 
     const prepared = transformForSave ? transformForSave(payload, mode) : payload;
 
+    if (
+      mode === 'create' &&
+      user &&
+      Object.prototype.hasOwnProperty.call(prepared, 'user_id')
+    ) {
+      const currentUserId = prepared.user_id;
+      const isMissingUserId =
+        currentUserId === undefined ||
+        currentUserId === null ||
+        (typeof currentUserId === 'string' && currentUserId.trim() === '');
+
+      if (isMissingUserId) {
+        prepared.user_id = user.id;
+      }
+    }
+
     try {
       if (mode === 'create') {
         const { error } = await supabase.from(table).insert(prepared);
@@ -1134,7 +1151,7 @@ function CrudManager({
         {showForm && (
           <Portal>
             <div
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-md"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/60 backdrop-blur-md"
               onClick={event => {
                 if (event.target === event.currentTarget) {
                   handleCloseForm();
@@ -1142,7 +1159,7 @@ function CrudManager({
               }}
             >
               <div
-                className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15"
+                className="relative w-full max-w-2xl mx-4 my-8 overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15"
                 onClick={event => event.stopPropagation()}
               >
               <div className="flex items-center justify-between border-b border-neutral-200/70 bg-gradient-to-r from-brand-50 via-white to-white px-6 py-4">

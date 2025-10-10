@@ -49,7 +49,7 @@ export function Alert({ type = 'info', message, onClose, duration = 5000 }: Aler
   };
 
   return (
-    <div className="fixed inset-x-0 top-24 z-[90] flex justify-end px-4 sm:px-6 animate-slide-in-right">
+    <div className="fixed inset-x-0 top-24 z-[10050] flex justify-end px-4 sm:px-6 animate-slide-in-right">
       <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-neutral-200/60 bg-white/90 shadow-xl shadow-neutral-900/10 backdrop-blur-lg">
         <span className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${style.accent}`} aria-hidden="true" />
         <div className="flex items-start gap-3 px-5 py-4">
