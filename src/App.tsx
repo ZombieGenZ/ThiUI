@@ -177,7 +177,6 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
               <Route path="/cookie-policy" element={<CookiePolicyPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
-              <Route path="/admin" element={<AdminPanelPage />} />
               <Route path="/admin/*" element={<AdminPanelPage />} />
             </Routes>
           </Suspense>
