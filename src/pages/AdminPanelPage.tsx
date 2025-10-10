@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -33,6 +33,8 @@ import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 type InputType =
   | 'text'
@@ -182,8 +184,13 @@ const badgeClass = (status: string) => {
   }
 };
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value ?? 0);
+const AdminCurrencyContext = createContext<(value: number) => string>(value =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value ?? 0)
+);
+
+function useAdminCurrencyFormatter() {
+  return useContext(AdminCurrencyContext);
+}
 
 const computeTrend = (current: number, previous: number) => {
   if (previous <= 0) {
@@ -206,6 +213,12 @@ const formatStatusLabel = (status: string) =>
 function AdminPanelPage() {
   const { user, loading, isAdmin, role, signOut } = useAuth();
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
+  const currencyFormatter = useMemo(
+    () => (value: number) => formatPrice(value ?? 0, language),
+    [formatPrice, language]
+  );
 
   const adminRoutes = useMemo<AdminRouteConfig[]>(
     () => [
@@ -361,7 +374,8 @@ function AdminPanelPage() {
   const displayRole = role ?? 'member';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-emerald-50/70 text-neutral-900">
+    <AdminCurrencyContext.Provider value={currencyFormatter}>
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-emerald-50/70 text-neutral-900">
       <div className="flex min-h-screen">
         <aside className="hidden w-72 flex-col border-r border-neutral-200/80 bg-white/80 backdrop-blur xl:flex">
           <div className="border-b border-neutral-200/70 px-6 pb-6 pt-8">
@@ -481,7 +495,8 @@ function AdminPanelPage() {
           </div>
         </main>
       </div>
-    </div>
+      </div>
+    </AdminCurrencyContext.Provider>
   );
 }
 function AdminDashboard() {
@@ -494,6 +509,7 @@ function AdminDashboard() {
     statusBreakdown: [] as { status: string; count: number }[],
     monthlySeries: [] as { label: string; revenue: number; orders: number }[],
   });
+  const formatCurrency = useAdminCurrencyFormatter();
 
   useEffect(() => {
     let mounted = true;
@@ -1343,6 +1359,7 @@ function CategoriesManager() {
 }
 function ProductsManager() {
   const [variantProduct, setVariantProduct] = useState<Record<string, any> | null>(null);
+  const formatCurrency = useAdminCurrencyFormatter();
 
   return (
     <>
@@ -1495,6 +1512,7 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
     stock_quantity: 0,
   });
   const [pendingDelete, setPendingDelete] = useState<ProductVariant | null>(null);
+  const formatCurrency = useAdminCurrencyFormatter();
 
   const loadVariants = useCallback(async () => {
     setLoading(true);
@@ -1744,6 +1762,7 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
   );
 }
 function VouchersManager() {
+  const formatCurrency = useAdminCurrencyFormatter();
   return (
     <CrudManager
       title="Discount vouchers"
@@ -1814,6 +1833,7 @@ function VouchersManager() {
 }
 function OrdersManager() {
   const [selectedOrder, setSelectedOrder] = useState<OrderWithRelations | null>(null);
+  const formatCurrency = useAdminCurrencyFormatter();
 
   return (
     <>

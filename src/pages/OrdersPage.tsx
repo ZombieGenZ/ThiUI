@@ -5,7 +5,8 @@ import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { getLocalizedValue } from '../utils/i18n';
 import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 
 interface Order {
@@ -28,6 +29,7 @@ export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { language, translate } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -200,7 +202,7 @@ export function OrdersPage() {
                           {translate({ en: 'Total', vi: 'Tổng cộng' })}
                         </p>
                         <p className="text-lg font-bold text-neutral-900">
-                          {formatCurrency(order.total_amount, language)}
+                          {formatPrice(order.total_amount, language)}
                         </p>
                       </div>
                     </div>
@@ -225,11 +227,11 @@ export function OrdersPage() {
                               : translate({ en: 'Product', vi: 'Sản phẩm' })}
                           </h4>
                           <p className="text-sm text-neutral-600">
-                            {translate({ en: 'Quantity', vi: 'Số lượng' })}: {item.quantity} x {formatCurrency(item.unit_price, language)}
+                            {translate({ en: 'Quantity', vi: 'Số lượng' })}: {item.quantity} x {formatPrice(item.unit_price, language)}
                           </p>
                         </div>
                         <p className="font-semibold text-neutral-900">
-                          {formatCurrency(item.quantity * item.unit_price, language)}
+                          {formatPrice(item.quantity * item.unit_price, language)}
                         </p>
                       </div>
                     ))}

@@ -9,7 +9,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { getLocalizedValue } from '../utils/i18n';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface LocalizedText {
   en: string;
@@ -116,6 +117,7 @@ export function DesignInspirationPage() {
   const { addFavorites, isFavorite, toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const { language, translate } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [designIdeas, setDesignIdeas] = useState<DesignInspiration[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(true);
   const [styleFilter, setStyleFilter] = useState<string>('all');
@@ -692,27 +694,28 @@ export function DesignInspirationPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
               {paginatedDesigns.map((design) => {
-              const currency = design.currency ?? 'USD';
-              const designTotals = design.products.reduce(
-                (accumulator, product) => {
-                  const availableProduct = productsBySlug[product.slug];
-                  const priceValue =
-                    availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price ?? 0;
+                const designCurrencyRaw = (design.currency ?? 'USD').toUpperCase();
+                const designCurrency = designCurrencyRaw === 'VND' ? 'VND' : 'USD';
+                const designTotals = design.products.reduce(
+                  (accumulator, product) => {
+                    const availableProduct = productsBySlug[product.slug];
+                    const priceValue =
+                      availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price ?? 0;
 
-                  return {
-                    total: accumulator.total + priceValue,
-                    missing: accumulator.missing + (availableProduct ? 0 : 1),
-                  };
-                },
-                { total: 0, missing: 0 }
-              );
-              const formattedTotal = formatCurrency(designTotals.total, language, currency);
-              const hasUnavailableProducts = designTotals.missing > 0;
-              const styleLabel = styleLabelMap[design.style]?.[language] ?? design.style;
-              const roomLabel = roomLabelMap[design.room]?.[language] ?? design.room;
-              const budgetLabel = budgetLabelMap[design.budget]?.[language] ?? design.budget;
+                    return {
+                      total: accumulator.total + priceValue,
+                      missing: accumulator.missing + (availableProduct ? 0 : 1),
+                    };
+                  },
+                  { total: 0, missing: 0 }
+                );
+                const formattedTotal = formatPrice(designTotals.total, language, designCurrency);
+                const hasUnavailableProducts = designTotals.missing > 0;
+                const styleLabel = styleLabelMap[design.style]?.[language] ?? design.style;
+                const roomLabel = roomLabelMap[design.room]?.[language] ?? design.room;
+                const budgetLabel = budgetLabelMap[design.budget]?.[language] ?? design.budget;
 
-              const isDesignBusy = loadingDesignId === design.id || savingDesignId === design.id;
+                const isDesignBusy = loadingDesignId === design.id || savingDesignId === design.id;
 
                 return (
                   <article
@@ -770,9 +773,9 @@ export function DesignInspirationPage() {
                             availableProduct.sale_price < availableProduct.base_price
                               ? availableProduct.base_price
                               : null;
-                          const formattedPrice = formatCurrency(priceValue, language, currency);
+                          const formattedPrice = formatPrice(priceValue, language, designCurrency);
                           const formattedCompare = compareAtPrice
-                            ? formatCurrency(compareAtPrice, language, currency)
+                            ? formatPrice(compareAtPrice, language, designCurrency)
                             : null;
                           const isFavorited = availableProduct ? isFavorite(availableProduct.id) : false;
 

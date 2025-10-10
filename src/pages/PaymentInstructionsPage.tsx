@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface PaymentInfo {
   bankName: string;
@@ -19,6 +21,8 @@ export function PaymentInstructionsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { clearCart } = useCart();
+  const { language } = useLanguage();
+  const { formatPrice, convertAmount, currency } = useCurrency();
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
@@ -131,6 +135,13 @@ export function PaymentInstructionsPage() {
     );
   }
 
+  const amountInSelectedCurrency = convertAmount(paymentInfo.amount, 'USD');
+  const formattedAmount = formatPrice(paymentInfo.amount, language, 'USD');
+  const amountCopyValue =
+    currency === 'USD'
+      ? amountInSelectedCurrency.toFixed(2)
+      : Math.round(amountInSelectedCurrency).toString();
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -195,15 +206,17 @@ export function PaymentInstructionsPage() {
 
             <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-blue-800 font-medium">Transfer Amount</span>
+                <span className="text-sm text-blue-800 font-medium">
+                  {language === 'vi' ? 'Số tiền chuyển' : 'Transfer Amount'} ({currency})
+                </span>
                 <button
-                  onClick={() => copyToClipboard(paymentInfo.amount.toFixed(2), 'Amount')}
+                  onClick={() => copyToClipboard(amountCopyValue, language === 'vi' ? 'Số tiền' : 'Amount')}
                   className="text-blue-600 hover:text-blue-700"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-2xl font-bold text-blue-900">${paymentInfo.amount.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-900">{formattedAmount}</p>
             </div>
 
             <div className="bg-amber-50 p-4 rounded-lg border-2 border-amber-200">

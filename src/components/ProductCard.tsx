@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { getLocalizedValue } from '../utils/i18n';
 import { normalizeImageUrl } from '../utils/imageHelpers';
 
 interface Product {
@@ -31,6 +32,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const { user } = useAuth();
   const { favorites, toggleFavorite } = useFavorites();
   const { language, translate } = useLanguage();
+  const { formatPrice } = useCurrency();
   const isFavorite = favorites.some(fav => fav.product_id === product.id);
   const price = product.sale_price || product.base_price;
   const hasDiscount = product.sale_price && product.sale_price < product.base_price;
@@ -38,8 +40,8 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
     : 0;
   const displayName = getLocalizedValue(product.name_i18n, language, product.name);
-  const formattedPrice = formatCurrency(price, language);
-  const formattedBasePrice = formatCurrency(product.base_price, language);
+  const formattedPrice = formatPrice(price, language);
+  const formattedBasePrice = formatPrice(product.base_price, language);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();

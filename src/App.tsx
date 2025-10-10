@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
@@ -84,18 +85,20 @@ function App() {
 
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <CartProvider>
-          <FavoritesProvider>
-            <Router>
-              {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+      <CurrencyProvider>
+        <AuthProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <Router>
+                {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-              {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-              <ThemedToastContainer />
-            </Router>
-          </FavoritesProvider>
-        </CartProvider>
-      </AuthProvider>
+                {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+                <ThemedToastContainer />
+              </Router>
+            </FavoritesProvider>
+          </CartProvider>
+        </AuthProvider>
+      </CurrencyProvider>
     </LanguageProvider>
   );
 }
