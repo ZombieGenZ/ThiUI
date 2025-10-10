@@ -43,7 +43,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
       {
         question: 'Do you ship internationally?',
         answer:
-          'Yes. ZShop ships nationwide and to more than 25 international destinations. Shipping costs and timelines are calculated at checkout based on your address.',
+          'Yes. FurniCraft ships nationwide and to more than 25 international destinations. Shipping costs and timelines are calculated at checkout based on your address.',
       },
       {
         question: 'How can I track my order?',
@@ -128,7 +128,7 @@ export function FAQPage() {
   usePageMetadata({
     title: 'Frequently Asked Questions',
     description:
-      'Find answers about ordering, shipping, returns, product care, and support at ZShop to make furniture shopping effortless.',
+      'Find answers about ordering, shipping, returns, product care, and support at FurniCraft to make furniture shopping effortless.',
   });
 
   return (
@@ -141,7 +141,7 @@ export function FAQPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">FAQ</h1>
               <p className="text-white/80 text-lg">
-                Browse the most common questions so you can shop for and care for your ZShop furniture with confidence.
+                Browse the most common questions so you can shop for and care for your FurniCraft furniture with confidence.
               </p>
             </div>
           </div>

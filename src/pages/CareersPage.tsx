@@ -85,7 +85,7 @@ const jobOpenings: JobOpening[] = [
     ],
     responsibilities: [
       'Receive and inspect inbound merchandise.',
-      'Pack outgoing orders to ZShop standards.',
+      'Pack outgoing orders to FurniCraft standards.',
       'Coordinate with the delivery team and update inventory records.',
     ],
     applyEmail: 'ops-careers@zshop.com',
@@ -134,9 +134,9 @@ const jobOpenings: JobOpening[] = [
 
 export function CareersPage() {
   usePageMetadata({
-    title: 'Careers at ZShop',
+    title: 'Careers at FurniCraft',
     description:
-      'Explore open positions at ZShop, learn about our culture and benefits, and submit your application to join the team.',
+      'Explore open positions at FurniCraft, learn about our culture and benefits, and submit your application to join the team.',
   });
 
   const [selectedJobId, setSelectedJobId] = useState(jobOpenings[0].id);
@@ -212,7 +212,7 @@ export function CareersPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Careers</h1>
               <p className="text-white/80 text-lg">
-                Join the ZShop team where creativity, service excellence, and long-term career growth are celebrated.
+                Join the FurniCraft team where creativity, service excellence, and long-term career growth are celebrated.
               </p>
             </div>
           </div>
@@ -228,7 +228,7 @@ export function CareersPage() {
                 <h2 className="font-display text-3xl text-neutral-900">Why Join Us</h2>
               </div>
               <p className="text-neutral-600 mb-6">
-                We foster a respectful, creative, and transparent workplace. The ZShop team is made up of people who love design, customer experience, and technology, and who support one another to achieve shared goals.
+                We foster a respectful, creative, and transparent workplace. The FurniCraft team is made up of people who love design, customer experience, and technology, and who support one another to achieve shared goals.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="border border-neutral-200 rounded-2xl p-4">
@@ -442,7 +442,7 @@ export function CareersPage() {
                     onChange={(event) => handleChange('coverLetter', event.target.value)}
                     rows={5}
                     className="mt-1 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    placeholder="Share your achievements and tell us why you want to join ZShop..."
+                    placeholder="Share your achievements and tell us why you want to join FurniCraft..."
                   />
                 </div>
 

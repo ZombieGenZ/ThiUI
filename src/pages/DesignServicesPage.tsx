@@ -57,7 +57,7 @@ export function DesignServicesPage() {
   usePageMetadata({
     title: 'Design Services',
     description:
-      'Work with ZShop interior designers for personalized consultations, room packages, or full home design solutions.',
+      'Work with FurniCraft interior designers for personalized consultations, room packages, or full home design solutions.',
   });
 
   const [formData, setFormData] = useState<DesignFormData>({
@@ -129,7 +129,7 @@ export function DesignServicesPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Design Services</h1>
               <p className="text-white/80 text-lg">
-                Partner with ZShop interior designers from concept to installation to build a home that reflects your style and
+                Partner with FurniCraft interior designers from concept to installation to build a home that reflects your style and
                 daily routines.
               </p>
             </div>

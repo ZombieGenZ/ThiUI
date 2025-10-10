@@ -47,7 +47,7 @@ const mockOrders: OrderTrackingInfo[] = [
       },
       {
         status: 'Processing',
-        description: 'Furniture inspected and packaged at ZShop fulfillment center.',
+        description: 'Furniture inspected and packaged at FurniCraft fulfillment center.',
         date: 'November 27, 2024 - 02:30 PM',
       },
       {
@@ -94,7 +94,7 @@ export function TrackOrderPage() {
   usePageMetadata({
     title: 'Track Order',
     description:
-      'Track your ZShop furniture order, view carrier updates, and access delivery support or invoices instantly.',
+      'Track your FurniCraft furniture order, view carrier updates, and access delivery support or invoices instantly.',
   });
 
   const [orderNumber, setOrderNumber] = useState('');

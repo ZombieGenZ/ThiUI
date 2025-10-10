@@ -54,7 +54,7 @@ export function Header({ onCartOpen }: HeaderProps) {
 
             <div className="flex-1 lg:flex-initial">
               <Link to="/" className="font-display text-2xl lg:text-3xl tracking-wide font-bold smooth-transition hover-scale">
-                <span className="text-brand-600">Z</span><span className="text-neutral-900 dark:text-white">Shop</span>
+                <span className="text-brand-600">Furni</span><span className="text-neutral-900 dark:text-white">Craft</span>
               </Link>
             </div>
 

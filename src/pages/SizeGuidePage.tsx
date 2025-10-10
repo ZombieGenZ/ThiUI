@@ -55,7 +55,7 @@ export function SizeGuidePage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Size Guide</h1>
               <p className="text-white/80 text-lg">
-                Explore standard measurements and pro tips to ensure ZShop furniture fits perfectly in your space.
+                Explore standard measurements and pro tips to ensure FurniCraft furniture fits perfectly in your space.
               </p>
             </div>
           </div>

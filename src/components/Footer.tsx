@@ -51,7 +51,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8 mb-10">
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <h3 className="font-display text-xl text-white mb-3 font-bold">
-              <span className="text-brand-500">Z</span>Shop
+              <span className="text-brand-500">Furni</span>Craft
             </h3>
             <p className="text-sm mb-4 text-gray-400">
               Premium furniture for beautiful spaces.
@@ -117,7 +117,7 @@ export function Footer() {
           </div>
 
           <div className="mt-6 text-center text-xs text-gray-500">
-            <p>&copy; 2024 ZShop. All rights reserved.</p>
+            <p>&copy; 2024 FurniCraft. All rights reserved.</p>
           </div>
         </div>
       </div>

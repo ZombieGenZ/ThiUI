@@ -200,7 +200,7 @@ export function VirtualShowroomPage() {
   usePageMetadata({
     title: 'Virtual Showroom',
     description:
-      'Step into ZShop\'s virtual showroom to explore curated rooms, interact with products, and shop directly from the scene.',
+      'Step into FurniCraft\'s virtual showroom to explore curated rooms, interact with products, and shop directly from the scene.',
   });
 
   const [selectedRoomId, setSelectedRoomId] = useState(roomTemplates[0].id);
@@ -367,7 +367,7 @@ export function VirtualShowroomPage() {
             <div className="border border-neutral-200 rounded-3xl p-6 bg-white shadow-sm">
               <h3 className="font-semibold text-lg text-neutral-900 mb-4">Need more help?</h3>
               <p className="text-sm text-neutral-600">
-                Book an in-store visit or schedule a 1:1 virtual consultation with a ZShop designer to bring your vision to
+                Book an in-store visit or schedule a 1:1 virtual consultation with a FurniCraft designer to bring your vision to
                 life.
               </p>
               <div className="mt-4 space-y-2">

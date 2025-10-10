@@ -22,9 +22,9 @@ const sections = [
   {
     title: '3. Information Sharing',
     content: [
-      'ZShop never sells or rents your personal data.',
+      'FurniCraft never sells or rents your personal data.',
       'We share information with shipping, payment, and marketing partners when required to deliver services.',
-      'Information may be disclosed to comply with legal requests or protect the rights of ZShop and our customers.',
+      'Information may be disclosed to comply with legal requests or protect the rights of FurniCraft and our customers.',
     ],
   },
   {
@@ -56,7 +56,7 @@ const sections = [
   {
     title: "7. Children's Privacy",
     content: [
-      'ZShop does not knowingly collect data from children under 13. We will delete such information immediately if discovered.',
+      'FurniCraft does not knowingly collect data from children under 13. We will delete such information immediately if discovered.',
     ],
   },
   {
@@ -78,7 +78,7 @@ const sections = [
 export function PrivacyPolicyPage() {
   usePageMetadata({
     title: 'Privacy Policy',
-    description: 'Understand how ZShop collects, uses, and protects your personal data in compliance with GDPR and CCPA.',
+    description: 'Understand how FurniCraft collects, uses, and protects your personal data in compliance with GDPR and CCPA.',
   });
 
   return (
@@ -91,7 +91,7 @@ export function PrivacyPolicyPage() {
             <div className="mt-6">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Privacy Policy</h1>
               <p className="text-white/80 text-lg max-w-2xl">
-                ZShop is committed to safeguarding your personal data and complies with global security standards including GDPR and CCPA.
+                FurniCraft is committed to safeguarding your personal data and complies with global security standards including GDPR and CCPA.
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function PrivacyPolicyPage() {
           <p>Effective Date: November 1, 2024</p>
           <p>Last Updated: November 20, 2024</p>
           <p className="mt-4">
-            This policy applies to all customers, newsletter subscribers, showroom visitors, and users of ZShop's online services.
+            This policy applies to all customers, newsletter subscribers, showroom visitors, and users of FurniCraft's online services.
           </p>
         </div>
 
@@ -125,7 +125,7 @@ export function PrivacyPolicyPage() {
 
         <div className="bg-neutral-50 border border-neutral-200 rounded-3xl p-8 text-sm text-neutral-600">
           <p>
-            ZShop honors your rights under GDPR and CCPA. Submit access, portability, deletion, or objection requests by contacting
+            FurniCraft honors your rights under GDPR and CCPA. Submit access, portability, deletion, or objection requests by contacting
             <a href="mailto:privacy@furniturestore.com" className="text-brand-600 font-semibold">privacy@furniturestore.com</a>.
           </p>
         </div>

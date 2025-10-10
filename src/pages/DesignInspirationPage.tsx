@@ -315,7 +315,7 @@ export function DesignInspirationPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Design Inspiration</h1>
               <p className="text-white/80 text-lg">
-                Explore stylist-curated rooms from ZShop. Filter by style, space, and budget to discover ideas you can bring home.
+                Explore stylist-curated rooms from FurniCraft. Filter by style, space, and budget to discover ideas you can bring home.
               </p>
             </div>
           </div>

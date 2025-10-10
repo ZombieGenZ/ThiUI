@@ -6,7 +6,7 @@ export function ShippingReturnsPage() {
   usePageMetadata({
     title: 'Shipping & Returns',
     description:
-      'Learn about ZShop\'s shipping and returns policies including delivery options, international shipping, and how to start a return.',
+      'Learn about FurniCraft\'s shipping and returns policies including delivery options, international shipping, and how to start a return.',
   });
 
   const shippingOptions = [
@@ -84,7 +84,7 @@ export function ShippingReturnsPage() {
             <h2 className="font-display text-3xl text-neutral-900">Shipping Policy</h2>
           </div>
           <p className="text-neutral-600 max-w-3xl mb-8">
-            ZShop partners with leading logistics specialists to deliver every order safely and on schedule. All
+            FurniCraft partners with leading logistics specialists to deliver every order safely and on schedule. All
             shipments include real-time tracking numbers sent via email within 24 hours of dispatch.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -24,7 +24,7 @@ export function BlogPage() {
   usePageMetadata({
     title: 'Blog & News',
     description:
-      'Discover interior design trends, styling tips, and the latest updates from ZShop in our editorial hub.',
+      'Discover interior design trends, styling tips, and the latest updates from FurniCraft in our editorial hub.',
   });
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -88,7 +88,7 @@ export function BlogPage() {
             <div className="mt-6 max-w-2xl">
               <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-300 uppercase tracking-wide">
                 <PenSquare className="w-4 h-4" />
-                ZShop Insights
+                FurniCraft Insights
               </span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl text-white leading-tight">
                 Interior inspiration & brand stories

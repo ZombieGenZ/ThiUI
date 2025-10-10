@@ -4,7 +4,7 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 export function TermsPage() {
   usePageMetadata({
     title: 'Terms of Service',
-    description: 'Review the ZShop Terms of Service outlining user responsibilities, usage guidelines, and legal protections.',
+    description: 'Review the FurniCraft Terms of Service outlining user responsibilities, usage guidelines, and legal protections.',
   });
 
   const effectiveDate = 'Effective Date: November 1, 2024';
@@ -14,7 +14,7 @@ export function TermsPage() {
     {
       title: '1. Acceptance of Terms',
       content:
-        'By accessing or using the ZShop website you agree to be bound by these terms and any supplemental policies referenced herein. If you do not agree, please refrain from using the services.',
+        'By accessing or using the FurniCraft website you agree to be bound by these terms and any supplemental policies referenced herein. If you do not agree, please refrain from using the services.',
     },
     {
       title: '2. Use License',
@@ -24,27 +24,27 @@ export function TermsPage() {
     {
       title: '3. Disclaimer',
       content:
-        'All information on the site is provided "as is." ZShop does not warrant that content will always be accurate, complete, or uninterrupted. We may update information at any time without prior notice.',
+        'All information on the site is provided "as is." FurniCraft does not warrant that content will always be accurate, complete, or uninterrupted. We may update information at any time without prior notice.',
     },
     {
       title: '4. Limitations',
       content:
-        'In no event shall ZShop or its partners be liable for indirect, incidental, or consequential damages arising from your use of the site, including but not limited to lost profits.',
+        'In no event shall FurniCraft or its partners be liable for indirect, incidental, or consequential damages arising from your use of the site, including but not limited to lost profits.',
     },
     {
       title: '5. Accuracy of Materials',
       content:
-        'Content, imagery, and product descriptions may contain technical or typographical errors. While we strive for accuracy, ZShop does not guarantee that information is complete or current and will correct inaccuracies when identified.',
+        'Content, imagery, and product descriptions may contain technical or typographical errors. While we strive for accuracy, FurniCraft does not guarantee that information is complete or current and will correct inaccuracies when identified.',
     },
     {
       title: '6. Links',
       content:
-        'The site may contain links to third-party websites. ZShop is not responsible for the content, privacy policies, or practices of those sites, and accessing them is at your own risk.',
+        'The site may contain links to third-party websites. FurniCraft is not responsible for the content, privacy policies, or practices of those sites, and accessing them is at your own risk.',
     },
     {
       title: '7. Modifications',
       content:
-        'ZShop reserves the right to modify these terms at any time. Updates take effect upon posting to the site. Continued use after changes constitutes acceptance of the revised terms.',
+        'FurniCraft reserves the right to modify these terms at any time. Updates take effect upon posting to the site. Continued use after changes constitutes acceptance of the revised terms.',
     },
     {
       title: '8. Governing Law',
@@ -54,22 +54,22 @@ export function TermsPage() {
     {
       title: '9. User Accounts',
       content:
-        'You are responsible for safeguarding your login credentials and notifying ZShop immediately of any unauthorized use. You remain liable for all activity that occurs under your account.',
+        'You are responsible for safeguarding your login credentials and notifying FurniCraft immediately of any unauthorized use. You remain liable for all activity that occurs under your account.',
     },
     {
       title: '10. Prohibited Uses',
       content:
-        'You may not use the site for fraudulent activity, spamming, malware distribution, system intrusion, or unauthorized data collection. ZShop may suspend accounts engaged in prohibited conduct.',
+        'You may not use the site for fraudulent activity, spamming, malware distribution, system intrusion, or unauthorized data collection. FurniCraft may suspend accounts engaged in prohibited conduct.',
     },
     {
       title: '11. Intellectual Property',
       content:
-        'All content, logos, imagery, and designs are the intellectual property of ZShop or our licensors. Unauthorized use may violate copyright, trademark, or other laws.',
+        'All content, logos, imagery, and designs are the intellectual property of FurniCraft or our licensors. Unauthorized use may violate copyright, trademark, or other laws.',
     },
     {
       title: '12. Termination',
       content:
-        'ZShop may suspend or terminate your access for reasonable cause, including violations of these terms, legal requirements, or actions that harm other users.',
+        'FurniCraft may suspend or terminate your access for reasonable cause, including violations of these terms, legal requirements, or actions that harm other users.',
     },
   ];
 
@@ -83,7 +83,7 @@ export function TermsPage() {
             <div className="mt-6">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Terms of Service</h1>
               <p className="text-white/80 text-lg max-w-2xl">
-                Please review these terms carefully to understand your rights and responsibilities when using ZShop services.
+                Please review these terms carefully to understand your rights and responsibilities when using FurniCraft services.
               </p>
             </div>
           </div>

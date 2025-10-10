@@ -6,7 +6,7 @@ const cookieSections = [
     title: 'What are Cookies?',
     paragraphs: [
       'Cookies are small text files stored on your device when you visit a website. They remember preferences, optimize performance, and personalize your experience.',
-      'ZShop uses cookies to keep shopping secure, fast, and tailored to your interests.',
+      'FurniCraft uses cookies to keep shopping secure, fast, and tailored to your interests.',
     ],
   },
   {
@@ -76,7 +76,7 @@ const cookieSections = [
 export function CookiePolicyPage() {
   usePageMetadata({
     title: 'Cookie Policy',
-    description: 'Learn how ZShop uses cookies, what categories are collected, and how you can manage your preferences.',
+    description: 'Learn how FurniCraft uses cookies, what categories are collected, and how you can manage your preferences.',
   });
 
   return (
@@ -89,7 +89,7 @@ export function CookiePolicyPage() {
             <div className="mt-6">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Cookie Policy</h1>
               <p className="text-white/80 text-lg max-w-2xl">
-                This cookie policy explains how ZShop collects, uses, and manages cookies to deliver a secure and personalized experience.
+                This cookie policy explains how FurniCraft collects, uses, and manages cookies to deliver a secure and personalized experience.
               </p>
             </div>
           </div>

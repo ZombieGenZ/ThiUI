@@ -38,7 +38,7 @@ export function BlogPostPage() {
     title: post?.title || 'Blog Post Details',
     description:
       post?.excerpt ||
-      'Explore the latest interior trends, styling tips, and design stories curated by the ZShop team.',
+      'Explore the latest interior trends, styling tips, and design stories curated by the FurniCraft team.',
   });
 
   useEffect(() => {

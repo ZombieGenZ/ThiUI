@@ -54,7 +54,7 @@ const faqs = [
   {
     question: 'Do you handle cleanup afterward?',
     answer:
-      "Yes. ZShop's assembly service includes bagging packaging, light vacuuming, and removing debris so you can enjoy your newly furnished room right away.",
+      "Yes. FurniCraft's assembly service includes bagging packaging, light vacuuming, and removing debris so you can enjoy your newly furnished room right away.",
   },
 ];
 
@@ -62,7 +62,7 @@ export function AssemblyServicesPage() {
   usePageMetadata({
     title: 'Assembly Services',
     description:
-      'Book professional furniture assembly with insured technicians, transparent pricing, and flexible scheduling from ZShop.',
+      'Book professional furniture assembly with insured technicians, transparent pricing, and flexible scheduling from FurniCraft.',
   });
 
   const [formData, setFormData] = useState<BookingFormData>({
@@ -150,7 +150,7 @@ export function AssemblyServicesPage() {
                   <h3 className="font-semibold text-lg text-neutral-900">Certified Technicians</h3>
                 </div>
                 <p className="text-sm text-neutral-600">
-                  ZShop technicians carry liability insurance, pass background checks, and follow strict manufacturer safety
+                  FurniCraft technicians carry liability insurance, pass background checks, and follow strict manufacturer safety
                   protocols.
                 </p>
               </div>

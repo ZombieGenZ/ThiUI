@@ -8,7 +8,7 @@ interface PageMetadataOptions {
 export function usePageMetadata({ title, description }: PageMetadataOptions) {
   useEffect(() => {
     if (title) {
-      document.title = `${title} | ZShop Furniture`;
+      document.title = `${title} | FurniCraft Furniture`;
     }
 
     if (description) {

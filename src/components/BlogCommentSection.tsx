@@ -61,7 +61,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
       }
     }
 
-    return 'ZShop Member';
+    return 'FurniCraft Member';
   }, [user]);
 
   useEffect(() => {
@@ -157,7 +157,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
     }
 
     if (isAuthenticated) {
-      nameToSubmit = (authenticatedName || '').trim() || 'ZShop Member';
+      nameToSubmit = (authenticatedName || '').trim() || 'FurniCraft Member';
       emailToSubmit = authenticatedEmail.trim();
     }
 
