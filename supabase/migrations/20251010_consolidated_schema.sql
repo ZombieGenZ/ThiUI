@@ -1,26 +1,24 @@
 /*
-  # SCHEMA TỔNG HỢP: Furniture Store Database Schema (20251010)
+  # SCHEMA TỔNG HỢP: Furniture Store Database Schema (20251010_fixed)
 
   ## Mục đích
   File này hợp nhất tất cả các file migration đã tạo trước đó thành một script SQL duy nhất,
   đảm bảo tính toàn vẹn, chức năng, và bao gồm tất cả các bản sửa lỗi và dữ liệu mẫu.
 
-  ## Các tính năng chính được hợp nhất
+  ## Các tính năng chính
   1.  Các bảng cốt lõi: profiles, categories, products, product_variants, addresses.
   2.  Hệ thống đặt hàng: orders, order_items, hàm generate_order_number().
   3.  Chức năng người dùng: favorites, cart_items, reviews.
   4.  Hệ thống khuyến mãi: vouchers, voucher_usage.
-  5.  Chức năng khác: contact_messages, room_inspirations.
-  6.  Tất cả các cột sửa lỗi (ví dụ: total_amount, shipping_cost, contact_info, shipping_address).
-  7.  Tất cả RLS Policies, Constraints, và Indexes.
-  8.  Dữ liệu mẫu cho vouchers và products.
+  5.  Chức năng khác: contact_messages, room_inspirations, blog_posts, comments.
+  6.  Tất cả RLS Policies, Constraints, và Indexes.
+  7.  Dữ liệu mẫu cho vouchers và products.
 */
 
 -- ============================================================================
 -- 0. HÀM HỖ TRỢ
 -- ============================================================================
 
--- Hàm tạo số đơn hàng duy nhất (ORD-YYYYMMDD-XXXXX)
 CREATE OR REPLACE FUNCTION generate_order_number()
 RETURNS text AS $$
 DECLARE
@@ -28,20 +26,16 @@ DECLARE
   counter integer := 0;
 BEGIN
   LOOP
-    -- Generate order number: ORD-YYYYMMDD-XXXXX (5 ký tự ngẫu nhiên)
     new_order_number := 'ORD-' ||
                         to_char(now(), 'YYYYMMDD') || '-' ||
                         upper(substring(md5(random()::text || clock_timestamp()::text) from 1 for 5));
 
-    -- Kiểm tra tính duy nhất
     IF NOT EXISTS (SELECT 1 FROM orders WHERE order_number = new_order_number) THEN
       RETURN new_order_number;
     END IF;
 
-    -- Kiểm tra an toàn để tránh vòng lặp vô hạn
     counter := counter + 1;
     IF counter > 100 THEN
-      -- Fallback về UUID nếu không thể tạo số duy nhất sau 100 lần thử
       RETURN 'ORD-' || upper(substring(gen_random_uuid()::text from 1 for 13));
     END IF;
   END LOOP;
@@ -49,7 +43,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================================
--- 1. PROFILES TABLE (Thông tin người dùng mở rộng)
+-- 1. PROFILES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS profiles (
@@ -87,7 +81,7 @@ CREATE POLICY "Users can update own profile"
   WITH CHECK (auth.uid() = id);
 
 -- ============================================================================
--- 2. CATEGORIES TABLE (Danh mục sản phẩm)
+-- 2. CATEGORIES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -111,7 +105,7 @@ CREATE POLICY "Categories are viewable by everyone"
   USING (true);
 
 -- ============================================================================
--- 3. PRODUCTS TABLE (Sản phẩm chính)
+-- 3. PRODUCTS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS products (
@@ -150,17 +144,13 @@ CREATE POLICY "Products are viewable by everyone"
   TO public
   USING (status = 'active' OR status = 'out_of_stock');
 
-ALTER TABLE products
-  ADD COLUMN IF NOT EXISTS model_3d_url text;
-
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured);
 CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
 
 -- ============================================================================
--- 4. PRODUCT VARIANTS TABLE (Biến thể sản phẩm - nếu có)
+-- 4. PRODUCT VARIANTS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS product_variants (
@@ -176,13 +166,15 @@ CREATE TABLE IF NOT EXISTS product_variants (
 
 ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Product variants are viewable by everyone" ON product_variants;
+
 CREATE POLICY "Product variants are viewable by everyone"
   ON product_variants FOR SELECT
   TO public
   USING (true);
 
 -- ============================================================================
--- 5. ADDRESSES TABLE (Địa chỉ người dùng)
+-- 5. ADDRESSES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS addresses (
@@ -201,6 +193,11 @@ CREATE TABLE IF NOT EXISTS addresses (
 );
 
 ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can insert own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can update own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can delete own addresses" ON addresses;
 
 CREATE POLICY "Users can view own addresses"
   ON addresses FOR SELECT
@@ -223,9 +220,8 @@ CREATE POLICY "Users can delete own addresses"
   TO authenticated
   USING (auth.uid() = user_id);
 
-
 -- ============================================================================
--- 6. VOUCHERS TABLE (Mã giảm giá)
+-- 6. VOUCHERS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS vouchers (
@@ -258,8 +254,7 @@ CREATE POLICY "Anyone can view active vouchers"
   USING (is_active = true AND (valid_until IS NULL OR valid_until > now()));
 
 -- ============================================================================
--- 7. ORDERS TABLE (Đơn hàng)
--- Sử dụng total_amount/shipping_cost và DEFAULT 0 cho các cột NOT NULL
+-- 7. ORDERS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -268,21 +263,18 @@ CREATE TABLE IF NOT EXISTS orders (
   order_number text UNIQUE NOT NULL DEFAULT generate_order_number(),
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')),
   
-  -- Các cột tiền tệ (Đã thêm NOT NULL DEFAULT 0 để fix lỗi)
-  subtotal decimal(10, 2) NOT NULL DEFAULT 0, -- Tổng giá trị sản phẩm trước phí/thuế/giảm giá
-  shipping_cost decimal(10, 2) NOT NULL DEFAULT 0, -- Phí vận chuyển
+  subtotal decimal(10, 2) NOT NULL DEFAULT 0,
+  shipping_cost decimal(10, 2) NOT NULL DEFAULT 0,
   tax decimal(10, 2) NOT NULL DEFAULT 0,
-  discount decimal(10, 2) DEFAULT 0, -- Tổng giảm giá từ các nguồn
-  total_amount decimal(10, 2) NOT NULL DEFAULT 0, -- TỔNG CUỐI CÙNG (fix lỗi null constraint)
+  discount decimal(10, 2) DEFAULT 0,
+  total_amount decimal(10, 2) NOT NULL DEFAULT 0,
   
-  -- Thông tin chiết khấu voucher
   voucher_id uuid REFERENCES vouchers(id),
   voucher_discount decimal(10, 2) DEFAULT 0,
 
-  -- Thông tin giao hàng/thanh toán
-  shipping_address_id uuid REFERENCES addresses(id), -- Tham chiếu đến bảng addresses (tùy chọn)
-  shipping_address jsonb DEFAULT '{}', -- Địa chỉ nhúng (tùy chọn, cho khách vãng lai)
-  contact_info jsonb DEFAULT '{}', -- Thông tin liên hệ nhúng
+  shipping_address_id uuid REFERENCES addresses(id),
+  shipping_address jsonb DEFAULT '{}',
+  contact_info jsonb DEFAULT '{}',
   payment_method text NOT NULL DEFAULT 'credit-card',
   payment_status text DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed', 'refunded')),
   delivery_date date,
@@ -295,13 +287,11 @@ CREATE TABLE IF NOT EXISTS orders (
 
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number);
 
--- Policies
 DROP POLICY IF EXISTS "Users can view own orders" ON orders;
 DROP POLICY IF EXISTS "Users can create own orders" ON orders;
 DROP POLICY IF EXISTS "Users can update own orders" ON orders;
@@ -323,19 +313,19 @@ CREATE POLICY "Users can update own orders"
   WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================================
--- 8. ORDER ITEMS TABLE (Chi tiết đơn hàng)
+-- 8. ORDER ITEMS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS order_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   product_id uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL, -- Variant ID (tùy chọn)
+  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
   quantity integer NOT NULL DEFAULT 1,
   
-  unit_price decimal(10, 2) NOT NULL DEFAULT 0, -- Giá gốc/cơ sở tại thời điểm mua
-  price decimal(10, 2) NOT NULL DEFAULT 0, -- Giá sau chiết khấu (nếu có)
-  subtotal decimal(10, 2) NOT NULL DEFAULT 0, -- total = price * quantity
+  unit_price decimal(10, 2) NOT NULL DEFAULT 0,
+  price decimal(10, 2) NOT NULL DEFAULT 0,
+  subtotal decimal(10, 2) NOT NULL DEFAULT 0,
   
   dimensions text,
   material text,
@@ -344,11 +334,9 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
 
--- Policies
 DROP POLICY IF EXISTS "Users can view own order items" ON order_items;
 DROP POLICY IF EXISTS "Users can create order items" ON order_items;
 
@@ -375,7 +363,7 @@ CREATE POLICY "Users can create order items"
   );
 
 -- ============================================================================
--- 9. VOUCHER USAGE TABLE (Lịch sử sử dụng Voucher)
+-- 9. VOUCHER USAGE TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS voucher_usage (
@@ -389,12 +377,10 @@ CREATE TABLE IF NOT EXISTS voucher_usage (
 
 ALTER TABLE voucher_usage ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_voucher_usage_voucher_id ON voucher_usage(voucher_id);
 CREATE INDEX IF NOT EXISTS idx_voucher_usage_user_id ON voucher_usage(user_id);
 CREATE INDEX IF NOT EXISTS idx_voucher_usage_order_id ON voucher_usage(order_id);
 
--- Policies
 DROP POLICY IF EXISTS "Users can view their voucher usage" ON voucher_usage;
 DROP POLICY IF EXISTS "Users can create voucher usage" ON voucher_usage;
 
@@ -409,7 +395,7 @@ CREATE POLICY "Users can create voucher usage"
   WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================================
--- 10. FAVORITES TABLE (Sản phẩm yêu thích)
+-- 10. FAVORITES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS favorites (
@@ -422,12 +408,10 @@ CREATE TABLE IF NOT EXISTS favorites (
 
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_product_id ON favorites(product_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_user_product ON favorites(user_id, product_id);
 
--- Policies
 DROP POLICY IF EXISTS "Users can view own favorites" ON favorites;
 DROP POLICY IF EXISTS "Users can add favorites" ON favorites;
 DROP POLICY IF EXISTS "Users can remove favorites" ON favorites;
@@ -448,7 +432,7 @@ CREATE POLICY "Users can remove favorites"
   USING (auth.uid() = user_id);
 
 -- ============================================================================
--- 11. CART ITEMS TABLE (Giỏ hàng)
+-- 11. CART ITEMS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS cart_items (
@@ -459,17 +443,15 @@ CREATE TABLE IF NOT EXISTS cart_items (
   quantity integer NOT NULL DEFAULT 1 CHECK (quantity > 0),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
-  UNIQUE(user_id, product_id) -- Giả định mỗi sản phẩm/variant chỉ có 1 dòng trong giỏ hàng
+  UNIQUE(user_id, product_id)
 );
 
 ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_cart_items_product_id ON cart_items(product_id);
 CREATE INDEX IF NOT EXISTS idx_cart_items_user_product ON cart_items(user_id, product_id);
 
--- Policies
 DROP POLICY IF EXISTS "Users can view own cart" ON cart_items;
 DROP POLICY IF EXISTS "Users can insert to own cart" ON cart_items;
 DROP POLICY IF EXISTS "Users can update own cart" ON cart_items;
@@ -497,7 +479,7 @@ CREATE POLICY "Users can delete from own cart"
   USING (auth.uid() = user_id);
 
 -- ============================================================================
--- 12. REVIEWS TABLE (Đánh giá sản phẩm)
+-- 12. REVIEWS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS reviews (
@@ -518,13 +500,11 @@ CREATE TABLE IF NOT EXISTS reviews (
 
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status);
 CREATE INDEX IF NOT EXISTS idx_reviews_user ON reviews(user_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_order ON reviews(order_id);
 
--- Policies
 DROP POLICY IF EXISTS "Approved reviews are viewable by everyone" ON reviews;
 DROP POLICY IF EXISTS "Users can insert own reviews" ON reviews;
 DROP POLICY IF EXISTS "Users can update own reviews" ON reviews;
@@ -546,7 +526,7 @@ CREATE POLICY "Users can update own reviews"
   WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================================
--- 13. ROOM INSPIRATIONS TABLE (Ảnh phòng mẫu)
+-- 13. ROOM INSPIRATIONS TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS room_inspirations (
@@ -563,13 +543,15 @@ CREATE TABLE IF NOT EXISTS room_inspirations (
 
 ALTER TABLE room_inspirations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Room inspirations are viewable by everyone" ON room_inspirations;
+
 CREATE POLICY "Room inspirations are viewable by everyone"
   ON room_inspirations FOR SELECT
   TO public
   USING (true);
 
 -- ============================================================================
--- 14. CONTACT MESSAGES TABLE (Liên hệ)
+-- 14. CONTACT MESSAGES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS contact_messages (
@@ -587,12 +569,10 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_contact_messages_user_id ON contact_messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
 CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
 
--- Policies
 DROP POLICY IF EXISTS "Users can view own messages" ON contact_messages;
 DROP POLICY IF EXISTS "Authenticated users can insert messages" ON contact_messages;
 DROP POLICY IF EXISTS "Anonymous users can insert messages" ON contact_messages;
@@ -612,12 +592,71 @@ CREATE POLICY "Anonymous users can insert messages"
   TO anon
   WITH CHECK (true);
 
+-- ============================================================================
+-- 15. BLOG POSTS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  excerpt text,
+  content text NOT NULL,
+  featured_image_url text,
+  author text,
+  published_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON blog_posts(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_created_at ON blog_posts(created_at DESC);
+
+DROP POLICY IF EXISTS "Blog posts are readable by everyone" ON blog_posts;
+
+CREATE POLICY "Blog posts are readable by everyone"
+  ON blog_posts FOR SELECT
+  TO public
+  USING (true);
 
 -- ============================================================================
--- 15. INSERT DỮ LIỆU MẪU
+-- 16. BLOG COMMENTS TABLE
 -- ============================================================================
 
--- INSERT CATEGORIES
+CREATE TABLE IF NOT EXISTS comments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id uuid NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  email text NOT NULL,
+  content text NOT NULL,
+  is_approved boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
+
+DROP POLICY IF EXISTS "Approved comments are visible" ON comments;
+DROP POLICY IF EXISTS "Public can insert comments" ON comments;
+
+CREATE POLICY "Approved comments are visible"
+  ON comments FOR SELECT
+  TO public
+  USING (is_approved = true);
+
+CREATE POLICY "Public can insert comments"
+  ON comments FOR INSERT
+  TO public
+  WITH CHECK (true);
+
+-- ============================================================================
+-- 17. INSERT SAMPLE DATA - CATEGORIES
+-- ============================================================================
+
 INSERT INTO categories (name, slug, description, display_order)
 VALUES
   ('Living Room', 'living-room', 'Furniture for your living room', 1),
@@ -627,7 +666,10 @@ VALUES
   ('Outdoor', 'outdoor', 'Outdoor and patio furniture', 5)
 ON CONFLICT (slug) DO NOTHING;
 
--- INSERT VOUCHERS
+-- ============================================================================
+-- 18. INSERT SAMPLE DATA - VOUCHERS
+-- ============================================================================
+
 INSERT INTO vouchers (code, discount_type, discount_value, min_purchase, max_discount, valid_until, is_active, description)
 VALUES
   ('WELCOME10', 'percentage', 10, 100, 50, now() + interval '90 days', true, 'Welcome discount for new customers'),
@@ -637,13 +679,10 @@ VALUES
   ('MEGA50', 'fixed', 50, 300, NULL, now() + interval '45 days', true, 'Mega sale - $50 off')
 ON CONFLICT (code) DO NOTHING;
 
--- UPDATE PRODUCTS WITH CATEGORY_ID (Connect products to categories)
-UPDATE products p
-SET category_id = c.id
-FROM categories c
-WHERE p.room_type = c.name;
+-- ============================================================================
+-- 19. INSERT SAMPLE DATA - PRODUCTS
+-- ============================================================================
 
--- INSERT PRODUCTS (Đã gộp từ 20251008110000_add_more_products.sql và các file khác)
 INSERT INTO products (name, slug, description, base_price, sale_price, images, rating, review_count, is_new, room_type, dimensions, materials, weight, sku, stock_quantity, style) VALUES
 ('Modern Velvet Sectional Sofa', 'modern-velvet-sectional-sofa', 'Luxurious L-shaped sectional with premium velvet upholstery and reversible chaise. Perfect for contemporary living spaces.', 2499.99, 1999.99, ARRAY[
   'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg',
@@ -743,10 +782,68 @@ INSERT INTO products (name, slug, description, base_price, sale_price, images, r
 ('Modular Outdoor Sectional', 'modular-outdoor-sectional', 'Versatile 5-piece sectional sofa set with weather-resistant cushions. Rearrange to fit any patio layout.', 2499.99, 1999.99, ARRAY[
   'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg',
   'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
-], 4.9, 145, true, 'Outdoor', '{"width": "280cm", "height": "75cm", "depth": "180cm"}', ARRAY['All-Weather Wicker', 'Powder-Coated Aluminum', 'Olefin Fabric'], 85, 'OD-SEC-004', 10, 'Modern')
+], 4.9, 145, true, 'Outdoor', '{"width": "280cm", "height": "75cm", "depth": "180cm"}', ARRAY['All-Weather Wicker', 'Powder-Coated Aluminum', 'Olefin Fabric'], 85, 'OD-SEC-004', 10, 'Modern'),
+
+('Harper Sectional Sofa', 'harper-sectional-sofa', 'A low-profile modular sectional with deep cushions and performance linen upholstery for family-friendly comfort.', 2150.00, NULL, ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg'], 4.8, 142, true, 'Living Room', '{"length": "112 in", "depth": "68 in", "height": "34 in"}', ARRAY['Performance linen', 'Kiln-dried hardwood', 'Feather-wrapped foam'], 165, 'LR-HAR-SEC-001', 12, 'Modern'),
+
+('Marble Orbit Coffee Table', 'marble-orbit-coffee-table', 'Round marble coffee table with a sculptural metal base and a protective resin seal for everyday use.', 780.00, NULL, ARRAY['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg'], 4.7, 88, false, 'Living Room', '{"diameter": "42 in", "height": "15 in"}', ARRAY['Carrara marble', 'Brushed brass'], 95, 'LR-MAR-COF-002', 20, 'Modern'),
+
+('Atlas Arc Floor Lamp', 'atlas-arc-floor-lamp', 'Sleek arched floor lamp with a weighted base and adjustable shade to spotlight seating areas.', 390.00, NULL, ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg'], 4.6, 67, false, 'Living Room', '{"height": "78 in", "reach": "48 in"}', ARRAY['Powder-coated steel', 'Linen shade'], 32, 'LR-ATL-LMP-003', 30, 'Modern'),
+
+('Tonal Wool Rug 8x10', 'tonal-wool-rug-8x10', 'Hand-loomed wool rug in layered neutral tones to anchor modern seating arrangements.', 960.00, NULL, ARRAY['https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg'], 4.8, 53, true, 'Living Room', '{"width": "96 in", "length": "120 in", "pile": "0.6 in"}', ARRAY['New Zealand wool', 'Cotton backing'], 45, 'LR-TON-RUG-004', 25, 'Modern'),
+
+('Nordic Oak Platform Bed (Queen)', 'nordic-oak-platform-bed', 'Solid oak platform bed with rounded corners and a slatted base for breathable support.', 1290.00, NULL, ARRAY['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg'], 4.9, 210, true, 'Bedroom', '{"width": "64 in", "length": "86 in", "height": "14 in", "headboard_height": "40 in"}', ARRAY['Solid oak', 'Baltic birch slats'], 120, 'BR-NOR-BED-001', 18, 'Scandinavian'),
+
+('Linen Bedding Set', 'linen-bedding-set', 'Four-piece garment-washed linen bedding bundle with breathable temperature regulation.', 360.00, NULL, ARRAY['https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg'], 4.7, 95, false, 'Bedroom', '{"size": "Queen", "pieces": "Duvet cover + 2 shams + sheet"}', ARRAY['European flax linen'], 12, 'BR-LIN-BED-002', 60, 'Scandinavian'),
+
+('Haze Glass Nightstands (Set of 2)', 'haze-glass-nightstands-set-of-2', 'Pair of smoked glass nightstands with concealed storage shelves and soft-close doors.', 540.00, NULL, ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg'], 4.6, 74, false, 'Bedroom', '{"width": "20 in", "depth": "18 in", "height": "24 in"}', ARRAY['Tempered glass', 'Brass hardware'], 64, 'BR-HAZ-NT-003', 22, 'Scandinavian'),
+
+('Softloom Area Rug', 'softloom-area-rug', 'Plush looped rug with subtle geometric patterning to soften bedroom floors.', 350.00, NULL, ARRAY['https://images.pexels.com/photos/6585612/pexels-photo-6585612.jpeg'], 4.8, 58, true, 'Bedroom', '{"width": "84 in", "length": "108 in"}', ARRAY['Wool blend', 'Cotton backing'], 38, 'BR-SOF-RUG-004', 28, 'Scandinavian'),
+
+('Forge Live-Edge Dining Table', 'forge-live-edge-dining-table', 'Statement dining table crafted from live-edge acacia wood with a raw steel base.', 2150.00, NULL, ARRAY['https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg'], 4.9, 132, false, 'Dining', '{"length": "96 in", "width": "40 in", "height": "30 in"}', ARRAY['Acacia wood', 'Powder-coated steel'], 210, 'DN-FOR-TBL-001', 10, 'Industrial'),
+
+('Set of 6 Rivet Leather Chairs', 'rivet-leather-dining-chairs-set-of-6', 'Six industrial-inspired leather dining chairs with welded steel frames and stitched cushioning.', 1140.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.7, 91, true, 'Dining', '{"width": "19 in", "depth": "22 in", "height": "34 in", "seat_height": "18 in"}', ARRAY['Top-grain leather', 'Steel frame'], 132, 'DN-RIV-CHR-002', 18, 'Industrial'),
+
+('Copper Cascade Chandelier', 'copper-cascade-chandelier', 'Multi-tier chandelier with hand-brushed copper shades for dramatic dining room lighting.', 490.00, NULL, ARRAY['https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg'], 4.5, 64, false, 'Dining', '{"diameter": "30 in", "height": "26 in"}', ARRAY['Copper', 'Fabric cord'], 22, 'DN-COP-CH-003', 35, 'Industrial'),
+
+('Walnut Executive Desk', 'walnut-executive-desk', 'L-shaped walnut veneer desk with integrated cable routing and soft-close storage drawers.', 1450.00, NULL, ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg'], 4.8, 118, true, 'Office', '{"width": "72 in", "depth": "60 in", "height": "30 in"}', ARRAY['Walnut veneer', 'Powder-coated steel'], 180, 'OF-WAL-DSK-001', 14, 'Modern'),
+
+('ErgoFlex Leather Chair', 'ergoflex-leather-chair', 'Ergonomic task chair with breathable leather, lumbar support, and fully adjustable arms.', 620.00, NULL, ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg'], 4.9, 256, false, 'Office', '{"width": "27 in", "depth": "27 in", "height": "48 in"}', ARRAY['Aniline leather', 'Aluminum base', 'Memory foam'], 52, 'OF-ERG-CHR-002', 30, 'Modern'),
+
+('Modular Wall Storage', 'modular-wall-storage', 'Configurable wall-mounted storage system with open shelving and concealed cabinets for home offices.', 890.00, NULL, ARRAY['https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg'], 4.7, 83, true, 'Office', '{"width": "96 in", "height": "84 in", "depth": "15 in"}', ARRAY['Engineered wood', 'Matte lacquer', 'Steel brackets'], 98, 'OF-MOD-STO-003', 16, 'Modern'),
+
+('Linear Task Lighting', 'linear-task-lighting', 'Slim LED task light with adjustable brightness and color temperature for focused work.', 320.00, NULL, ARRAY['https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg'], 4.5, 45, false, 'Office', '{"length": "38 in", "height": "18 in"}', ARRAY['Anodized aluminum', 'LED'], 8, 'OF-LIN-LGT-004', 40, 'Modern'),
+
+('Driftwood Outdoor Sofa', 'driftwood-outdoor-sofa', 'All-weather outdoor sofa with teak-inspired frame and quick-dry cushions for coastal patios.', 1980.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.8, 102, true, 'Outdoor', '{"width": "88 in", "depth": "34 in", "height": "32 in"}', ARRAY['Powder-coated aluminum', 'Olefin upholstery'], 120, 'OD-DRI-SOF-001', 12, 'Boho'),
+
+('All-Weather Lounge Chairs (Set of 2)', 'all-weather-lounge-chairs-set-of-2', 'Pair of reclining outdoor lounge chairs with UV-resistant wicker and water-repellent cushions.', 1080.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.7, 78, false, 'Outdoor', '{"width": "30 in", "depth": "58 in", "height": "34 in"}', ARRAY['Resin wicker', 'Aluminum frame', 'Polyester cushions'], 86, 'OD-ALL-LNG-002', 18, 'Boho'),
+
+('Braided Outdoor Rug', 'braided-outdoor-rug', 'Weather-resistant flatweave rug with braided edges to ground outdoor seating zones.', 420.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.6, 59, false, 'Outdoor', '{"width": "96 in", "length": "120 in"}', ARRAY['Recycled polypropylene'], 24, 'OD-BRA-RUG-003', 34, 'Boho'),
+
+('Rattan Lantern Trio', 'rattan-lantern-trio', 'Set of three handwoven lanterns with glass inserts for layered outdoor lighting.', 340.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.5, 48, true, 'Outdoor', '{"heights": "12 in / 16 in / 20 in"}', ARRAY['Natural rattan', 'Glass'], 18, 'OD-RAT-LAN-004', 40, 'Boho'),
+
+('Acacia Coffee Table', 'acacia-coffee-table', 'Outdoor coffee table crafted from solid acacia with a slatted top for quick drying.', 500.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.7, 41, false, 'Outdoor', '{"diameter": "38 in", "height": "16 in"}', ARRAY['Solid acacia wood'], 55, 'OD-ACA-COF-005', 22, 'Boho')
 ON CONFLICT (slug) DO NOTHING;
 
--- Provide sample 3D models for selected hero products
+-- ============================================================================
+-- 20. UPDATE PRODUCTS - LINK TO CATEGORIES AND SET 3D MODELS
+-- ============================================================================
+
+UPDATE products p
+SET category_id = c.id
+FROM categories c
+WHERE p.room_type = c.name
+  AND p.category_id IS NULL;
+
+UPDATE products
+SET is_featured = true
+WHERE id IN (
+  SELECT id FROM products
+  WHERE review_count > 0
+  ORDER BY review_count DESC, rating DESC
+  LIMIT 12
+);
+
 UPDATE products
 SET model_3d_url = 'https://modelviewer.dev/shared-assets/models/Chair.glb'
 WHERE slug = 'scandinavian-accent-chair';
@@ -756,22 +853,16 @@ SET model_3d_url = 'https://modelviewer.dev/shared-assets/models/Cube.gltf'
 WHERE slug = 'modern-velvet-sectional-sofa';
 
 -- ============================================================================
--- 16. DISABLE FOREIGN KEY CONSTRAINTS FOR SAMPLE DATA
+-- 21. INSERT SAMPLE REVIEWS
 -- ============================================================================
 
--- Tạm thời disable foreign key constraints để insert sample reviews
 ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_user_id_fkey;
 ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_order_id_fkey;
-
--- Cho phép NULL cho sample data
 ALTER TABLE reviews ALTER COLUMN user_id DROP NOT NULL;
 ALTER TABLE reviews ALTER COLUMN order_id DROP NOT NULL;
 
--- ============================================================================
--- 17. INSERT SAMPLE REVIEWS (15-30 per product)
--- ============================================================================
-
-DO $$
+-- SỬA LỖI: Đảm bảo sử dụng cú pháp dollar-quoted ($tag$) chính xác cho PL/pgSQL DO block.
+DO $review_insert_block$
 DECLARE
   product_slug text;
   product_id uuid;
@@ -780,7 +871,6 @@ DECLARE
   i integer;
   num_reviews integer;
 BEGIN
-  -- Define sample data
   sample_comments := ARRAY[
     'Absolutely love this piece! The quality is outstanding and it fits perfectly in my living room.',
     'Great value for money. Very comfortable and looks exactly like the pictures.',
@@ -816,16 +906,13 @@ BEGIN
 
   sample_ratings := ARRAY[5, 5, 4, 5, 4, 5, 5, 3, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5];
 
-  -- Insert reviews for each product
   FOR product_slug IN
     SELECT slug FROM products LIMIT 20
   LOOP
     SELECT id INTO product_id FROM products WHERE slug = product_slug;
     
-    -- Random number of reviews (15-25)
     num_reviews := 15 + floor(random() * 11)::integer;
 
-    -- Create reviews for this product
     FOR i IN 1..LEAST(num_reviews, array_length(sample_comments, 1))
     LOOP
       INSERT INTO reviews (
@@ -840,127 +927,27 @@ BEGIN
       )
       VALUES (
         product_id,
-        NULL, -- NULL user_id for sample data
-        NULL, -- NULL order_id for sample data
+        NULL,
+        NULL,
         sample_ratings[i],
         sample_comments[i],
-        false, -- Not verified since no real user
+        false,
         'approved',
         now() - (random() * interval '180 days')
       )
       ON CONFLICT DO NOTHING;
     END LOOP;
 
-    -- Update product rating and review_count
     UPDATE products p
     SET
       rating = (SELECT ROUND(AVG(rating)::numeric, 2) FROM reviews r WHERE r.product_id = p.id),
       review_count = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id)
     WHERE p.id = product_id;
   END LOOP;
-END $$;
+END $review_insert_block$ LANGUAGE plpgsql;
 
 -- ============================================================================
--- 18. RE-ENABLE FOREIGN KEY CONSTRAINTS (Optional - for production)
--- ============================================================================
-
--- Uncomment these if you want to restore constraints after sample data
--- Note: This will prevent adding more sample reviews without real users
-/*
-ALTER TABLE reviews ALTER COLUMN user_id SET NOT NULL;
-ALTER TABLE reviews ALTER COLUMN order_id SET NOT NULL;
-
-ALTER TABLE reviews ADD CONSTRAINT reviews_user_id_fkey 
-  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-  
-ALTER TABLE reviews ADD CONSTRAINT reviews_order_id_fkey 
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE;
-*/
-
--- ============================================================================
--- 19. UPDATE PRODUCTS - LINK TO CATEGORIES AND MARK AS FEATURED
--- ============================================================================
-
--- Link products to categories based on room_type
-UPDATE products p
-SET category_id = c.id
-FROM categories c
-WHERE p.room_type = c.name
-  AND p.category_id IS NULL;
-
--- Mark best sellers as featured
-UPDATE products
-SET is_featured = true
-WHERE id IN (
-  SELECT id FROM products
-  WHERE review_count > 0
-  ORDER BY review_count DESC, rating DESC
-  LIMIT 12
-);
-
--- ============================================================================
--- 20. BLOG POSTS TABLE (Nội dung blog)
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS blog_posts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  title text NOT NULL,
-  slug text UNIQUE NOT NULL,
-  excerpt text,
-  content text NOT NULL,
-  featured_image_url text,
-  author text,
-  published_at timestamptz DEFAULT now(),
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
-ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
-
-CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON blog_posts(published_at DESC);
-CREATE INDEX IF NOT EXISTS idx_blog_posts_created_at ON blog_posts(created_at DESC);
-
-DROP POLICY IF EXISTS "Blog posts are readable by everyone" ON blog_posts;
-
-CREATE POLICY "Blog posts are readable by everyone"
-  ON blog_posts FOR SELECT
-  TO public
-  USING (true);
-
--- ============================================================================
--- 21. BLOG COMMENTS TABLE (Bình luận bài viết)
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS comments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  post_id uuid NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  email text NOT NULL,
-  content text NOT NULL,
-  is_approved boolean DEFAULT true,
-  created_at timestamptz DEFAULT now()
-);
-
-ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
-
-CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
-CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
-
-DROP POLICY IF EXISTS "Approved comments are visible" ON comments;
-DROP POLICY IF EXISTS "Public can insert comments" ON comments;
-
-CREATE POLICY "Approved comments are visible"
-  ON comments FOR SELECT
-  TO public
-  USING (is_approved = true);
-
-CREATE POLICY "Public can insert comments"
-  ON comments FOR INSERT
-  TO public
-  WITH CHECK (true);
-
--- ============================================================================
--- 22. SEED SAMPLE BLOG DATA
+-- 22. INSERT SAMPLE BLOG POSTS
 -- ============================================================================
 
 INSERT INTO blog_posts (id, title, slug, excerpt, content, featured_image_url, author, published_at, created_at, updated_at)
@@ -970,21 +957,8 @@ VALUES
     '5 Interior Design Trends Defining Modern Living in 2024',
     '5-interior-design-trends-2024',
     'Discover the leading interior trends of 2024 to refresh your home with minimalist, sustainable, and highly curated touches.',
-    E'## Minimalism with warmth
-The minimalist look remains popular for the calm and clarity it brings. Work with a neutral palette and layer natural textures to keep the space welcoming.
-
-## Planet-friendly materials
-Sustainability is now a priority. Reclaimed woods, FSC-certified timber, and organic fabrics are top picks that balance style with responsibility.
-
-## Smart technology at home
-Connected lighting, automated shades, and multifunctional furnishings create a seamless living experience. Integrate smart features where they make daily routines easier.
-
-## Personalized styling
-Display art, handmade pieces, and meaningful keepsakes to give every room character. A few personal accents instantly make a space feel one-of-a-kind.
-
-## Indoor greenery
-Plants continue to shine as natural mood boosters. Cluster mini planters or hang cascading greenery to purify the air and energize the room.',
-    'https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    E'## Minimalism with warmth\nThe minimalist look remains popular for the calm and clarity it brings. Work with a neutral palette and layer natural textures to keep the space welcoming.\n\n## Planet-friendly materials\nSustainability is now a priority. Reclaimed woods, FSC-certified timber, and organic fabrics are top picks that balance style with responsibility.\n\n## Smart technology at home\nConnected lighting, automated shades, and multifunctional furnishings create a seamless living experience. Integrate smart features where they make daily routines easier.\n\n## Personalized styling\nDisplay art, handmade pieces, and meaningful keepsakes to give every room character. A few personal accents instantly make a space feel one-of-a-kind.\n\n## Indoor greenery\nPlants continue to shine as natural mood boosters. Cluster mini planters or hang cascading greenery to purify the air and energize the room.',
+    'https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg',
     'Thi Interior Studio',
     '2024-03-18T08:00:00Z',
     '2024-03-18T08:00:00Z',
@@ -995,18 +969,8 @@ Plants continue to shine as natural mood boosters. Cluster mini planters or hang
     'How to Choose the Right Sofa for Every Living Room Size',
     'how-to-choose-the-right-sofa',
     'The sofa is the heart of the living room. Learn how to pick the ideal dimensions, materials, and colors for your space.',
-    E'## Measure with intention
-Before you shop, map out the room and note doorways, walkways, and other furniture placements to confirm the sofa will fit comfortably.
-
-## Match the shape to your lifestyle
-If you host often, consider an L-shaped sectional or sleeper sofa. For compact apartments, a two-seater paired with an ottoman keeps things flexible.
-
-## Focus on fabric and color
-Performance linen and cotton blend well with modern styles, while leather introduces polish. Stick with timeless neutrals and layer in colorful pillows for personality.
-
-## Coordinate with the rest of the room
-Balance the sofa with the coffee table, media console, and lighting. Finish the look with an area rug or wall art that ties the palette together.',
-    'https://images.pexels.com/photos/276554/pexels-photo-276554.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    E'## Measure with intention\nBefore you shop, map out the room and note doorways, walkways, and other furniture placements to confirm the sofa will fit comfortably.\n\n## Match the shape to your lifestyle\nIf you host often, consider an L-shaped sectional or sleeper sofa. For compact apartments, a two-seater paired with an ottoman keeps things flexible.\n\n## Focus on fabric and color\nPerformance linen and cotton blend well with modern styles, while leather introduces polish. Stick with timeless neutrals and layer in colorful pillows for personality.\n\n## Coordinate with the rest of the room\nBalance the sofa with the coffee table, media console, and lighting. Finish the look with an area rug or wall art that ties the palette together.',
+    'https://images.pexels.com/photos/276554/pexels-photo-276554.jpeg',
     'Thi Interior Studio',
     '2024-03-12T08:00:00Z',
     '2024-03-12T08:00:00Z',
@@ -1017,18 +981,8 @@ Balance the sofa with the coffee table, media console, and lighting. Finish the 
     'Design a Home Office That Boosts Productivity and Creativity',
     'design-a-productive-home-office',
     'A thoughtful workspace keeps you focused and inspired. Explore layout, lighting, and styling ideas from the ZShop team.',
-    E'## Embrace natural light
-Position your desk near a window to soak up daylight and stay energized. Layer sheer curtains or blinds so you can control glare during video calls.
-
-## Invest in ergonomic furniture
-Choose a chair with proper lumbar support and a height-adjustable seat. A spacious desktop keeps monitors, keyboards, and notebooks organized.
-
-## Keep clutter in check
-Edit your work surface regularly and rely on trays, shelves, or wall-mounted organizers to store paperwork. A tidy setup makes it easier to focus.
-
-## Add inspiring accents
-Greenery, sculptural lamps, or framed prints introduce texture and creativity. Rotate a few accessories seasonally to keep the space feeling fresh.',
-    'https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    E'## Embrace natural light\nPosition your desk near a window to soak up daylight and stay energized. Layer sheer curtains or blinds so you can control glare during video calls.\n\n## Invest in ergonomic furniture\nChoose a chair with proper lumbar support and a height-adjustable seat. A spacious desktop keeps monitors, keyboards, and notebooks organized.\n\n## Keep clutter in check\nEdit your work surface regularly and rely on trays, shelves, or wall-mounted organizers to store paperwork. A tidy setup makes it easier to focus.\n\n## Add inspiring accents\nGreenery, sculptural lamps, or framed prints introduce texture and creativity. Rotate a few accessories seasonally to keep the space feeling fresh.',
+    'https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg',
     'Thi Interior Studio',
     '2024-03-05T08:00:00Z',
     '2024-03-05T08:00:00Z',
@@ -1043,6 +997,10 @@ ON CONFLICT (slug) DO UPDATE SET
   published_at = EXCLUDED.published_at,
   updated_at = EXCLUDED.updated_at;
 
+-- ============================================================================
+-- 23. INSERT SAMPLE BLOG COMMENTS
+-- ============================================================================
+
 INSERT INTO comments (id, post_id, name, email, content, is_approved, created_at)
 VALUES
   (
@@ -1050,7 +1008,7 @@ VALUES
     'bb20612b-71f0-4a77-91c8-fd0566f6cb99',
     'Minh Anh',
     'minhanh@example.com',
-    'This workspace is gorgeous! I'm adding greenery and a new desk lamp this week.',
+    'This workspace is gorgeous! I am adding greenery and a new desk lamp this week.',
     true,
     '2024-03-06T09:15:00Z'
   ),
@@ -1079,573 +1037,3 @@ ON CONFLICT (id) DO UPDATE SET
   content = EXCLUDED.content,
   is_approved = EXCLUDED.is_approved,
   created_at = EXCLUDED.created_at;
-
--- 13. Seed products for design inspiration looks
-INSERT INTO products (
-  name,
-  slug,
-  description,
-  base_price,
-  sale_price,
-  room_type,
-  style,
-  materials,
-  dimensions,
-  weight,
-  sku,
-  stock_quantity,
-  images,
-  rating,
-  review_count,
-  is_new,
-  status
-)
-VALUES
-  (
-    'Harper Sectional Sofa',
-    'harper-sectional-sofa',
-    'A low-profile modular sectional with deep cushions and performance linen upholstery for family-friendly comfort.',
-    2150.00,
-    NULL,
-    'Living Room',
-    'Modern',
-    ARRAY['Performance linen', 'Kiln-dried hardwood', 'Feather-wrapped foam'],
-    '{"length": "112 in", "depth": "68 in", "height": "34 in"}'::jsonb,
-    165,
-    'LR-HAR-SEC-001',
-    12,
-    ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.8,
-    142,
-    true,
-    'active'
-  ),
-  (
-    'Marble Orbit Coffee Table',
-    'marble-orbit-coffee-table',
-    'Round marble coffee table with a sculptural metal base and a protective resin seal for everyday use.',
-    780.00,
-    NULL,
-    'Living Room',
-    'Modern',
-    ARRAY['Carrara marble', 'Brushed brass'],
-    '{"diameter": "42 in", "height": "15 in"}'::jsonb,
-    95,
-    'LR-MAR-COF-002',
-    20,
-    ARRAY['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    88,
-    false,
-    'active'
-  ),
-  (
-    'Atlas Arc Floor Lamp',
-    'atlas-arc-floor-lamp',
-    'Sleek arched floor lamp with a weighted base and adjustable shade to spotlight seating areas.',
-    390.00,
-    NULL,
-    'Living Room',
-    'Modern',
-    ARRAY['Powder-coated steel', 'Linen shade'],
-    '{"height": "78 in", "reach": "48 in"}'::jsonb,
-    32,
-    'LR-ATL-LMP-003',
-    30,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.6,
-    67,
-    false,
-    'active'
-  ),
-  (
-    'Tonal Wool Rug 8x10',
-    'tonal-wool-rug-8x10',
-    'Hand-loomed wool rug in layered neutral tones to anchor modern seating arrangements.',
-    960.00,
-    NULL,
-    'Living Room',
-    'Modern',
-    ARRAY['New Zealand wool', 'Cotton backing'],
-    '{"width": "96 in", "length": "120 in", "pile": "0.6 in"}'::jsonb,
-    45,
-    'LR-TON-RUG-004',
-    25,
-    ARRAY['https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.8,
-    53,
-    true,
-    'active'
-  ),
-  (
-    'Nordic Oak Platform Bed (Queen)',
-    'nordic-oak-platform-bed',
-    'Solid oak platform bed with rounded corners and a slatted base for breathable support.',
-    1290.00,
-    NULL,
-    'Bedroom',
-    'Scandinavian',
-    ARRAY['Solid oak', 'Baltic birch slats'],
-    '{"width": "64 in", "length": "86 in", "height": "14 in", "headboard_height": "40 in"}'::jsonb,
-    120,
-    'BR-NOR-BED-001',
-    18,
-    ARRAY['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.9,
-    210,
-    true,
-    'active'
-  ),
-  (
-    'Linen Bedding Set',
-    'linen-bedding-set',
-    'Four-piece garment-washed linen bedding bundle with breathable temperature regulation.',
-    360.00,
-    NULL,
-    'Bedroom',
-    'Scandinavian',
-    ARRAY['European flax linen'],
-    '{"size": "Queen", "pieces": "Duvet cover + 2 shams + sheet"}'::jsonb,
-    12,
-    'BR-LIN-BED-002',
-    60,
-    ARRAY['https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    95,
-    false,
-    'active'
-  ),
-  (
-    'Haze Glass Nightstands (Set of 2)',
-    'haze-glass-nightstands-set-of-2',
-    'Pair of smoked glass nightstands with concealed storage shelves and soft-close doors.',
-    540.00,
-    NULL,
-    'Bedroom',
-    'Scandinavian',
-    ARRAY['Tempered glass', 'Brass hardware'],
-    '{"width": "20 in", "depth": "18 in", "height": "24 in"}'::jsonb,
-    64,
-    'BR-HAZ-NT-003',
-    22,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.6,
-    74,
-    false,
-    'active'
-  ),
-  (
-    'Softloom Area Rug',
-    'softloom-area-rug',
-    'Plush looped rug with subtle geometric patterning to soften bedroom floors.',
-    350.00,
-    NULL,
-    'Bedroom',
-    'Scandinavian',
-    ARRAY['Wool blend', 'Cotton backing'],
-    '{"width": "84 in", "length": "108 in"}'::jsonb,
-    38,
-    'BR-SOF-RUG-004',
-    28,
-    ARRAY['https://images.pexels.com/photos/6585612/pexels-photo-6585612.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.8,
-    58,
-    true,
-    'active'
-  ),
-  (
-    'Forge Live-Edge Dining Table',
-    'forge-live-edge-dining-table',
-    'Statement dining table crafted from live-edge acacia wood with a raw steel base.',
-    2150.00,
-    NULL,
-    'Dining',
-    'Industrial',
-    ARRAY['Acacia wood', 'Powder-coated steel'],
-    '{"length": "96 in", "width": "40 in", "height": "30 in"}'::jsonb,
-    210,
-    'DN-FOR-TBL-001',
-    10,
-    ARRAY['https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.9,
-    132,
-    false,
-    'active'
-  ),
-  (
-    'Set of 6 Rivet Leather Chairs',
-    'rivet-leather-dining-chairs-set-of-6',
-    'Six industrial-inspired leather dining chairs with welded steel frames and stitched cushioning.',
-    1140.00,
-    NULL,
-    'Dining',
-    'Industrial',
-    ARRAY['Top-grain leather', 'Steel frame'],
-    '{"width": "19 in", "depth": "22 in", "height": "34 in", "seat_height": "18 in"}'::jsonb,
-    132,
-    'DN-RIV-CHR-002',
-    18,
-    ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    91,
-    true,
-    'active'
-  ),
-  (
-    'Copper Cascade Chandelier',
-    'copper-cascade-chandelier',
-    'Multi-tier chandelier with hand-brushed copper shades for dramatic dining room lighting.',
-    490.00,
-    NULL,
-    'Dining',
-    'Industrial',
-    ARRAY['Copper', 'Fabric cord'],
-    '{"diameter": "30 in", "height": "26 in"}'::jsonb,
-    22,
-    'DN-COP-CH-003',
-    35,
-    ARRAY['https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.5,
-    64,
-    false,
-    'active'
-  ),
-  (
-    'Walnut Executive Desk',
-    'walnut-executive-desk',
-    'L-shaped walnut veneer desk with integrated cable routing and soft-close storage drawers.',
-    1450.00,
-    NULL,
-    'Office',
-    'Modern',
-    ARRAY['Walnut veneer', 'Powder-coated steel'],
-    '{"width": "72 in", "depth": "60 in", "height": "30 in"}'::jsonb,
-    180,
-    'OF-WAL-DSK-001',
-    14,
-    ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.8,
-    118,
-    true,
-    'active'
-  ),
-  (
-    'ErgoFlex Leather Chair',
-    'ergoflex-leather-chair',
-    'Ergonomic task chair with breathable leather, lumbar support, and fully adjustable arms.',
-    620.00,
-    NULL,
-    'Office',
-    'Modern',
-    ARRAY['Aniline leather', 'Aluminum base', 'Memory foam'],
-    '{"width": "27 in", "depth": "27 in", "height": "48 in"}'::jsonb,
-    52,
-    'OF-ERG-CHR-002',
-    30,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.9,
-    256,
-    false,
-    'active'
-  ),
-  (
-    'Modular Wall Storage',
-    'modular-wall-storage',
-    'Configurable wall-mounted storage system with open shelving and concealed cabinets for home offices.',
-    890.00,
-    NULL,
-    'Office',
-    'Modern',
-    ARRAY['Engineered wood', 'Matte lacquer', 'Steel brackets'],
-    '{"width": "96 in", "height": "84 in", "depth": "15 in"}'::jsonb,
-    98,
-    'OF-MOD-STO-003',
-    16,
-    ARRAY['https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    83,
-    true,
-    'active'
-  ),
-  (
-    'Linear Task Lighting',
-    'linear-task-lighting',
-    'Slim LED task light with adjustable brightness and color temperature for focused work.',
-    320.00,
-    NULL,
-    'Office',
-    'Modern',
-    ARRAY['Anodized aluminum', 'LED'],
-    '{"length": "38 in", "height": "18 in"}'::jsonb,
-    8,
-    'OF-LIN-LGT-004',
-    40,
-    ARRAY['https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.5,
-    45,
-    false,
-    'active'
-  ),
-  (
-    'Convertible Sofa Bed',
-    'convertible-sofa-bed',
-    'Compact sofa that converts to a full-size bed with hidden storage for linens.',
-    940.00,
-    NULL,
-    'Living Room',
-    'Minimalist',
-    ARRAY['Performance fabric', 'Solid pine frame'],
-    '{"width": "84 in", "depth": "36 in", "height": "34 in"}'::jsonb,
-    128,
-    'LR-CON-SOF-005',
-    26,
-    ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.6,
-    73,
-    true,
-    'active'
-  ),
-  (
-    'Foldaway Dining Set',
-    'foldaway-dining-set',
-    'Wall-mounted foldable dining table with two upholstered stools that tuck away to save space.',
-    520.00,
-    NULL,
-    'Dining',
-    'Minimalist',
-    ARRAY['Oak veneer', 'Steel', 'Performance fabric'],
-    '{"table_width": "36 in", "table_depth": "20 in", "table_height": "30 in"}'::jsonb,
-    60,
-    'DN-FOL-SET-002',
-    24,
-    ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.5,
-    52,
-    false,
-    'active'
-  ),
-  (
-    'Wall-Mounted Shelving System',
-    'wall-mounted-shelving-system',
-    'Floating shelving solution with adjustable brackets to customize storage in tight spaces.',
-    390.00,
-    NULL,
-    'Living Room',
-    'Minimalist',
-    ARRAY['Powder-coated steel', 'Oak veneer shelves'],
-    '{"width": "72 in", "height": "78 in", "depth": "12 in"}'::jsonb,
-    48,
-    'LR-WAL-SHE-006',
-    30,
-    ARRAY['https://images.pexels.com/photos/209224/pexels-photo-209224.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.4,
-    61,
-    true,
-    'active'
-  ),
-  (
-    'Soft Glow Pendant',
-    'soft-glow-pendant',
-    'Frosted glass pendant with dimmable LED module ideal for intimate studio zones.',
-    330.00,
-    NULL,
-    'Living Room',
-    'Minimalist',
-    ARRAY['Frosted glass', 'Brushed nickel'],
-    '{"diameter": "18 in", "height": "12 in"}'::jsonb,
-    12,
-    'LR-SOF-PEN-007',
-    35,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.6,
-    44,
-    false,
-    'active'
-  ),
-  (
-    'Driftwood Outdoor Sofa',
-    'driftwood-outdoor-sofa',
-    'All-weather outdoor sofa with teak-inspired frame and quick-dry cushions for coastal patios.',
-    1980.00,
-    NULL,
-    'Outdoor',
-    'Boho',
-    ARRAY['Powder-coated aluminum', 'Olefin upholstery'],
-    '{"width": "88 in", "depth": "34 in", "height": "32 in"}'::jsonb,
-    120,
-    'OD-DRI-SOF-001',
-    12,
-    ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.8,
-    102,
-    true,
-    'active'
-  ),
-  (
-    'All-Weather Lounge Chairs (Set of 2)',
-    'all-weather-lounge-chairs-set-of-2',
-    'Pair of reclining outdoor lounge chairs with UV-resistant wicker and water-repellent cushions.',
-    1080.00,
-    NULL,
-    'Outdoor',
-    'Boho',
-    ARRAY['Resin wicker', 'Aluminum frame', 'Polyester cushions'],
-    '{"width": "30 in", "depth": "58 in", "height": "34 in"}'::jsonb,
-    86,
-    'OD-ALL-LNG-002',
-    18,
-    ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    78,
-    false,
-    'active'
-  ),
-  (
-    'Braided Outdoor Rug',
-    'braided-outdoor-rug',
-    'Weather-resistant flatweave rug with braided edges to ground outdoor seating zones.',
-    420.00,
-    NULL,
-    'Outdoor',
-    'Boho',
-    ARRAY['Recycled polypropylene'],
-    '{"width": "96 in", "length": "120 in"}'::jsonb,
-    24,
-    'OD-BRA-RUG-003',
-    34,
-    ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.6,
-    59,
-    false,
-    'active'
-  ),
-  (
-    'Rattan Lantern Trio',
-    'rattan-lantern-trio',
-    'Set of three handwoven lanterns with glass inserts for layered outdoor lighting.',
-    340.00,
-    NULL,
-    'Outdoor',
-    'Boho',
-    ARRAY['Natural rattan', 'Glass'],
-    '{"heights": "12 in / 16 in / 20 in"}'::jsonb,
-    18,
-    'OD-RAT-LAN-004',
-    40,
-    ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.5,
-    48,
-    true,
-    'active'
-  ),
-  (
-    'Acacia Coffee Table',
-    'acacia-coffee-table',
-    'Outdoor coffee table crafted from solid acacia with a slatted top for quick drying.',
-    500.00,
-    NULL,
-    'Outdoor',
-    'Boho',
-    ARRAY['Solid acacia wood'],
-    '{"diameter": "38 in", "height": "16 in"}'::jsonb,
-    55,
-    'OD-ACA-COF-005',
-    22,
-    ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    41,
-    false,
-    'active'
-  ),
-  (
-    'Alpine Modular Sofa',
-    'alpine-modular-sofa',
-    'Oversized modular sofa with deep chenille cushions and reversible corner pieces for chalet-inspired lounging.',
-    2480.00,
-    NULL,
-    'Living Room',
-    'Seasonal',
-    ARRAY['Chenille upholstery', 'Solid birch frame', 'Feather blend cushions'],
-    '{"width": "120 in", "depth": "68 in", "height": "34 in"}'::jsonb,
-    220,
-    'LR-ALP-SOF-008',
-    10,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.9,
-    98,
-    true,
-    'active'
-  ),
-  (
-    'Stone Hearth Console',
-    'stone-hearth-console',
-    'Console table with a faux-stone finish and integrated media storage for lodge-inspired living rooms.',
-    1120.00,
-    NULL,
-    'Living Room',
-    'Seasonal',
-    ARRAY['Engineered wood', 'Stone composite veneer'],
-    '{"width": "72 in", "depth": "18 in", "height": "30 in"}'::jsonb,
-    140,
-    'LR-STO-CON-009',
-    16,
-    ARRAY['https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.6,
-    54,
-    false,
-    'active'
-  ),
-  (
-    'Chunky Wool Throws',
-    'chunky-wool-throws',
-    'Set of two oversized merino wool throws with hand-knotted tassels for layered winter texture.',
-    420.00,
-    NULL,
-    'Living Room',
-    'Seasonal',
-    ARRAY['Merino wool'],
-    '{"size": "50 in x 70 in"}'::jsonb,
-    10,
-    'LR-CHU-THR-010',
-    40,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.8,
-    63,
-    true,
-    'active'
-  ),
-  (
-    'Antler Inspired Chandelier',
-    'antler-inspired-chandelier',
-    'Rustic chandelier crafted from resin antlers with warm LED bulbs for a cabin-worthy glow.',
-    1620.00,
-    NULL,
-    'Living Room',
-    'Seasonal',
-    ARRAY['Resin', 'LED'],
-    '{"diameter": "36 in", "height": "28 in"}'::jsonb,
-    44,
-    'LR-ANT-CH-011',
-    18,
-    ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'],
-    4.7,
-    49,
-    false,
-    'active'
-  )
-ON CONFLICT (slug) DO UPDATE SET
-  description = EXCLUDED.description,
-  base_price = EXCLUDED.base_price,
-  sale_price = EXCLUDED.sale_price,
-  room_type = EXCLUDED.room_type,
-  style = EXCLUDED.style,
-  materials = EXCLUDED.materials,
-  dimensions = EXCLUDED.dimensions,
-  weight = EXCLUDED.weight,
-  sku = EXCLUDED.sku,
-  stock_quantity = EXCLUDED.stock_quantity,
-  images = EXCLUDED.images,
-  rating = EXCLUDED.rating,
-  review_count = EXCLUDED.review_count,
-  is_new = EXCLUDED.is_new,
-  status = EXCLUDED.status;
