@@ -32,6 +32,7 @@ export function Header({ onCartOpen }: HeaderProps) {
   ];
 
   const resourceLinks = [
+    { name: 'Blog & Tin tức', path: '/blog' },
     { name: 'Shipping & Returns', path: '/shipping-returns' },
     { name: 'Track Order', path: '/track-order' },
     { name: 'FAQ', path: '/faq' },
@@ -140,6 +141,13 @@ export function Header({ onCartOpen }: HeaderProps) {
                 className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
                 Contact
+              </Link>
+
+              <Link
+                to="/blog"
+                className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
+              >
+                Blog
               </Link>
 
               <Link

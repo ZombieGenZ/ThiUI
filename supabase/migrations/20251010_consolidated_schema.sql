@@ -884,3 +884,64 @@ WHERE id IN (
   ORDER BY review_count DESC, rating DESC
   LIMIT 12
 );
+
+-- ============================================================================
+-- 20. BLOG POSTS TABLE (Nội dung blog)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  excerpt text,
+  content text NOT NULL,
+  featured_image_url text,
+  author text,
+  published_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON blog_posts(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_created_at ON blog_posts(created_at DESC);
+
+DROP POLICY IF EXISTS "Blog posts are readable by everyone" ON blog_posts;
+
+CREATE POLICY "Blog posts are readable by everyone"
+  ON blog_posts FOR SELECT
+  TO public
+  USING (true);
+
+-- ============================================================================
+-- 21. BLOG COMMENTS TABLE (Bình luận bài viết)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS comments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id uuid NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  email text NOT NULL,
+  content text NOT NULL,
+  is_approved boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
+
+DROP POLICY IF EXISTS "Approved comments are visible" ON comments;
+DROP POLICY IF EXISTS "Public can insert comments" ON comments;
+
+CREATE POLICY "Approved comments are visible"
+  ON comments FOR SELECT
+  TO public
+  USING (is_approved = true);
+
+CREATE POLICY "Public can insert comments"
+  ON comments FOR INSERT
+  TO public
+  WITH CHECK (true);
