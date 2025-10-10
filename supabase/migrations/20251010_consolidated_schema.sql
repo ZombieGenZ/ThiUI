@@ -858,7 +858,7 @@ BEGIN
       review_count = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id)
     WHERE p.id = product_id;
   END LOOP;
-END $$ LANGUAGE plpgsql;
+END $$;
 
 -- ============================================================================
 -- 18. RE-ENABLE FOREIGN KEY CONSTRAINTS (Optional - for production)
