@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS products (
   stock_quantity integer DEFAULT 0,
   images text[] DEFAULT ARRAY[]::text[],
   video_url text,
-  rating decimal(3,2) DEFAULT 0,
+  rating decimal(3,2) CHECK (rating BETWEEN 1 AND 5),
   review_count integer DEFAULT 0,
   is_featured boolean DEFAULT false,
   is_new boolean DEFAULT false,
