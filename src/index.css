@@ -343,6 +343,20 @@
     animation: progress-bar 1.5s infinite;
   }
 
+  @keyframes alertProgress {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  .alert-progress {
+    transform-origin: right center;
+    animation: alertProgress 5000ms linear forwards;
+  }
+
   .focus-ring {
     outline: 2px solid transparent;
     outline-offset: 2px;

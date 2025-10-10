@@ -1,21 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import type { LucideIcon } from 'lucide-react';
 import {
+  BarChart3,
+  Boxes,
   ChevronLeft,
   ChevronRight,
   Edit,
   Eye,
+  LayoutDashboard,
   Layers,
   Loader2,
+  LogOut,
   Plus,
   RefreshCw,
+  ShieldAlert,
   Search,
   Trash2,
+  Users as UsersIcon,
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 type InputType =
   | 'text'
@@ -52,6 +60,14 @@ interface ColumnConfig {
   label: string;
   widthClass?: string;
   render?: (value: any, row: Record<string, any>) => JSX.Element | string | number | null;
+}
+
+interface AdminNavItem {
+  key: string;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  sections: { key: string; label: string; component: JSX.Element }[];
 }
 
 interface CrudManagerProps {
@@ -154,10 +170,76 @@ const badgeClass = (status: string) => {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value ?? 0);
 
+const computeTrend = (current: number, previous: number) => {
+  if (previous <= 0) {
+    if (current <= 0) {
+      return { label: '0%', positive: false };
+    }
+    return { label: '+100%', positive: true };
+  }
+
+  const diff = ((current - previous) / previous) * 100;
+  return { label: `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%`, positive: diff >= 0 };
+};
+
+const formatStatusLabel = (status: string) =>
+  status
+    .split('_')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
 function AdminPanelPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin, role, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<string>('dashboard');
+
+  const navigation = useMemo<AdminNavItem[]>(
+    () => [
+      {
+        key: 'dashboard',
+        label: 'Dashboard',
+        description: 'Tổng quan hoạt động và các số liệu quan trọng.',
+        icon: LayoutDashboard,
+        sections: [{ key: 'overview', label: 'Tổng quan', component: <AdminDashboard /> }],
+      },
+      {
+        key: 'users',
+        label: 'Quản lý người dùng',
+        description: 'Theo dõi khách hàng và các yêu cầu hỗ trợ.',
+        icon: UsersIcon,
+        sections: [
+          { key: 'profiles', label: 'Tài khoản khách hàng', component: <ProfilesManager /> },
+          { key: 'contact', label: 'Liên hệ & phản hồi', component: <ContactManager /> },
+          { key: 'design', label: 'Yêu cầu thiết kế', component: <DesignRequestsManager /> },
+          { key: 'careers', label: 'Ứng tuyển', component: <CareerApplicationsManager /> },
+        ],
+      },
+      {
+        key: 'products',
+        label: 'Quản lý sản phẩm',
+        description: 'Điều chỉnh danh mục, sản phẩm và chương trình khuyến mãi.',
+        icon: Boxes,
+        sections: [
+          { key: 'catalogue', label: 'Danh sách sản phẩm', component: <ProductsManager /> },
+          { key: 'categories', label: 'Danh mục', component: <CategoriesManager /> },
+          { key: 'vouchers', label: 'Mã khuyến mãi', component: <VouchersManager /> },
+        ],
+      },
+      {
+        key: 'analytics',
+        label: 'Thống kê',
+        description: 'Theo dõi đơn hàng và nội dung truyền thông.',
+        icon: BarChart3,
+        sections: [
+          { key: 'orders', label: 'Đơn hàng', component: <OrdersManager /> },
+          { key: 'blog', label: 'Bài viết & tin tức', component: <BlogPostsManager /> },
+        ],
+      },
+    ],
+    []
+  );
+
+  const [activeNav, setActiveNav] = useState<string>(() => navigation[0]?.key ?? 'dashboard');
+  const [activeSection, setActiveSection] = useState<string>(() => navigation[0]?.sections[0]?.key ?? 'overview');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -165,94 +247,181 @@ function AdminPanelPage() {
     }
   }, [loading, user, navigate]);
 
+  useEffect(() => {
+    const nav = navigation.find(item => item.key === activeNav);
+    if (nav && !nav.sections.some(section => section.key === activeSection)) {
+      setActiveSection(nav.sections[0]?.key ?? activeSection);
+    }
+  }, [activeNav, activeSection, navigation]);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-100">
-        <Loader2 className="animate-spin h-8 w-8 text-brand-600" />
+      <div className="flex min-h-screen items-center justify-center bg-neutral-100">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
       </div>
     );
   }
 
-  const isAdmin = user?.email?.toLowerCase() === 'administrator@furnicraft.com';
-
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-100 px-6 text-center">
-        <div className="max-w-md rounded-2xl bg-white p-10 shadow-strong border border-neutral-200">
-          <h1 className="text-2xl font-semibold text-neutral-900">Access Restricted</h1>
-          <p className="mt-3 text-neutral-600">
-            This area is reserved for Furnicraft administrators. Please sign in with an administrator account to manage store data.
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-neutral-100 via-white to-rose-50 px-6 text-center">
+        <div className="max-w-md rounded-3xl border border-rose-100 bg-white/80 p-10 shadow-strong backdrop-blur">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+            <ShieldAlert className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-semibold text-neutral-900">Quyền truy cập bị hạn chế</h1>
+          <p className="mt-3 text-sm text-neutral-600">
+            Chỉ những tài khoản được gán vai trò <strong>admin</strong> mới có thể truy cập khu vực quản trị. Vui lòng liên hệ quản trị viên hệ thống để được cấp quyền.
           </p>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="mt-6 inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-600 hover:border-brand-200 hover:text-brand-600"
+          >
+            Quay lại trang chủ
+          </button>
         </div>
       </div>
     );
   }
 
-  const sections = useMemo(
-    () => [
-      { key: 'dashboard', label: 'Dashboard Overview', component: <AdminDashboard /> },
-      { key: 'categories', label: 'Categories', component: <CategoriesManager /> },
-      { key: 'products', label: 'Products', component: <ProductsManager /> },
-      { key: 'vouchers', label: 'Vouchers', component: <VouchersManager /> },
-      { key: 'orders', label: 'Orders', component: <OrdersManager /> },
-      { key: 'blog', label: 'Posts & Articles', component: <BlogPostsManager /> },
-      { key: 'contact', label: 'Contact Submissions', component: <ContactManager /> },
-      { key: 'design', label: 'Design Service Requests', component: <DesignRequestsManager /> },
-      { key: 'careers', label: 'Career Applications', component: <CareerApplicationsManager /> },
-      { key: 'users', label: 'Customer Accounts', component: <ProfilesManager /> },
-    ],
-    []
-  );
+  const currentNav = navigation.find(item => item.key === activeNav) ?? navigation[0];
+  const currentSection = currentNav.sections.find(section => section.key === activeSection) ?? currentNav.sections[0];
 
-  const currentSection = sections.find(section => section.key === activeSection) ?? sections[0];
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const userName = (user?.user_metadata as Record<string, any>)?.full_name ?? user?.email ?? 'Admin';
+  const displayRole = role ?? 'member';
 
   return (
-    <div className="min-h-screen bg-neutral-100 text-neutral-900">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-emerald-50/70 text-neutral-900">
       <div className="flex min-h-screen">
-        <aside className="w-72 bg-white border-r border-neutral-200 shadow-sm">
-          <div className="p-6 border-b border-neutral-200">
-            <p className="text-sm uppercase tracking-wide text-brand-600 font-semibold">Furnicraft Admin</p>
-            <h2 className="mt-2 text-xl font-semibold text-neutral-900">Control Center</h2>
-            <p className="mt-1 text-sm text-neutral-500">Manage catalogue, orders, and customer engagements.</p>
+        <aside className="hidden w-72 flex-col border-r border-neutral-200/80 bg-white/80 backdrop-blur xl:flex">
+          <div className="border-b border-neutral-200/70 px-6 pb-6 pt-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Furnicraft</p>
+            <h2 className="mt-2 text-2xl font-semibold text-neutral-900">Admin Console</h2>
+            <p className="mt-2 text-sm text-neutral-500">{userName}</p>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-600">
+              <span className="h-2 w-2 rounded-full bg-brand-500" /> {displayRole}
+            </div>
           </div>
-          <nav className="p-4 space-y-1">
-            {sections.map(section => (
-              <button
-                key={section.key}
-                type="button"
-                onClick={() => setActiveSection(section.key)}
-                className={`w-full flex items-center justify-between rounded-xl px-4 py-3 text-left transition
-                  ${
-                    currentSection.key === section.key
-                      ? 'bg-brand-50 text-brand-700 font-semibold shadow-inner border border-brand-100'
-                      : 'text-neutral-600 hover:bg-neutral-100'
-                  }
-                `}
-              >
-                <span>{section.label}</span>
-                {currentSection.key === section.key && <div className="h-2 w-2 rounded-full bg-brand-500" />}
-              </button>
-            ))}
+          <nav className="flex-1 space-y-1 px-4 py-6">
+            {navigation.map(item => {
+              const Icon = item.icon;
+              const active = item.key === activeNav;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => {
+                    setActiveNav(item.key);
+                    setActiveSection(item.sections[0]?.key ?? item.key);
+                  }}
+                  className={`group w-full rounded-2xl border px-4 py-3 text-left transition-all ${
+                    active
+                      ? 'border-brand-200 bg-gradient-to-r from-brand-500/10 via-brand-500/5 to-transparent text-brand-700 shadow-lg shadow-brand-500/10'
+                      : 'border-transparent bg-transparent text-neutral-500 hover:border-neutral-200 hover:bg-neutral-100/80 hover:text-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
+                        active
+                          ? 'border-brand-200 bg-white text-brand-600'
+                          : 'border-neutral-200 bg-white/60 text-neutral-500 group-hover:border-brand-200 group-hover:text-brand-600'
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-sm font-semibold">{item.label}</span>
+                  </div>
+                </button>
+              );
+            })}
           </nav>
+          <div className="px-4 pb-6">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-600 hover:border-brand-200 hover:text-brand-600"
+            >
+              <LogOut className="h-4 w-4" /> Đăng xuất
+            </button>
+          </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+        <main className="flex-1 overflow-y-auto">
+          <div className="relative mx-auto flex max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-10">
+            <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-semibold text-neutral-900">{currentSection.label}</h1>
-                <p className="text-sm text-neutral-500">Logged in as {user?.email}</p>
+                <span className="text-xs font-semibold uppercase tracking-[0.38em] text-brand-500">Quản trị hệ thống</span>
+                <h1 className="mt-2 text-3xl font-semibold text-neutral-900">{currentNav.label}</h1>
+                <p className="mt-2 text-sm text-neutral-500">{currentNav.description}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"
-              >
-                <RefreshCw className="h-4 w-4" /> Refresh data
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-600 shadow-sm hover:border-brand-200 hover:text-brand-600"
+                >
+                  <RefreshCw className="h-4 w-4" /> Làm mới dữ liệu
+                </button>
+              </div>
             </div>
 
-            <div className="bg-white border border-neutral-200 rounded-2xl shadow-lg shadow-neutral-200/40 p-6">
+            <div className="mb-4 flex flex-wrap items-center gap-3 xl:hidden">
+              {navigation.map(item => {
+                const active = item.key === activeNav;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => {
+                      setActiveNav(item.key);
+                      setActiveSection(item.sections[0]?.key ?? item.key);
+                    }}
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
+                      active
+                        ? 'border-brand-200 bg-brand-100 text-brand-700'
+                        : 'border-neutral-200 bg-white/70 text-neutral-500'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {currentNav.sections.length > 1 && (
+              <div className="mb-6 flex flex-wrap gap-3">
+                {currentNav.sections.map(section => {
+                  const active = section.key === activeSection;
+                  return (
+                    <button
+                      key={section.key}
+                      type="button"
+                      onClick={() => setActiveSection(section.key)}
+                      className={`rounded-2xl px-4 py-2 text-sm font-semibold transition-all ${
+                        active
+                          ? 'bg-neutral-900 text-white shadow-lg shadow-neutral-900/20'
+                          : 'border border-neutral-200 bg-white/80 text-neutral-600 hover:border-brand-200 hover:text-brand-600'
+                      }`}
+                    >
+                      {section.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-xl shadow-neutral-900/5 backdrop-blur">
               {currentSection.component}
             </div>
           </div>
@@ -264,6 +433,13 @@ function AdminPanelPage() {
 function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<Record<string, number>>({});
+  const [ordersSummary, setOrdersSummary] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    averageOrderValue: 0,
+    statusBreakdown: [] as { status: string; count: number }[],
+    monthlySeries: [] as { label: string; revenue: number; orders: number }[],
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -278,18 +454,72 @@ function AdminDashboard() {
         'design_service_requests',
         'career_applications',
       ];
+
       try {
-        const results = await Promise.all(
-          tables.map(table => supabase.from(table).select('id', { count: 'exact', head: true }))
-        );
+        const [tableResults, ordersResult] = await Promise.all([
+          Promise.all(tables.map(table => supabase.from(table).select('id', { count: 'exact', head: true }))),
+          supabase.from('orders').select('total_amount, created_at, status').order('created_at', { ascending: true }),
+        ]);
+
         if (!mounted) return;
+
         const counts: Record<string, number> = {};
-        results.forEach((result, index) => {
+        tableResults.forEach((result, index) => {
+          if (result.error) throw result.error;
           counts[tables[index]] = result.count ?? 0;
         });
         setMetrics(counts);
+
+        if (ordersResult.error) throw ordersResult.error;
+        const ordersData = ordersResult.data ?? [];
+
+        const totalRevenue = ordersData.reduce(
+          (sum, order) => sum + Number(order.total_amount ?? 0),
+          0
+        );
+        const totalOrders = ordersData.length;
+        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+        const statusCounts = ordersData.reduce<Record<string, number>>((acc, order) => {
+          const status = (order.status ?? 'unknown').toLowerCase();
+          acc[status] = (acc[status] ?? 0) + 1;
+          return acc;
+        }, {});
+
+        const statusBreakdown = Object.entries(statusCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([status, count]) => ({ status, count }));
+
+        const monthlyMap = new Map<string, { revenue: number; orders: number }>();
+        ordersData.forEach(order => {
+          if (!order.created_at) return;
+          const created = new Date(order.created_at);
+          if (Number.isNaN(created.getTime())) return;
+          const key = `${created.getFullYear()}-${created.getMonth()}`;
+          const entry = monthlyMap.get(key) ?? { revenue: 0, orders: 0 };
+          entry.revenue += Number(order.total_amount ?? 0);
+          entry.orders += 1;
+          monthlyMap.set(key, entry);
+        });
+
+        const monthlySeries: { label: string; revenue: number; orders: number }[] = [];
+        const referenceDate = new Date();
+        for (let offset = 5; offset >= 0; offset -= 1) {
+          const pointDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - offset, 1);
+          const key = `${pointDate.getFullYear()}-${pointDate.getMonth()}`;
+          const entry = monthlyMap.get(key) ?? { revenue: 0, orders: 0 };
+          monthlySeries.push({
+            label: pointDate.toLocaleString('vi-VN', { month: 'short' }),
+            revenue: entry.revenue,
+            orders: entry.orders,
+          });
+        }
+
+        setOrdersSummary({ totalRevenue, totalOrders, averageOrderValue, statusBreakdown, monthlySeries });
       } catch (error) {
-        toast.error('Unable to load dashboard metrics');
+        console.error(error);
+        if (mounted) toast.error('Không thể tải dữ liệu dashboard');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -309,53 +539,226 @@ function AdminDashboard() {
     );
   }
 
-  const metricCards = [
+  const latestSeries =
+    ordersSummary.monthlySeries[ordersSummary.monthlySeries.length - 1] ?? { revenue: 0, orders: 0 };
+  const previousSeries =
+    ordersSummary.monthlySeries.length > 1
+      ? ordersSummary.monthlySeries[ordersSummary.monthlySeries.length - 2]
+      : { revenue: 0, orders: 0 };
+  const revenueTrend = computeTrend(latestSeries.revenue, previousSeries.revenue);
+  const ordersTrend = computeTrend(latestSeries.orders, previousSeries.orders);
+  const supportRequests = (metrics.contact_messages ?? 0) + (metrics.design_service_requests ?? 0);
+  const averageMonthlyRevenue = ordersSummary.monthlySeries.length
+    ? ordersSummary.monthlySeries.reduce((sum, item) => sum + item.revenue, 0) /
+      ordersSummary.monthlySeries.length
+    : 0;
+  const bestMonth =
+    ordersSummary.monthlySeries.length > 0
+      ? ordersSummary.monthlySeries.reduce((best, item) =>
+          item.revenue > best.revenue ? item : best
+        )
+      : { label: '—', revenue: 0, orders: 0 };
+
+  const highlightCards = [
     {
-      label: 'Active Products',
-      value: metrics.products ?? 0,
-      description: 'Total live products in the catalogue',
+      label: 'Tổng doanh thu',
+      value: formatCurrency(ordersSummary.totalRevenue),
+      helper: `${revenueTrend.label} so với tháng trước`,
+      positive: revenueTrend.positive,
     },
     {
-      label: 'Categories',
-      value: metrics.categories ?? 0,
-      description: 'Organised departments and collections',
+      label: 'Đơn hàng tháng này',
+      value: latestSeries.orders.toLocaleString('vi-VN'),
+      helper: `${ordersTrend.label} so với tháng trước`,
+      positive: ordersTrend.positive,
     },
     {
-      label: 'Orders',
-      value: metrics.orders ?? 0,
-      description: 'Customer orders awaiting fulfilment',
+      label: 'Giá trị đơn trung bình',
+      value: formatCurrency(ordersSummary.averageOrderValue),
+      helper: `${ordersSummary.totalOrders.toLocaleString('vi-VN')} đơn đã ghi nhận`,
+      positive: ordersSummary.averageOrderValue >= 0,
     },
     {
-      label: 'Blog Posts',
-      value: metrics.blog_posts ?? 0,
-      description: 'Stories, guides, and inspiration articles',
-    },
-    {
-      label: 'Contact Requests',
-      value: metrics.contact_messages ?? 0,
-      description: 'Inbound customer enquiries',
-    },
-    {
-      label: 'Design Requests',
-      value: metrics.design_service_requests ?? 0,
-      description: 'Interior design consultations submitted',
-    },
-    {
-      label: 'Career Applications',
-      value: metrics.career_applications ?? 0,
-      description: 'Candidates eager to join the team',
+      label: 'Yêu cầu hỗ trợ',
+      value: supportRequests.toLocaleString('vi-VN'),
+      helper: 'Liên hệ & yêu cầu thiết kế cần xử lý',
+      positive: true,
     },
   ];
 
+  const engagementCards = [
+    { label: 'Sản phẩm đang bán', value: metrics.products ?? 0, caption: 'Trong catalogue hiện tại' },
+    { label: 'Danh mục sản phẩm', value: metrics.categories ?? 0, caption: 'Nhóm sản phẩm chính' },
+    { label: 'Bài viết blog', value: metrics.blog_posts ?? 0, caption: 'Nguồn cảm hứng & tin tức' },
+    { label: 'Đơn hàng toàn thời gian', value: metrics.orders ?? 0, caption: 'Bao gồm cả hoàn tất & đang xử lý' },
+    { label: 'Yêu cầu thiết kế', value: metrics.design_service_requests ?? 0, caption: 'Khách hàng muốn tư vấn' },
+    { label: 'Ứng tuyển vào đội ngũ', value: metrics.career_applications ?? 0, caption: 'Hồ sơ cần phản hồi' },
+  ];
+
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {metricCards.map(card => (
-        <div key={card.label} className="rounded-2xl border border-neutral-200 p-6 shadow-sm bg-neutral-50">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-500">{card.label}</p>
-          <p className="mt-3 text-3xl font-bold text-neutral-900">{card.value}</p>
-          <p className="mt-2 text-sm text-neutral-500">{card.description}</p>
+    <div className="space-y-8">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {highlightCards.map(card => (
+          <div
+            key={card.label}
+            className="rounded-3xl border border-neutral-200/80 bg-white/90 p-5 shadow-sm shadow-neutral-900/5"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">{card.label}</p>
+            <p className="mt-3 text-2xl font-semibold text-neutral-900">{card.value}</p>
+            <p className={`mt-2 text-xs font-semibold ${card.positive ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {card.helper}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
+        <div className="rounded-3xl border border-neutral-200/80 bg-white/90 p-6 shadow-sm shadow-neutral-900/5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-neutral-900">Doanh thu 6 tháng gần đây</h3>
+              <p className="text-sm text-neutral-500">Theo dõi xu hướng doanh thu & số lượng đơn hàng.</p>
+            </div>
+            <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">Realtime</span>
+          </div>
+          <div className="mt-6">
+            <RevenueTrendChart data={ordersSummary.monthlySeries} />
+          </div>
         </div>
-      ))}
+
+        <div className="flex flex-col gap-5">
+          <div className="rounded-3xl border border-neutral-200/80 bg-white/90 p-5 shadow-sm shadow-neutral-900/5">
+            <h3 className="text-base font-semibold text-neutral-900">Tình trạng đơn hàng</h3>
+            <p className="mt-1 text-xs text-neutral-500">Các trạng thái phổ biến nhất trong hệ thống.</p>
+            <div className="mt-4 space-y-2">
+              {ordersSummary.statusBreakdown.length === 0 ? (
+                <p className="text-sm text-neutral-500">Chưa có dữ liệu đơn hàng.</p>
+              ) : (
+                ordersSummary.statusBreakdown.map(item => (
+                  <div
+                    key={item.status}
+                    className="flex items-center justify-between rounded-2xl border border-neutral-200 bg-white/70 px-3 py-2"
+                  >
+                    <span className={`${badgeClass(item.status)} text-[11px]`}>{formatStatusLabel(item.status)}</span>
+                    <span className="text-sm font-semibold text-neutral-700">
+                      {item.count.toLocaleString('vi-VN')}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-neutral-200/80 bg-white/90 p-5 shadow-sm shadow-neutral-900/5">
+            <h3 className="text-base font-semibold text-neutral-900">Hiệu suất nhanh</h3>
+            <ul className="mt-4 space-y-3 text-sm text-neutral-600">
+              <li className="flex items-center justify-between">
+                <span>Doanh thu trung bình / tháng</span>
+                <span className="font-semibold text-neutral-900">{formatCurrency(averageMonthlyRevenue)}</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>Tháng cao nhất</span>
+                <span className="font-semibold text-neutral-900">
+                  {bestMonth.label} · {formatCurrency(bestMonth.revenue)}
+                </span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>Tổng đơn đã ghi nhận</span>
+                <span className="font-semibold text-neutral-900">
+                  {ordersSummary.totalOrders.toLocaleString('vi-VN')}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {engagementCards.map(card => (
+          <div
+            key={card.label}
+            className="rounded-3xl border border-neutral-200/80 bg-white/90 p-5 shadow-sm shadow-neutral-900/5"
+          >
+            <p className="text-sm font-semibold text-neutral-600">{card.label}</p>
+            <p className="mt-2 text-2xl font-semibold text-neutral-900">{card.value.toLocaleString('vi-VN')}</p>
+            <p className="mt-1 text-xs text-neutral-500">{card.caption}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RevenueTrendChart({
+  data,
+}: {
+  data: { label: string; revenue: number; orders: number }[];
+}) {
+  if (!data || data.length === 0) {
+    return <p className="text-sm text-neutral-500">Chưa có dữ liệu để hiển thị.</p>;
+  }
+
+  const plottedData = data.length === 1 ? [...data, { ...data[0] }] : data;
+  const maxRevenue = Math.max(...plottedData.map(item => item.revenue), 1);
+  const maxOrders = Math.max(...plottedData.map(item => item.orders), 1);
+
+  const points = plottedData.map((entry, index) => {
+    const x = (index / Math.max(plottedData.length - 1, 1)) * 100;
+    const y = 100 - (entry.revenue / maxRevenue) * 100;
+    return `${x},${y}`;
+  });
+
+  const areaPoints = ['0,100', ...points, '100,100'].join(' ');
+
+  return (
+    <div className="space-y-6">
+      <div className="relative h-56 overflow-hidden rounded-2xl border border-neutral-200 bg-gradient-to-br from-white via-white to-neutral-50">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          <defs>
+            <linearGradient id="revenueGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <polygon points={areaPoints} fill="url(#revenueGradient)" />
+          <polyline
+            points={points.join(' ')}
+            fill="none"
+            stroke="#16a34a"
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {points.map(point => {
+            const [x, y] = point.split(',');
+            return <circle key={`${x}-${y}`} cx={x} cy={y} r={1.5} fill="#16a34a" />;
+          })}
+        </svg>
+
+        <div className="absolute inset-x-6 bottom-6 flex h-24 items-end justify-between gap-3">
+          {plottedData.map((entry, index) => {
+            const barHeight = maxOrders === 0 ? 0 : (entry.orders / maxOrders) * 100;
+            return (
+              <div key={`${entry.label}-${index}`} className="flex flex-1 flex-col items-center gap-1 text-[11px]">
+                <span className="font-semibold text-neutral-500">{entry.orders.toLocaleString('vi-VN')}</span>
+                <div className="flex h-full w-full max-w-[38px] items-end rounded-full border border-emerald-100 bg-emerald-50/50 p-1">
+                  <div
+                    className="w-full rounded-full bg-emerald-500/70"
+                    style={{ height: `${Math.max(barHeight, 6)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex justify-between text-[11px] font-medium text-neutral-500">
+        {plottedData.map((entry, index) => (
+          <span key={`${entry.label}-${index}`} className="flex-1 text-center">
+            {entry.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -385,6 +788,7 @@ function CrudManager({
   const [editingItem, setEditingItem] = useState<Record<string, any> | null>(null);
   const [formValues, setFormValues] = useState<Record<string, any>>(defaultValues);
   const [fieldOptions, setFieldOptions] = useState<Record<string, Option[]>>({});
+  const [pendingDelete, setPendingDelete] = useState<Record<string, any> | null>(null);
 
   const loadOptions = useCallback(async () => {
     const optionEntries = await Promise.all(
@@ -467,18 +871,23 @@ function CrudManager({
     setEditingItem(null);
   };
 
-  const handleDelete = async (item: Record<string, any>) => {
+  const requestDelete = (item: Record<string, any>) => {
     if (disableDelete) return;
-    const confirmed = window.confirm('Are you sure you want to delete this record? This action cannot be undone.');
-    if (!confirmed) return;
+    setPendingDelete(item);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
     try {
-      const { error } = await supabase.from(table).delete().eq('id', item.id);
+      const { error } = await supabase.from(table).delete().eq('id', pendingDelete.id);
       if (error) throw error;
       toast.success('Record removed successfully');
       fetchItems();
     } catch (error) {
       console.error(error);
       toast.error('Unable to delete this record');
+    } finally {
+      setPendingDelete(null);
     }
   };
 
@@ -545,218 +954,247 @@ function CrudManager({
     }
   };
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold text-neutral-900">{title}</h2>
-          <p className="text-sm text-neutral-500">Manage records, update details, and keep data accurate.</p>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-            <input
-              value={search}
-              onChange={event => setSearch(event.target.value)}
-              className="w-full sm:w-64 rounded-lg border border-neutral-200 bg-neutral-50 pl-10 pr-4 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
-              placeholder="Search records"
-            />
+    <>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-neutral-900">{title}</h2>
+            <p className="text-sm text-neutral-500">Manage records, update details, and keep data accurate.</p>
           </div>
-          {!disableCreate && (
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
-            >
-              <Plus className="h-4 w-4" />
-              New entry
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="overflow-x-auto border border-neutral-200 rounded-xl">
-        <table className="min-w-full divide-y divide-neutral-200 text-sm">
-          <thead className="bg-neutral-50">
-            <tr>
-              {columns.map(column => (
-                <th
-                  key={column.key}
-                  className={`px-4 py-3 text-left font-semibold uppercase tracking-wide text-xs text-neutral-500 ${column.widthClass ?? ''}`}
-                >
-                  {column.label}
-                </th>
-              ))}
-              <th className="px-4 py-3 text-left font-semibold uppercase tracking-wide text-xs text-neutral-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-200">
-            {loading && (
-              <tr>
-                <td colSpan={columns.length + 1} className="py-10 text-center text-neutral-500">
-                  <Loader2 className="h-5 w-5 animate-spin inline-block mr-2 text-brand-600" /> Loading data...
-                </td>
-              </tr>
-            )}
-
-            {!loading && items.length === 0 && (
-              <tr>
-                <td colSpan={columns.length + 1} className="py-10 text-center text-neutral-500">
-                  No records found. Try adjusting your search.
-                </td>
-              </tr>
-            )}
-
-            {!loading &&
-              items.map(item => (
-                <tr key={item.id} className="hover:bg-neutral-50">
-                  {columns.map(column => (
-                    <td key={column.key} className="px-4 py-3 align-top text-neutral-700">
-                      {column.render ? column.render(item[column.key], item) : (item[column.key] ?? '')}
-                    </td>
-                  ))}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {renderActions?.(item, fetchItems)}
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(item)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:border-brand-300 hover:text-brand-600"
-                      >
-                        <Edit className="h-3.5 w-3.5" /> Edit
-                      </button>
-                      {!disableDelete && (
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" /> Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <p className="text-sm text-neutral-500">
-          Showing {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, count)} of {count} entries
-        </p>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-            className="inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 disabled:opacity-40"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="text-sm font-medium text-neutral-600">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
-            className="inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 disabled:opacity-40"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-neutral-900">
-                {editingItem ? 'Update record' : 'Create new record'}
-              </h3>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+              <input
+                value={search}
+                onChange={event => setSearch(event.target.value)}
+                className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2 pl-10 pr-4 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 sm:w-64"
+                placeholder="Search records"
+              />
+            </div>
+            {!disableCreate && (
               <button
                 type="button"
-                onClick={handleCloseForm}
-                className="rounded-full p-1 text-neutral-500 hover:bg-neutral-100"
+                onClick={handleOpenCreate}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
               >
-                <X className="h-5 w-5" />
+                <Plus className="h-4 w-4" />
+                New entry
               </button>
-            </div>
+            )}
+          </div>
+        </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-              {formFields.map(field => (
-                <div key={field.name} className="space-y-1">
-                  <label className="block text-sm font-semibold text-neutral-700">
-                    {field.label}
-                    {field.required && <span className="text-rose-500 ml-0.5">*</span>}
-                  </label>
-                  {field.type === 'textarea' ? (
-                    <textarea
-                      value={formValues[field.name] ?? ''}
-                      onChange={event => handleInputChange(field.name, event.target.value, field.type)}
-                      placeholder={field.placeholder}
-                      className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
-                      rows={4}
-                    />
-                  ) : field.type === 'select' ? (
-                    <select
-                      value={formValues[field.name] ?? ''}
-                      onChange={event => handleInputChange(field.name, event.target.value, field.type)}
-                      className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
-                    >
-                      <option value="">Select an option</option>
-                      {(fieldOptions[field.name] ?? []).map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : field.type === 'checkbox' ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(formValues[field.name])}
-                        onChange={() => handleInputChange(field.name, !formValues[field.name], field.type)}
-                        className="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
-                      />
-                      <span className="text-sm text-neutral-600">Enable</span>
-                    </div>
-                  ) : (
-                    <input
-                      type={field.type === 'datetime-local' ? 'datetime-local' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'}
-                      value={formValues[field.name] ?? ''}
-                      onChange={event => handleInputChange(field.name, event.target.value, field.type)}
-                      placeholder={field.placeholder}
-                      min={field.min}
-                      step={field.step}
-                      className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
-                    />
-                  )}
-                  {field.description && <p className="text-xs text-neutral-500">{field.description}</p>}
+        <div className="overflow-x-auto rounded-2xl border border-neutral-200">
+          <table className="min-w-full divide-y divide-neutral-200 text-sm">
+            <thead className="bg-neutral-50">
+              <tr>
+                {columns.map(column => (
+                  <th
+                    key={column.key}
+                    className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 ${column.widthClass ?? ''}`}
+                  >
+                    {column.label}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-200">
+              {loading && (
+                <tr>
+                  <td colSpan={columns.length + 1} className="py-10 text-center text-neutral-500">
+                    <Loader2 className="mr-2 inline-block h-5 w-5 animate-spin text-brand-600" /> Loading data...
+                  </td>
+                </tr>
+              )}
+
+              {!loading && items.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length + 1} className="py-10 text-center text-neutral-500">
+                    No records found. Try adjusting your search.
+                  </td>
+                </tr>
+              )}
+
+              {!loading &&
+                items.map(item => (
+                  <tr key={item.id} className="hover:bg-neutral-50">
+                    {columns.map(column => (
+                      <td key={column.key} className="px-4 py-3 align-top text-neutral-700">
+                        {column.render ? column.render(item[column.key], item) : (item[column.key] ?? '')}
+                      </td>
+                    ))}
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {renderActions?.(item, fetchItems)}
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(item)}
+                          className="inline-flex items-center gap-1 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:border-brand-300 hover:text-brand-600"
+                        >
+                          <Edit className="h-3.5 w-3.5" /> Edit
+                        </button>
+                        {!disableDelete && (
+                          <button
+                            type="button"
+                            onClick={() => requestDelete(item)}
+                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-neutral-500">
+            Showing {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, count)} of {count} entries
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="text-sm font-medium text-neutral-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 disabled:opacity-40"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {showForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-sm">
+            <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15">
+              <div className="flex items-center justify-between border-b border-neutral-200/70 bg-gradient-to-r from-brand-50 via-white to-white px-6 py-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900">
+                    {editingItem ? 'Update record' : 'Create new record'}
+                  </h3>
+                  <p className="text-xs text-neutral-500">Điền đầy đủ các thông tin bắt buộc trước khi lưu.</p>
                 </div>
-              ))}
-
-              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseForm}
-                  className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 hover:bg-neutral-100"
+                  className="rounded-full p-2 text-neutral-500 hover:bg-neutral-100"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
-                >
-                  {editingItem ? 'Save changes' : 'Create record'}
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleSubmit} className="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-6">
+                {formFields.map(field => (
+                  <div key={field.name} className="space-y-1">
+                    <label className="block text-sm font-semibold text-neutral-700">
+                      {field.label}
+                      {field.required && <span className="ml-0.5 text-rose-500">*</span>}
+                    </label>
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        value={formValues[field.name] ?? ''}
+                        onChange={event => handleInputChange(field.name, event.target.value, field.type)}
+                        placeholder={field.placeholder}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                        rows={4}
+                      />
+                    ) : field.type === 'select' ? (
+                      <select
+                        value={formValues[field.name] ?? ''}
+                        onChange={event => handleInputChange(field.name, event.target.value, field.type)}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                      >
+                        <option value="">Select an option</option>
+                        {(fieldOptions[field.name] ?? []).map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : field.type === 'checkbox' ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(formValues[field.name])}
+                          onChange={() => handleInputChange(field.name, !formValues[field.name], field.type)}
+                          className="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                        />
+                        <span className="text-sm text-neutral-600">Enable</span>
+                      </div>
+                    ) : (
+                      <input
+                        type={
+                          field.type === 'datetime-local'
+                            ? 'datetime-local'
+                            : field.type === 'number'
+                            ? 'number'
+                            : field.type === 'email'
+                            ? 'email'
+                            : field.type === 'url'
+                            ? 'url'
+                            : 'text'
+                        }
+                        value={formValues[field.name] ?? ''}
+                        onChange={event => handleInputChange(field.name, event.target.value, field.type)}
+                        placeholder={field.placeholder}
+                        min={field.min}
+                        step={field.step}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                      />
+                    )}
+                    {field.description && <p className="text-xs text-neutral-500">{field.description}</p>}
+                  </div>
+                ))}
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseForm}
+                    className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 hover:bg-neutral-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
+                  >
+                    {editingItem ? 'Save changes' : 'Create record'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          open={Boolean(pendingDelete)}
+          title="Xóa bản ghi"
+          description="Thao tác này sẽ xóa dữ liệu khỏi hệ thống. Bạn có muốn tiếp tục?"
+          confirmLabel="Xóa"
+          cancelLabel="Hủy"
+          tone="danger"
+          icon={<Trash2 className="h-5 w-5 text-rose-600" />}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
-    </div>
+    </>
   );
 }
 async function fetchCategoryOptions(): Promise<Option[]> {
@@ -964,6 +1402,7 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
     sku: '',
     stock_quantity: 0,
   });
+  const [pendingDelete, setPendingDelete] = useState<ProductVariant | null>(null);
 
   const loadVariants = useCallback(async () => {
     setLoading(true);
@@ -1019,35 +1458,40 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
     }
   };
 
-  const handleDelete = async (variant: ProductVariant) => {
-    const confirmed = window.confirm('Delete this variant?');
-    if (!confirmed) return;
+  const requestDelete = (variant: ProductVariant) => {
+    setPendingDelete(variant);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
     try {
-      const { error } = await supabase.from('product_variants').delete().eq('id', variant.id);
+      const { error } = await supabase.from('product_variants').delete().eq('id', pendingDelete.id);
       if (error) throw error;
       toast.success('Variant removed');
       loadVariants();
     } catch (error) {
       console.error(error);
       toast.error('Unable to delete variant');
+    } finally {
+      setPendingDelete(null);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-4xl rounded-2xl bg-white shadow-2xl border border-neutral-200">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-sm">
+      <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15">
+        <div className="flex items-center justify-between border-b border-neutral-200/70 bg-gradient-to-r from-brand-50 via-white to-white px-6 py-4">
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">Manage variants</h3>
             <p className="text-sm text-neutral-500">{product.name}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full p-1 text-neutral-500 hover:bg-neutral-100">
-            <X className="h-5 w-5" />
+          <button type="button" onClick={onClose} className="rounded-full p-2 text-neutral-500 hover:bg-neutral-100">
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="grid gap-6 px-6 py-6 md:grid-cols-[1.7fr_1fr]">
-          <div className="border border-neutral-200 rounded-xl overflow-hidden">
+          <div className="overflow-hidden rounded-2xl border border-neutral-200">
             <table className="min-w-full divide-y divide-neutral-200 text-sm">
               <thead className="bg-neutral-50">
                 <tr>
@@ -1063,7 +1507,7 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
                 {loading && (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-neutral-500">
-                      <Loader2 className="h-5 w-5 animate-spin inline-block mr-2 text-brand-600" /> Loading variants...
+                      <Loader2 className="mr-2 inline-block h-5 w-5 animate-spin text-brand-600" /> Loading variants...
                     </td>
                   </tr>
                 )}
@@ -1102,7 +1546,7 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(variant)}
+                            onClick={() => requestDelete(variant)}
                             className="rounded-lg border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50"
                           >
                             Delete
@@ -1115,73 +1559,73 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
             </table>
           </div>
 
-          <div className="rounded-xl border border-neutral-200 p-4 bg-neutral-50">
-            <h4 className="text-sm font-semibold text-neutral-800 mb-3">
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+            <h4 className="mb-3 text-sm font-semibold text-neutral-800">
               {editingVariant ? 'Update variant' : 'Create new variant'}
             </h4>
             <form className="space-y-3" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-xs font-semibold text-neutral-600 mb-1">Variant type</label>
+                <label className="mb-1 block text-xs font-semibold text-neutral-600">Variant type</label>
                 <input
                   value={formValues.variant_type}
                   onChange={event => setFormValues(prev => ({ ...prev, variant_type: event.target.value }))}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm"
                   placeholder="Color, Size, Material"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-600 mb-1">Variant value</label>
+                <label className="mb-1 block text-xs font-semibold text-neutral-600">Variant value</label>
                 <input
                   value={formValues.variant_value}
                   onChange={event => setFormValues(prev => ({ ...prev, variant_value: event.target.value }))}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm"
                   placeholder="Walnut, Large"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-600 mb-1">SKU</label>
+                <label className="mb-1 block text-xs font-semibold text-neutral-600">SKU</label>
                 <input
                   value={formValues.sku}
                   onChange={event => setFormValues(prev => ({ ...prev, sku: event.target.value }))}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm"
                   placeholder="SKU-123"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-600 mb-1">Price adjustment (USD)</label>
+                <label className="mb-1 block text-xs font-semibold text-neutral-600">Price adjustment (USD)</label>
                 <input
                   type="number"
                   step={0.01}
                   value={formValues.price_adjustment}
                   onChange={event => setFormValues(prev => ({ ...prev, price_adjustment: Number(event.target.value) }))}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-600 mb-1">Stock quantity</label>
+                <label className="mb-1 block text-xs font-semibold text-neutral-600">Stock quantity</label>
                 <input
                   type="number"
                   step={1}
                   value={formValues.stock_quantity}
                   onChange={event => setFormValues(prev => ({ ...prev, stock_quantity: Number(event.target.value) }))}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm"
                 />
               </div>
 
               <div className="flex items-center gap-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                  className="flex-1 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
                 >
                   {editingVariant ? 'Save changes' : 'Add variant'}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 hover:bg-neutral-100"
+                  className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 hover:bg-neutral-100"
                 >
                   Clear
                 </button>
@@ -1190,6 +1634,20 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
           </div>
         </div>
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          open={Boolean(pendingDelete)}
+          title="Xóa biến thể"
+          description="Biến thể sẽ bị xóa vĩnh viễn khỏi sản phẩm này. Bạn chắc chắn chứ?"
+          confirmLabel="Xóa"
+          cancelLabel="Hủy"
+          tone="danger"
+          icon={<Trash2 className="h-5 w-5 text-rose-600" />}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   );
 }
