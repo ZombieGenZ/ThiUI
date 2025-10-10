@@ -144,6 +144,34 @@ BEGIN
   ON CONFLICT (id) DO UPDATE
     SET full_name = EXCLUDED.full_name,
         updated_at = now();
+
+  -- Đảm bảo có bản ghi trong auth.identities cho tài khoản admin để Supabase Authentication hoạt động chính xác
+  INSERT INTO auth.identities (
+    id,
+    user_id,
+    identity_data,
+    provider,
+    provider_id,
+    last_sign_in_at,
+    created_at,
+    updated_at
+  )
+  VALUES (
+    extensions.gen_random_uuid(),
+    admin_id,
+    jsonb_build_object('sub', admin_id::text, 'email', admin_email),
+    'email',
+    admin_email,
+    now(),
+    now(),
+    now()
+  )
+  ON CONFLICT (provider, provider_id) DO UPDATE
+    SET
+      user_id = EXCLUDED.user_id,
+      identity_data = EXCLUDED.identity_data,
+      last_sign_in_at = now(),
+      updated_at = now();
 END $$;
 
 
