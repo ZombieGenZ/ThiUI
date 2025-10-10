@@ -1,38 +1,31 @@
 import { Mail, Facebook, Twitter, Youtube, Instagram } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function Footer() {
   const sections = [
     {
-      title: 'Shop',
-      links: [
-        { name: 'Living Room', path: '/shop/living-room' },
-        { name: 'Bedroom', path: '/shop/bedroom' },
-        { name: 'Dining', path: '/shop/dining' },
-        { name: 'Office', path: '/shop/office' },
-        { name: 'Outdoor', path: '/shop/outdoor' },
-        { name: 'Sale', path: '/sale' },
-      ],
-    },
-    {
       title: 'Customer Service',
       links: [
-        { name: 'Contact Us', path: '/contact' },
-        { name: 'Shipping & Returns', path: '/shipping' },
-        { name: 'Assembly Services', path: '/assembly' },
-        { name: 'Track Order', path: '/track' },
+        { name: 'Shipping & Returns', path: '/shipping-returns' },
+        { name: 'Track Order', path: '/track-order' },
         { name: 'FAQ', path: '/faq' },
-        { name: 'Size Guide', path: '/size-guide' },
+        { name: 'Contact', path: '/contact' },
       ],
     },
     {
       title: 'Company',
       links: [
         { name: 'About Us', path: '/about' },
-        { name: 'Design Inspiration', path: '/inspiration' },
-        { name: 'Virtual Showroom', path: '/showroom' },
         { name: 'Design Services', path: '/design-services' },
-        { name: 'Blog', path: '/blog' },
         { name: 'Careers', path: '/careers' },
+      ],
+    },
+    {
+      title: 'Explore',
+      links: [
+        { name: 'Design Inspiration', path: '/design-inspiration' },
+        { name: 'Virtual Showroom', path: '/virtual-showroom' },
+        { name: 'Size Guide', path: '/size-guide' },
       ],
     },
     {
@@ -40,7 +33,7 @@ export function Footer() {
       links: [
         { name: 'Terms of Service', path: '/terms' },
         { name: 'Privacy Policy', path: '/privacy' },
-        { name: 'Cookie Policy', path: '/cookies' },
+        { name: 'Cookie Policy', path: '/cookie-policy' },
       ],
     },
   ];
@@ -88,12 +81,9 @@ export function Footer() {
               <ul className="space-y-1.5">
                 {section.links.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.path}
-                      className="text-xs text-gray-400 hover:text-white transition-colors block"
-                    >
+                    <Link to={link.path} className="text-xs text-gray-400 hover:text-white transition-colors block">
                       {link.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -131,7 +121,6 @@ export function Footer() {
           </div>
         </div>
       </div>
-
     </footer>
   );
 }

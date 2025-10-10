@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Menu, X, SlidersHorizontal } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -23,6 +23,20 @@ export function Header({ onCartOpen }: HeaderProps) {
     { name: 'Dining', path: '/shop/dining' },
     { name: 'Office', path: '/shop/office' },
     { name: 'Outdoor', path: '/shop/outdoor' },
+  ];
+
+  const serviceLinks = [
+    { name: 'Assembly Services', path: '/assembly-services' },
+    { name: 'Design Services', path: '/design-services' },
+    { name: 'Virtual Showroom', path: '/virtual-showroom' },
+  ];
+
+  const resourceLinks = [
+    { name: 'Shipping & Returns', path: '/shipping-returns' },
+    { name: 'Track Order', path: '/track-order' },
+    { name: 'FAQ', path: '/faq' },
+    { name: 'Size Guide', path: '/size-guide' },
+    { name: 'Design Inspiration', path: '/design-inspiration' },
   ];
 
   return (
@@ -67,6 +81,48 @@ export function Header({ onCartOpen }: HeaderProps) {
                       className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
                     >
                       {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative group">
+                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
+                  <span>Services</span>
+                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
+                  {serviceLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative group">
+                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
+                  <span>Resources</span>
+                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <div className="absolute top-full left-0 mt-2 w-60 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
+                  {resourceLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
+                    >
+                      {link.name}
                     </Link>
                   ))}
                 </div>
@@ -267,6 +323,30 @@ export function Header({ onCartOpen }: HeaderProps) {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {cat.name}
+                </Link>
+              ))}
+              <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Services</div>
+              {serviceLinks.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Resources</div>
+              {resourceLinks.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
