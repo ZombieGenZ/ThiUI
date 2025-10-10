@@ -19,6 +19,71 @@
     đổi tên biến PL/pgSQL 'slug' thành 'product_slug'.
 */
 
+-- Đảm bảo các tiện ích mật mã cần thiết luôn khả dụng
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- ============================================================================
+-- -1. KHỞI TẠO TÀI KHOẢN QUẢN TRỊ
+-- ============================================================================
+
+DO $$
+DECLARE
+  admin_email constant text := 'administrator@furnicraft.com';
+  admin_id uuid := gen_random_uuid();
+  password_hash text;
+  password_column text;
+  insert_sql text;
+  is_existing boolean;
+BEGIN
+  SELECT EXISTS (SELECT 1 FROM auth.users WHERE email = admin_email) INTO is_existing;
+  IF is_existing THEN
+    RETURN;
+  END IF;
+
+  password_hash := crypt('Abc123123_', gen_salt('bf'));
+
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'auth'
+      AND table_name = 'users'
+      AND column_name = 'encrypted_password'
+  ) THEN
+    password_column := 'encrypted_password';
+  ELSIF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'auth'
+      AND table_name = 'users'
+      AND column_name = 'hashed_password'
+  ) THEN
+    password_column := 'hashed_password';
+  ELSE
+    RAISE EXCEPTION 'Không tìm thấy cột mật khẩu trong auth.users';
+  END IF;
+
+  insert_sql := format(
+    'INSERT INTO auth.users (id, instance_id, email, %s, email_confirmed_at, created_at, updated_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+     VALUES ($1, $2, $3, $4, now(), now(), now(), now(), $5, $6, ''authenticated'', ''authenticated'')',
+    password_column
+  );
+
+  EXECUTE insert_sql
+    USING
+      admin_id,
+      '00000000-0000-0000-0000-000000000000',
+      admin_email,
+      password_hash,
+      jsonb_build_object('provider', 'email', 'providers', ARRAY['email'], 'role', 'admin'),
+      jsonb_build_object('full_name', 'Administrator', 'is_admin', true);
+
+  INSERT INTO profiles (id, full_name, created_at, updated_at)
+  VALUES (admin_id, 'Administrator', now(), now())
+  ON CONFLICT (id) DO UPDATE
+    SET full_name = EXCLUDED.full_name,
+        updated_at = now();
+END $$;
+
 -- ============================================================================
 -- 0. HÀM HỖ TRỢ
 -- ============================================================================
@@ -84,6 +149,15 @@ CREATE POLICY "Users can update own profile"
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Admins manage profiles" ON profiles;
+
+CREATE POLICY "Admins manage profiles"
+  ON profiles
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
 -- ============================================================================
 -- 2. CATEGORIES TABLE
 -- ============================================================================
@@ -107,6 +181,15 @@ CREATE POLICY "Categories are viewable by everyone"
   ON categories FOR SELECT
   TO public
   USING (true);
+
+DROP POLICY IF EXISTS "Admins manage categories" ON categories;
+
+CREATE POLICY "Admins manage categories"
+  ON categories
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
 
 -- ============================================================================
 -- 3. PRODUCTS TABLE
@@ -155,6 +238,15 @@ CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured);
 CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
 
+DROP POLICY IF EXISTS "Admins manage products" ON products;
+
+CREATE POLICY "Admins manage products"
+  ON products
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
 -- ============================================================================
 -- 4. PRODUCT VARIANTS TABLE
 -- ============================================================================
@@ -178,6 +270,15 @@ CREATE POLICY "Product variants are viewable by everyone"
   ON product_variants FOR SELECT
   TO public
   USING (true);
+
+DROP POLICY IF EXISTS "Admins manage product variants" ON product_variants;
+
+CREATE POLICY "Admins manage product variants"
+  ON product_variants
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
 
 -- ============================================================================
 -- 5. ADDRESSES TABLE
@@ -259,6 +360,15 @@ CREATE POLICY "Anyone can view active vouchers"
   TO authenticated
   USING (is_active = true AND (valid_until IS NULL OR valid_until > now()));
 
+DROP POLICY IF EXISTS "Admins manage vouchers" ON vouchers;
+
+CREATE POLICY "Admins manage vouchers"
+  ON vouchers
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
 -- ============================================================================
 -- 7. ORDERS TABLE
 -- ============================================================================
@@ -318,6 +428,15 @@ CREATE POLICY "Users can update own orders"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins manage orders" ON orders;
+
+CREATE POLICY "Admins manage orders"
+  ON orders
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
 -- ============================================================================
 -- 8. ORDER ITEMS TABLE
 -- ============================================================================
@@ -367,6 +486,15 @@ CREATE POLICY "Users can create order items"
       AND orders.user_id = auth.uid()
     )
   );
+
+DROP POLICY IF EXISTS "Admins manage order items" ON order_items;
+
+CREATE POLICY "Admins manage order items"
+  ON order_items
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
 
 -- ============================================================================
 -- 9. VOUCHER USAGE TABLE
@@ -520,6 +648,15 @@ CREATE POLICY "Approved reviews are viewable by everyone"
   TO public
   USING (status = 'approved');
 
+DROP POLICY IF EXISTS "Admins manage reviews" ON reviews;
+
+CREATE POLICY "Admins manage reviews"
+  ON reviews
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
 CREATE POLICY "Users can insert own reviews"
   ON reviews FOR INSERT
   TO authenticated
@@ -621,6 +758,129 @@ CREATE POLICY "Anonymous users can insert messages"
   TO anon
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Admins manage contact messages" ON contact_messages;
+
+CREATE POLICY "Admins manage contact messages"
+  ON contact_messages
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
+-- ============================================================================
+-- 14B. DESIGN SERVICE REQUESTS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS design_service_requests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  name text NOT NULL,
+  email text NOT NULL,
+  phone text DEFAULT '',
+  project_type text NOT NULL,
+  project_scope text,
+  preferred_style text,
+  budget_range text,
+  desired_timeline text,
+  additional_notes text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_review', 'quoted', 'scheduled', 'completed', 'closed')),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE design_service_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_design_service_requests_email ON design_service_requests(email);
+CREATE INDEX IF NOT EXISTS idx_design_service_requests_status ON design_service_requests(status);
+CREATE INDEX IF NOT EXISTS idx_design_service_requests_created_at ON design_service_requests(created_at DESC);
+
+DROP POLICY IF EXISTS "Users manage own design requests" ON design_service_requests;
+DROP POLICY IF EXISTS "Authenticated design request submissions" ON design_service_requests;
+DROP POLICY IF EXISTS "Anonymous design request submissions" ON design_service_requests;
+DROP POLICY IF EXISTS "Admins manage design requests" ON design_service_requests;
+
+CREATE POLICY "Users manage own design requests"
+  ON design_service_requests
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Authenticated design request submissions"
+  ON design_service_requests
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Anonymous design request submissions"
+  ON design_service_requests
+  FOR INSERT
+  TO anon
+  WITH CHECK (true);
+
+CREATE POLICY "Admins manage design requests"
+  ON design_service_requests
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
+-- ============================================================================
+-- 14C. CAREER APPLICATIONS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS career_applications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  full_name text NOT NULL,
+  email text NOT NULL,
+  phone text DEFAULT '',
+  position_applied text NOT NULL,
+  resume_url text NOT NULL,
+  cover_letter text,
+  portfolio_url text,
+  expected_salary text,
+  status text NOT NULL DEFAULT 'received' CHECK (status IN ('received', 'reviewing', 'interview', 'offer', 'hired', 'archived', 'rejected')),
+  notes text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE career_applications ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_career_applications_email ON career_applications(email);
+CREATE INDEX IF NOT EXISTS idx_career_applications_status ON career_applications(status);
+CREATE INDEX IF NOT EXISTS idx_career_applications_created_at ON career_applications(created_at DESC);
+
+DROP POLICY IF EXISTS "Users manage own applications" ON career_applications;
+DROP POLICY IF EXISTS "Authenticated career submissions" ON career_applications;
+DROP POLICY IF EXISTS "Anonymous career submissions" ON career_applications;
+DROP POLICY IF EXISTS "Admins manage career applications" ON career_applications;
+
+CREATE POLICY "Users manage own applications"
+  ON career_applications
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Authenticated career submissions"
+  ON career_applications
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Anonymous career submissions"
+  ON career_applications
+  FOR INSERT
+  TO anon
+  WITH CHECK (true);
+
+CREATE POLICY "Admins manage career applications"
+  ON career_applications
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+
 -- ============================================================================
 -- 15. BLOG POSTS TABLE
 -- ============================================================================
@@ -651,6 +911,15 @@ CREATE POLICY "Blog posts are readable by everyone"
   ON blog_posts FOR SELECT
   TO public
   USING (true);
+
+DROP POLICY IF EXISTS "Admins manage blog posts" ON blog_posts;
+
+CREATE POLICY "Admins manage blog posts"
+  ON blog_posts
+  FOR ALL
+  TO authenticated
+  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
+  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
 
 -- ============================================================================
 -- 16. BLOG COMMENTS TABLE
@@ -1446,3 +1715,133 @@ JOIN LATERAL (
   LIMIT 1
 ) AS p ON TRUE
 ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+-- 24. CHUẨN HÓA LINK ẢNH
+-- ============================================================================
+
+UPDATE products
+SET images = COALESCE(
+  ARRAY(
+    SELECT normalized_img
+    FROM (
+      SELECT CASE
+        WHEN img IS NULL OR btrim(img) = '' THEN NULL
+        WHEN position('?' IN img) > 0 THEN regexp_replace(img, '\\?.*$', '?auto=compress&cs=tinysrgb&w=1600')
+        ELSE img || '?auto=compress&cs=tinysrgb&w=1600'
+      END AS normalized_img
+      FROM unnest(products.images) AS img
+    ) AS normalized
+    WHERE normalized_img IS NOT NULL
+  ),
+  ARRAY[]::text[]
+)
+WHERE images IS NOT NULL;
+
+UPDATE blog_posts
+SET featured_image_url = CASE
+  WHEN featured_image_url IS NULL OR btrim(featured_image_url) = '' THEN featured_image_url
+  WHEN position('?' IN featured_image_url) > 0 THEN regexp_replace(featured_image_url, '\\?.*$', '?auto=compress&cs=tinysrgb&w=1600')
+  ELSE featured_image_url || '?auto=compress&cs=tinysrgb&w=1600'
+END;
+
+-- ============================================================================
+-- 25. GIẢM MẪU DỮ LIỆU
+-- ============================================================================
+
+WITH keep_slugs AS (
+  SELECT DISTINCT unnest(product_slugs) AS slug
+  FROM room_inspirations
+),
+product_stats AS (
+  SELECT COUNT(*)::numeric AS total_products FROM products
+),
+reserved_products AS (
+  SELECT COUNT(*)::numeric AS reserved_products
+  FROM products
+  WHERE slug IN (SELECT slug FROM keep_slugs)
+),
+eligible_products AS (
+  SELECT COUNT(*)::numeric AS eligible_total
+  FROM products
+  WHERE slug NOT IN (SELECT slug FROM keep_slugs)
+),
+delete_limit AS (
+  SELECT LEAST(
+      COALESCE(eligible_products.eligible_total, 0),
+      GREATEST(floor(product_stats.total_products / 2.0) - COALESCE(reserved_products.reserved_products, 0), 0)
+    ) AS limit_value
+  FROM product_stats
+  LEFT JOIN reserved_products ON TRUE
+  LEFT JOIN eligible_products ON TRUE
+),
+product_candidates AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY created_at, id) AS rn
+  FROM products
+  WHERE slug NOT IN (SELECT slug FROM keep_slugs)
+),
+products_to_remove AS (
+  SELECT pc.id
+  FROM product_candidates pc
+  CROSS JOIN delete_limit dl
+  WHERE pc.rn <= dl.limit_value
+)
+DELETE FROM reviews WHERE product_id IN (SELECT id FROM products_to_remove);
+
+DELETE FROM product_variants WHERE product_id IN (SELECT id FROM products_to_remove);
+DELETE FROM favorites WHERE product_id IN (SELECT id FROM products_to_remove);
+DELETE FROM cart_items WHERE product_id IN (SELECT id FROM products_to_remove);
+DELETE FROM order_items WHERE product_id IN (SELECT id FROM products_to_remove);
+DELETE FROM products WHERE id IN (SELECT id FROM products_to_remove);
+
+WITH ranked_reviews AS (
+  SELECT
+    id,
+    product_id,
+    ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY created_at DESC, id) AS rn,
+    COUNT(*) OVER (PARTITION BY product_id) AS total_count
+  FROM reviews
+),
+reviews_to_remove AS (
+  SELECT id
+  FROM ranked_reviews
+  WHERE rn > floor(total_count / 2.0)
+)
+DELETE FROM reviews WHERE id IN (SELECT id FROM reviews_to_remove);
+
+WITH candidate_posts AS (
+  SELECT
+    id,
+    ROW_NUMBER() OVER (ORDER BY published_at DESC, id) AS rn,
+    COUNT(*) OVER () AS total_count
+  FROM blog_posts
+  WHERE NOT EXISTS (
+    SELECT 1 FROM comments WHERE comments.post_id = blog_posts.id
+  )
+),
+posts_to_remove AS (
+  SELECT id
+  FROM candidate_posts
+  WHERE rn > floor(total_count / 2.0)
+)
+DELETE FROM blog_posts WHERE id IN (SELECT id FROM posts_to_remove);
+
+-- Cập nhật lại thống kê đánh giá sau khi giảm mẫu
+WITH aggregates AS (
+  SELECT
+    product_id,
+    ROUND(AVG(rating)::numeric, 2) AS avg_rating,
+    COUNT(*) AS review_total
+  FROM reviews
+  GROUP BY product_id
+)
+UPDATE products AS p
+SET
+  rating = COALESCE(a.avg_rating, 0),
+  review_count = COALESCE(a.review_total, 0)
+FROM aggregates AS a
+WHERE p.id = a.product_id;
+
+UPDATE products
+SET rating = 0, review_count = 0
+WHERE id NOT IN (SELECT DISTINCT product_id FROM reviews);

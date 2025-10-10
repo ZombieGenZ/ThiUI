@@ -46,6 +46,7 @@ const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage').then(m 
 const CookiePolicyPage = lazy(() => import('./pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })));
 const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })));
+const AdminPanelPage = lazy(() => import('./pages/AdminPanelPage').then(m => ({ default: m.AdminPanelPage })));
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -128,11 +129,13 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
     AOS.refresh();
   }, [location.pathname]);
 
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <>
       <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white dark:bg-neutral-950">
-        <Header onCartOpen={() => setCartOpen(true)} />
-        <main className="flex-1 pt-20 transition-all duration-300">
+        {!isAdminRoute && <Header onCartOpen={() => setCartOpen(true)} />}
+        <main className={`flex-1 transition-all duration-300 ${!isAdminRoute ? 'pt-20' : ''}`}>
           <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center">
               <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-600"></div>
@@ -174,13 +177,15 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
               <Route path="/cookie-policy" element={<CookiePolicyPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/admin" element={<AdminPanelPage />} />
+              <Route path="/admin/*" element={<AdminPanelPage />} />
             </Routes>
           </Suspense>
         </main>
-        <Footer />
+        {!isAdminRoute && <Footer />}
       </div>
 
-      <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      {!isAdminRoute && <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
     </>
   );
 }
