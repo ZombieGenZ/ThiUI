@@ -2,10 +2,13 @@ import { Star, ShoppingBag, Eye, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { formatCurrency, getLocalizedValue } from '../utils/i18n';
 
 interface Product {
   id: string;
   name: string;
+  name_i18n?: Record<string, string> | null;
   slug: string;
   base_price: number;
   sale_price: number | null;
@@ -26,12 +29,16 @@ interface ProductCardProps {
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const { user } = useAuth();
   const { favorites, toggleFavorite } = useFavorites();
+  const { language, translate } = useLanguage();
   const isFavorite = favorites.some(fav => fav.product_id === product.id);
   const price = product.sale_price || product.base_price;
   const hasDiscount = product.sale_price && product.sale_price < product.base_price;
   const discountPercent = hasDiscount
     ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
     : 0;
+  const displayName = getLocalizedValue(product.name_i18n, language, product.name);
+  const formattedPrice = formatCurrency(price, language);
+  const formattedBasePrice = formatCurrency(product.base_price, language);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -40,7 +47,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden card-hover shadow-sm border border-gray-100 flex flex-col h-full will-change-transform hover:shadow-lg hover:border-brand-200">
+    <div className="group relative bg-white dark:bg-neutral-900 rounded-lg overflow-hidden card-hover shadow-sm border border-gray-100 dark:border-neutral-700 flex flex-col h-full will-change-transform hover:shadow-lg hover:border-brand-200 dark:hover:border-brand-500">
       <div className="relative aspect-square overflow-hidden bg-gray-50 flex-shrink-0">
         {user && (
           <button
@@ -58,7 +65,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         )}
         {product.is_new && (
           <div className="absolute top-3 left-3 z-10 bg-brand-600 text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm">
-            NEW
+            {translate({ en: 'NEW', vi: 'MỚI' })}
           </div>
         )}
         {hasDiscount && (
@@ -68,7 +75,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         )}
         <img
           src={product.images[0] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
-          alt={product.name}
+          alt={displayName}
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover image-scale"
@@ -79,17 +86,19 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           <Link
             to={`/product/${product.slug}`}
             className="flex-1 bg-white text-gray-900 px-3 py-2 rounded-md font-medium shadow-lg flex items-center justify-center gap-2 hover:bg-gray-100 smooth-transition text-sm"
+            aria-label={translate({ en: `View ${displayName}`, vi: `Xem ${displayName}` })}
           >
             <Eye className="w-4 h-4" />
-            <span className="hidden sm:inline">View</span>
+            <span className="hidden sm:inline">{translate({ en: 'View', vi: 'Xem' })}</span>
           </Link>
           {onAddToCart && (
             <button
               onClick={onAddToCart}
               className="flex-1 bg-brand-600 text-white px-3 py-2 rounded-md font-medium shadow-lg flex items-center justify-center gap-2 hover:bg-brand-700 smooth-transition text-sm"
+              aria-label={translate({ en: `Add ${displayName} to cart`, vi: `Thêm ${displayName} vào giỏ hàng` })}
             >
               <ShoppingBag className="w-4 h-4" />
-              <span className="hidden sm:inline">Add</span>
+              <span className="hidden sm:inline">{translate({ en: 'Add', vi: 'Thêm' })}</span>
             </button>
           )}
         </div>
@@ -97,8 +106,8 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
       <div className="p-4 flex flex-col flex-1">
         <Link to={`/product/${product.slug}`} className="flex-1">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-brand-600 smooth-transition text-sm leading-relaxed">
-            {product.name}
+          <h3 className="font-semibold text-gray-900 dark:text-neutral-100 mb-2 line-clamp-2 group-hover:text-brand-600 smooth-transition text-sm leading-relaxed">
+            {displayName}
           </h3>
         </Link>
 
@@ -120,16 +129,18 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
         <div className="flex items-baseline gap-2 mb-1 mt-auto">
           <span className={`font-bold text-base ${hasDiscount ? 'text-red-600' : 'text-gray-900'}`}>
-            ${price.toFixed(2)}
+            {formattedPrice}
           </span>
           {hasDiscount && (
-            <span className="text-sm text-gray-400 line-through">${product.base_price.toFixed(2)}</span>
+            <span className="text-sm text-gray-400 line-through">{formattedBasePrice}</span>
           )}
         </div>
 
         {product.stock_quantity !== undefined && product.stock_quantity > 0 && product.stock_quantity <= 10 && (
           <p className="text-xs text-orange-600 font-medium">
-            Only {product.stock_quantity} left!
+            {language === 'vi'
+              ? `Chỉ còn ${product.stock_quantity} sản phẩm!`
+              : `Only ${product.stock_quantity} left!`}
           </p>
         )}
       </div>

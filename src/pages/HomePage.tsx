@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ProductCard } from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { createAddToCartHandler } from '../utils/cartHelpers';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 interface Product {
   id: string;
   name: string;
+  name_i18n?: Record<string, string> | null;
   slug: string;
   base_price: number;
   sale_price: number | null;
@@ -29,10 +33,16 @@ interface Category {
 export function HomePage() {
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { language, translate } = useLanguage();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const addToCartHandler = useMemo(
+    () => createAddToCartHandler(addToCart, user, navigate, { translate }),
+    [addToCart, user, navigate, translate]
+  );
 
   useEffect(() => {
     loadData();
@@ -79,12 +89,8 @@ export function HomePage() {
   }, []);
 
   const handleAddToCart = async (product: Product) => {
-    if (!user) {
-      toast.error('Please sign in to add items to cart');
-      return;
-    }
-    await addToCart(product.id, 1);
-    toast.success(`${product.name} added to cart`);
+    const displayName = getLocalizedValue(product.name_i18n, language, product.name);
+    await addToCartHandler(product.id, displayName, 1);
   };
 
   return (

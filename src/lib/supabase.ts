@@ -32,6 +32,8 @@ export type Database = {
           title: string;
           slug: string;
           excerpt: string | null;
+          title_i18n: Record<string, string>;
+          excerpt_i18n: Record<string, string>;
           content: string;
           featured_image_url: string | null;
           author: string | null;
@@ -52,17 +54,15 @@ export type Database = {
           name: string;
           slug: string;
           description: string | null;
+          name_i18n: Record<string, string>;
+          description_i18n: Record<string, string>;
           category_id: string | null;
           base_price: number;
           sale_price: number | null;
           style: string | null;
           room_type: string | null;
           materials: string[] | null;
-          dimensions: {
-            width: number;
-            depth: number;
-            height: number;
-          } | null;
+          dimensions: Record<string, string> | null;
           weight: number | null;
           sku: string;
           stock_quantity: number;

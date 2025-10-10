@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom';
 import { supabase, type Database } from '../lib/supabase';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
-const formatPublishedDate = (isoString: string) => {
+const formatPublishedDate = (isoString: string, language: 'en' | 'vi') => {
   try {
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -21,15 +23,23 @@ const formatPublishedDate = (isoString: string) => {
 };
 
 export function BlogPage() {
-  usePageMetadata({
-    title: 'Blog & News',
-    description:
-      'Discover interior design trends, styling tips, and the latest updates from FurniCraft in our editorial hub.',
-  });
+  const { language, t, translate } = useLanguage();
+  const metadata = useMemo(
+    () => ({
+      title: translate({ en: 'Blog & News', vi: 'Blog & Tin tức' }) || 'Blog',
+      description:
+        translate({
+          en: 'Discover interior design trends, styling tips, and the latest updates from FurniCraft in our editorial hub.',
+          vi: 'Khám phá xu hướng nội thất, mẹo trang trí và cập nhật mới nhất từ FurniCraft tại chuyên mục của chúng tôi.',
+        }) || '',
+    }),
+    [translate]
+  );
 
+  usePageMetadata(metadata);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,11 +56,10 @@ export function BlogPage() {
 
       if (error) {
         console.error('Error fetching blog posts:', error);
-
-          setErrorMessage('We couldn\'t load the blog posts. Please try again later.');
-          setPosts([]);
+        setLoadError(true);
+        setPosts([]);
       } else {
-        setErrorMessage(null);
+        setLoadError(false);
         setPosts(data ?? []);
       }
 
@@ -66,32 +75,42 @@ export function BlogPage() {
 
   const [featuredPost, ...otherPosts] = posts;
 
+  const localizedFeaturedTitle = featuredPost
+    ? getLocalizedValue(featuredPost.title_i18n, language, featuredPost.title)
+    : '';
+  const localizedFeaturedExcerpt = featuredPost
+    ? getLocalizedValue(featuredPost.excerpt_i18n, language, featuredPost.excerpt ?? '')
+    : '';
+
   const heroDescription = useMemo(() => {
-    if (featuredPost?.excerpt?.trim()) {
-      return featuredPost.excerpt;
+    if (featuredPost) {
+      const excerpt = getLocalizedValue(featuredPost.excerpt_i18n, language, featuredPost.excerpt ?? '');
+      if (excerpt.trim()) {
+        return excerpt;
+      }
+
+      if (featuredPost.content) {
+        return `${featuredPost.content.slice(0, 160)}...`;
+      }
     }
 
-    if (featuredPost?.content) {
-      return `${featuredPost.content.slice(0, 160)}...`;
-    }
-
-    return 'Stay up to date with stories, trends, and inspiration to elevate your home.';
-  }, [featuredPost?.content, featuredPost?.excerpt]);
+    return t('blog.heroFallback');
+  }, [featuredPost, language, t]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-neutral-950 transition-colors duration-300">
       <div className="relative h-[340px] bg-[url('https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg?auto=compress&cs=tinysrgb&w=1600')] bg-cover bg-center">
         <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/90 via-neutral-900/70 to-neutral-900/50" />
         <div className="relative z-10 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Blog & News' }]} />
+            <Breadcrumb items={[{ label: t('common.home'), href: '/' }, { label: t('common.blog') }]} />
             <div className="mt-6 max-w-2xl">
               <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-300 uppercase tracking-wide">
                 <PenSquare className="w-4 h-4" />
-                FurniCraft Insights
+                {translate({ en: 'FurniCraft Insights', vi: 'Góc nhìn FurniCraft' })}
               </span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl text-white leading-tight">
-                Interior inspiration & brand stories
+                {t('blog.heroTitle')}
               </h1>
               <p className="mt-4 text-lg text-white/80 leading-relaxed">{heroDescription}</p>
             </div>
@@ -105,28 +124,33 @@ export function BlogPage() {
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="animate-pulse bg-neutral-100 rounded-3xl h-[420px] border border-neutral-200"
+                className="animate-pulse bg-neutral-100 dark:bg-neutral-800/60 rounded-3xl h-[420px] border border-neutral-200 dark:border-neutral-700"
               />
             ))}
           </div>
-        ) : errorMessage ? (
-          <div className="bg-red-50 border border-red-200 rounded-3xl p-10 text-center">
-            <h2 className="font-semibold text-red-600 text-lg">Something went wrong</h2>
-            <p className="mt-2 text-red-500 text-sm">{errorMessage}</p>
+        ) : loadError ? (
+          <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-400/40 rounded-3xl p-10 text-center">
+            <h2 className="font-semibold text-red-600 dark:text-red-300 text-lg">
+              {translate({ en: 'Something went wrong', vi: 'Đã xảy ra lỗi' })}
+            </h2>
+            <p className="mt-2 text-red-500 dark:text-red-200 text-sm">
+              {translate({
+                en: "We couldn't load the blog posts. Please try again later.",
+                vi: 'Không thể tải bài viết. Vui lòng thử lại sau.',
+              })}
+            </p>
           </div>
         ) : posts.length === 0 ? (
-          <div className="bg-neutral-50 border border-dashed border-neutral-200 rounded-3xl p-12 text-center">
-            <h2 className="font-display text-2xl text-neutral-900 mb-2">No posts yet</h2>
-            <p className="text-neutral-600">
-              We are curating standout stories for you. Please check back soon!
-            </p>
+          <div className="bg-neutral-50 dark:bg-neutral-900/60 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-3xl p-12 text-center">
+            <h2 className="font-display text-2xl text-neutral-900 dark:text-neutral-100 mb-2">{t('blog.noPosts')}</h2>
+            <p className="text-neutral-600 dark:text-neutral-300">{t('blog.noPostsDescription')}</p>
           </div>
         ) : (
           <div className="space-y-16">
             {featuredPost && (
               <Link
                 to={`/blog/${featuredPost.slug}`}
-                className="grid lg:grid-cols-[1.2fr_1fr] gap-8 rounded-3xl overflow-hidden shadow-lg border border-neutral-200 group"
+                className="grid lg:grid-cols-[1.2fr_1fr] gap-8 rounded-3xl overflow-hidden shadow-lg border border-neutral-200 dark:border-neutral-700 group"
               >
                 <div className="relative min-h-[320px]">
                   <img
@@ -134,21 +158,21 @@ export function BlogPage() {
                       featuredPost.featured_image_url ||
                       'https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg?auto=compress&cs=tinysrgb&w=1600'
                     }
-                    alt={featuredPost.title}
+                    alt={localizedFeaturedTitle}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/80 via-neutral-900/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
                     <div className="flex items-center gap-3 text-sm text-white/80 mb-3">
                       <CalendarDays className="w-4 h-4" />
-                      <span>{formatPublishedDate(featuredPost.published_at || featuredPost.created_at)}</span>
+                      <span>{formatPublishedDate(featuredPost.published_at || featuredPost.created_at, language)}</span>
                     </div>
-                    <h2 className="font-display text-3xl leading-tight mb-4">{featuredPost.title}</h2>
+                    <h2 className="font-display text-3xl leading-tight mb-4">{localizedFeaturedTitle}</h2>
                     <p className="text-white/85 text-base line-clamp-3">
-                      {featuredPost.excerpt || featuredPost.content.slice(0, 200)}
+                      {localizedFeaturedExcerpt || featuredPost.content.slice(0, 200)}
                     </p>
                     <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
-                      Read article
+                      {t('common.readArticle')}
                       <svg
                         className="w-4 h-4 transition-transform group-hover:translate-x-1"
                         fill="none"
@@ -162,21 +186,21 @@ export function BlogPage() {
                     </span>
                   </div>
                 </div>
-                <div className="p-8 lg:p-10 bg-white flex flex-col justify-between">
+                <div className="p-8 lg:p-10 bg-white dark:bg-neutral-900 flex flex-col justify-between">
                   <div>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold uppercase tracking-wide">
-                      Featured
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-200 text-xs font-semibold uppercase tracking-wide">
+                      {translate({ en: 'Featured', vi: 'Nổi bật' })}
                     </span>
-                    <h3 className="mt-4 font-display text-3xl text-neutral-900 leading-tight">
-                      {featuredPost.title}
+                    <h3 className="mt-4 font-display text-3xl text-neutral-900 dark:text-neutral-100 leading-tight">
+                      {localizedFeaturedTitle}
                     </h3>
-                    <p className="mt-4 text-neutral-600 leading-relaxed whitespace-pre-line">
-                      {featuredPost.content.slice(0, 300)}...
+                    <p className="mt-4 text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-line">
+                      {localizedFeaturedExcerpt || `${featuredPost.content.slice(0, 300)}...`}
                     </p>
                   </div>
-                  <div className="mt-8 flex items-center gap-3 text-sm text-neutral-500">
+                  <div className="mt-8 flex items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
                     <CalendarDays className="w-4 h-4" />
-                    <span>{formatPublishedDate(featuredPost.published_at || featuredPost.created_at)}</span>
+                    <span>{formatPublishedDate(featuredPost.published_at || featuredPost.created_at, language)}</span>
                   </div>
                 </div>
               </Link>
@@ -185,8 +209,15 @@ export function BlogPage() {
             {otherPosts.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="font-display text-2xl text-neutral-900">Latest Posts</h2>
-                  <span className="text-sm text-neutral-500">{otherPosts.length} posts</span>
+                  <h2 className="font-display text-2xl text-neutral-900 dark:text-neutral-100">
+                    {t('blog.latestPosts')}
+                  </h2>
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                    {translate({
+                      en: `${otherPosts.length} posts`,
+                      vi: `${otherPosts.length} bài viết`,
+                    })}
+                  </span>
                 </div>
 
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -194,7 +225,7 @@ export function BlogPage() {
                     <Link
                       key={post.id}
                       to={`/blog/${post.slug}`}
-                      className="group bg-white border border-neutral-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
+                      className="group bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
                     >
                       <div className="relative h-56 overflow-hidden">
                         <img
@@ -202,23 +233,23 @@ export function BlogPage() {
                             post.featured_image_url ||
                             'https://images.pexels.com/photos/276554/pexels-photo-276554.jpeg?auto=compress&cs=tinysrgb&w=1600'
                           }
-                          alt={post.title}
+                          alt={getLocalizedValue(post.title_i18n, language, post.title)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                       <div className="p-6">
-                        <div className="flex items-center gap-2 text-xs text-neutral-500 uppercase tracking-wide mb-3">
+                        <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-3">
                           <CalendarDays className="w-3.5 h-3.5" />
-                          <span>{formatPublishedDate(post.published_at || post.created_at)}</span>
+                          <span>{formatPublishedDate(post.published_at || post.created_at, language)}</span>
                         </div>
-                        <h3 className="font-semibold text-lg text-neutral-900 leading-snug line-clamp-2 group-hover:text-brand-600 transition-colors">
-                          {post.title}
+                        <h3 className="font-semibold text-lg text-neutral-900 dark:text-neutral-100 leading-snug line-clamp-2 group-hover:text-brand-600 transition-colors">
+                          {getLocalizedValue(post.title_i18n, language, post.title)}
                         </h3>
-                        <p className="mt-3 text-sm text-neutral-600 leading-relaxed line-clamp-3">
-                          {post.excerpt || post.content.slice(0, 150)}
+                        <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed line-clamp-3">
+                          {getLocalizedValue(post.excerpt_i18n, language, post.excerpt ?? '') || post.content.slice(0, 150)}
                         </p>
                         <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
-                          Continue reading
+                          {t('common.readArticle')}
                           <svg
                             className="w-4 h-4 transition-transform group-hover:translate-x-1"
                             fill="none"

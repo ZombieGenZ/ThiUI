@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Tag, SortAsc } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { createAddToCartHandler } from '../utils/cartHelpers';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 interface Product {
   id: string;
   name: string;
+  name_i18n?: Record<string, string> | null;
   slug: string;
   base_price: number;
   sale_price: number | null;
@@ -22,9 +26,15 @@ interface Product {
 export function SalePage() {
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { language, translate } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'discount' | 'price-low' | 'price-high'>('discount');
+  const handleAddToCart = useMemo(
+    () => createAddToCartHandler(addToCart, user, navigate, { translate }),
+    [addToCart, user, navigate, translate]
+  );
 
   useEffect(() => {
     loadSaleProducts();
@@ -45,15 +55,6 @@ export function SalePage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddToCart = async (product: Product) => {
-    if (!user) {
-      toast.error('Please sign in to add items to cart');
-      return;
-    }
-    await addToCart(product.id, 1);
-    toast.success(`${product.name} added to cart`);
   };
 
   const sortedProducts = [...products].sort((a, b) => {
@@ -78,13 +79,15 @@ export function SalePage() {
         <div className="relative z-10 text-center px-4">
           <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
             <Tag className="w-5 h-5 text-white" />
-            <span className="text-white font-semibold">Special Offers</span>
+            <span className="text-white font-semibold">
+              {translate({ en: 'Special Offers', vi: 'Ưu đãi đặc biệt' })}
+            </span>
           </div>
           <h1 className="font-display text-5xl md:text-6xl text-white mb-4">
-            Sale & Clearance
+            {translate({ en: 'Sale & Clearance', vi: 'Giảm giá & Thanh lý' })}
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            Save up to 50% on selected furniture pieces
+            {translate({ en: 'Save up to 50% on selected furniture pieces', vi: 'Tiết kiệm đến 50% cho các sản phẩm nội thất được chọn' })}
           </p>
         </div>
       </div>
@@ -93,7 +96,7 @@ export function SalePage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
           <div>
             <p className="text-neutral-600">
-              {products.length} items on sale
+              {translate({ en: `${products.length} items on sale`, vi: `${products.length} sản phẩm đang giảm giá` })}
             </p>
           </div>
 
@@ -105,9 +108,9 @@ export function SalePage() {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="border border-neutral-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
-                <option value="discount">Highest Discount</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="discount">{translate({ en: 'Highest Discount', vi: 'Giảm giá cao nhất' })}</option>
+                <option value="price-low">{translate({ en: 'Price: Low to High', vi: 'Giá: Từ thấp đến cao' })}</option>
+                <option value="price-high">{translate({ en: 'Price: High to Low', vi: 'Giá: Từ cao đến thấp' })}</option>
               </select>
             </div>
           </div>
@@ -129,9 +132,10 @@ export function SalePage() {
               <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
                 <ProductCard product={{
                   ...product,
+                  name_i18n: product.name_i18n,
                   room_type: null,
                   stock_quantity: 0
-                }} onAddToCart={() => handleAddToCart(product)} />
+                }} onAddToCart={() => handleAddToCart(product.id, getLocalizedValue(product.name_i18n, language, product.name), 1)} />
               </div>
             ))}
           </div>
@@ -139,10 +143,10 @@ export function SalePage() {
           <div className="text-center py-16">
             <Tag className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-              No items on sale right now
+              {translate({ en: 'No items on sale right now', vi: 'Hiện chưa có sản phẩm giảm giá' })}
             </h3>
             <p className="text-neutral-600">
-              Check back soon for amazing deals!
+              {translate({ en: 'Check back soon for amazing deals!', vi: 'Quay lại sau để nhận ưu đãi hấp dẫn!' })}
             </p>
           </div>
         )}

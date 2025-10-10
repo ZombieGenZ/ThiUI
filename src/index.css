@@ -10,11 +10,13 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scrollbar-gutter: stable both-edges;
   }
 
   body {
-    @apply antialiased font-sans text-neutral-800;
+    @apply antialiased font-sans text-neutral-800 bg-white dark:bg-neutral-950 dark:text-neutral-100;
     overflow-x: hidden;
+    overflow-y: auto;
   }
 
   * {
@@ -42,6 +44,14 @@
   ::-webkit-scrollbar-thumb {
     background: #16a34a;
     border-radius: 5px;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #15803d;
   }
 
   ::-webkit-scrollbar-thumb:hover {

@@ -9,6 +9,7 @@ interface Favorite {
   product?: {
     id: string;
     name: string;
+    name_i18n?: Record<string, string> | null;
     slug: string;
     base_price: number;
     sale_price: number | null;
@@ -26,6 +27,7 @@ interface FavoritesContextType {
   isFavorite: (productId: string) => boolean;
   toggleFavorite: (productId: string) => Promise<void>;
   refreshFavorites: () => Promise<void>;
+  addFavorites: (productIds: string[]) => Promise<void>;
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
@@ -52,6 +54,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           product:products(
             id,
             name,
+            name_i18n,
             slug,
             base_price,
             sale_price,
@@ -115,6 +118,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
             product:products(
               id,
               name,
+              name_i18n,
               slug,
               base_price,
               sale_price,
@@ -139,6 +143,53 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addFavorites = async (productIds: string[]) => {
+    if (!user) {
+      throw new Error('Please sign in to save favorites');
+    }
+
+    const uniqueIds = Array.from(new Set(productIds));
+    const missingIds = uniqueIds.filter(id => !favorites.some(fav => fav.product_id === id));
+
+    if (missingIds.length === 0) {
+      return;
+    }
+
+    try {
+      const payload = missingIds.map(productId => ({ user_id: user.id, product_id: productId }));
+      const { data, error } = await supabase
+        .from('favorites')
+        .insert(payload)
+        .select(`
+          id,
+          product_id,
+          created_at,
+          product:products(
+            id,
+            name,
+            name_i18n,
+            slug,
+            base_price,
+            sale_price,
+            images,
+            rating,
+            review_count,
+            is_new,
+            stock_quantity
+          )
+        `);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setFavorites(prev => [...(data as any), ...prev]);
+      }
+    } catch (error) {
+      console.error('Error adding favorites:', error);
+      throw error;
+    }
+  };
+
   return (
     <FavoritesContext.Provider
       value={{
@@ -147,6 +198,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         isFavorite,
         toggleFavorite,
         refreshFavorites,
+        addFavorites,
       }}
     >
       {children}
