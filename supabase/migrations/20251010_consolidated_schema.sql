@@ -113,6 +113,8 @@ CREATE TABLE IF NOT EXISTS products (
   name text NOT NULL,
   slug text UNIQUE NOT NULL,
   description text,
+  name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
+  description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   category_id uuid REFERENCES categories(id) ON DELETE SET NULL,
   base_price decimal(10,2) NOT NULL,
   sale_price decimal(10,2),
@@ -517,7 +519,16 @@ CREATE POLICY "Approved reviews are viewable by everyone"
 CREATE POLICY "Users can insert own reviews"
   ON reviews FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1
+      FROM orders o
+      JOIN order_items oi ON oi.order_id = o.id
+      WHERE o.user_id = auth.uid()
+        AND oi.product_id = product_id
+    )
+  );
 
 CREATE POLICY "Users can update own reviews"
   ON reviews FOR UPDATE
@@ -601,6 +612,8 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   title text NOT NULL,
   slug text UNIQUE NOT NULL,
   excerpt text,
+  title_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
+  excerpt_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   content text NOT NULL,
   featured_image_url text,
   author text,
@@ -680,360 +693,417 @@ VALUES
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================================
--- 19. INSERT SAMPLE DATA - PRODUCTS
+-- 19. INSERT MULTI-LANGUAGE PRODUCT CATALOG
 -- ============================================================================
 
-INSERT INTO products (name, slug, description, base_price, sale_price, images, rating, review_count, is_new, room_type, dimensions, materials, weight, sku, stock_quantity, style) VALUES
-('Modern Velvet Sectional Sofa', 'modern-velvet-sectional-sofa', 'Luxurious L-shaped sectional with premium velvet upholstery and reversible chaise. Perfect for contemporary living spaces.', 2499.99, 1999.99, ARRAY[
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg',
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
-], 4.7, 89, true, 'Living Room', '{"width": "280cm", "height": "85cm", "depth": "180cm"}', ARRAY['Velvet', 'Hardwood Frame', 'High-Density Foam'], 95, 'LR-SEC-001', 15, 'Modern'),
+DELETE FROM reviews;
+DELETE FROM product_variants;
+DELETE FROM products;
 
-('Industrial Coffee Table Set', 'industrial-coffee-table-set', 'Rustic coffee table with solid wood top and metal frame. Includes matching side table for complete living room setup.', 599.99, 449.99, ARRAY[
-  'https://images.pexels.com/photos/1457847/pexels-photo-1457847.jpeg',
-  'https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg'
-], 4.5, 124, false, 'Living Room', '{"width": "120cm", "height": "45cm", "depth": "70cm"}', ARRAY['Reclaimed Wood', 'Metal'], 35, 'LR-COF-002', 28, 'Industrial'),
-
-('Minimalist TV Stand', 'minimalist-tv-stand', 'Clean-lined entertainment center with cable management system and spacious storage compartments.', 799.99, null, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/276534/pexels-photo-276534.jpeg'
-], 4.6, 67, true, 'Living Room', '{"width": "180cm", "height": "55cm", "depth": "45cm"}', ARRAY['Oak Wood', 'Tempered Glass'], 45, 'LR-TV-003', 22, 'Minimalist'),
-
-('Scandinavian Accent Chair', 'scandinavian-accent-chair', 'Mid-century inspired lounge chair with comfortable cushioning and elegant wooden legs.', 449.99, 349.99, ARRAY[
-  'https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg',
-  'https://images.pexels.com/photos/1148955/pexels-photo-1148955.jpeg'
-], 4.8, 156, false, 'Living Room', '{"width": "75cm", "height": "82cm", "depth": "80cm"}', ARRAY['Fabric', 'Beech Wood'], 18, 'LR-CHR-004', 35, 'Scandinavian'),
-
-('King Size Platform Bed', 'king-size-platform-bed', 'Contemporary platform bed with upholstered headboard and built-in LED lighting. Includes storage drawers.', 1899.99, 1599.99, ARRAY[
-  'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg',
-  'https://images.pexels.com/photos/271897/pexels-photo-271897.jpeg'
-], 4.9, 203, true, 'Bedroom', '{"width": "200cm", "height": "120cm", "depth": "220cm"}', ARRAY['Upholstered Fabric', 'Solid Wood', 'LED Lights'], 120, 'BR-BED-001', 12, 'Contemporary'),
-
-('Rustic Wooden Dresser', 'rustic-wooden-dresser', 'Six-drawer dresser with antique brass handles and natural wood finish. Perfect for farmhouse style bedrooms.', 1299.99, 999.99, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/276583/pexels-photo-276583.jpeg'
-], 4.6, 98, false, 'Bedroom', '{"width": "150cm", "height": "95cm", "depth": "50cm"}', ARRAY['Solid Pine', 'Brass Hardware'], 75, 'BR-DRS-002', 18, 'Rustic'),
-
-('Modern Nightstand Pair', 'modern-nightstand-pair', 'Set of two matching nightstands with soft-close drawers and wireless charging pad on top.', 499.99, null, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
-], 4.7, 145, true, 'Bedroom', '{"width": "50cm", "height": "55cm", "depth": "40cm"}', ARRAY['Walnut Veneer', 'Metal'], 15, 'BR-NTS-003', 30, 'Modern'),
-
-('Extendable Dining Table', 'extendable-dining-table', 'Elegant dining table that extends from 6 to 10 seats. Features solid oak construction with natural finish.', 1799.99, 1499.99, ARRAY[
-  'https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg',
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg'
-], 4.9, 167, false, 'Dining', '{"width": "180-280cm", "height": "76cm", "depth": "100cm"}', ARRAY['Solid Oak', 'Metal Extension Mechanism'], 85, 'DN-TBL-001', 14, 'Traditional'),
-
-('Upholstered Dining Chairs Set', 'upholstered-dining-chairs-set', 'Set of 4 comfortable dining chairs with padded seats and elegant curved backs. Neutral fabric complements any decor.', 899.99, 699.99, ARRAY[
-  'https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg',
-  'https://images.pexels.com/photos/2079249/pexels-photo-2079249.jpeg'
-], 4.6, 132, true, 'Dining', '{"width": "48cm", "height": "95cm", "depth": "55cm"}', ARRAY['Linen Fabric', 'Rubberwood'], 12, 'DN-CHR-002', 25, 'Contemporary'),
-
-('Executive L-Shaped Desk', 'executive-l-shaped-desk', 'Spacious corner desk with cable management, keyboard tray, and file cabinet. Ideal for home office productivity.', 1299.99, 999.99, ARRAY[
-  'https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg',
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
-], 4.7, 189, false, 'Office', '{"width": "180cm", "height": "75cm", "depth": "140cm"}', ARRAY['Engineered Wood', 'Metal Frame'], 65, 'OF-DSK-001', 20, 'Executive'),
-
-('Ergonomic Office Chair', 'ergonomic-office-chair', 'Premium mesh back chair with lumbar support, adjustable armrests, and headrest. Built for all-day comfort.', 699.99, 549.99, ARRAY[
-  'https://images.pexels.com/photos/276534/pexels-photo-276534.jpeg',
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
-], 4.9, 312, true, 'Office', '{"width": "65cm", "height": "120cm", "depth": "65cm"}', ARRAY['Breathable Mesh', 'Steel Frame', 'PU Leather'], 22, 'OF-CHR-002', 35, 'Ergonomic'),
-
-('Rattan Patio Dining Set', 'rattan-patio-dining-set', 'Weather-resistant 6-piece outdoor dining set with glass top table and comfortable cushioned chairs.', 1899.99, 1599.99, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg'
-], 4.7, 134, false, 'Outdoor', '{"width": "150cm", "height": "75cm", "depth": "90cm"}', ARRAY['PE Rattan', 'Aluminum Frame', 'Tempered Glass'], 55, 'OD-SET-001', 16, 'Contemporary'),
-
-('Teak Lounger with Cushion', 'teak-lounger-with-cushion', 'Premium outdoor chaise lounge with adjustable backrest and weather-resistant cushion. Perfect for poolside relaxation.', 799.99, 649.99, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg'
-], 4.8, 98, true, 'Outdoor', '{"width": "200cm", "height": "35cm", "depth": "70cm"}', ARRAY['Teak Wood', 'Sunbrella Fabric'], 25, 'OD-LNG-002', 22, 'Tropical'),
-
-('Luxury Walk-In Wardrobe', 'luxury-walk-in-wardrobe', 'Spacious modular wardrobe system with sliding mirrored doors and customizable interior organization.', 3499.99, 2999.99, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/271897/pexels-photo-271897.jpeg'
-], 4.8, 87, true, 'Bedroom', '{"width": "300cm", "height": "240cm", "depth": "65cm"}', ARRAY['Mirrored Glass', 'Laminated Board', 'Aluminum Frame'], 180, 'BR-WRD-004', 8, 'Luxury'),
-
-('Industrial Bar Stool Set', 'industrial-bar-stool-set', 'Set of 2 adjustable height bar stools with footrest and swivel seat. Perfect for kitchen islands or home bars.', 399.99, 299.99, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/276534/pexels-photo-276534.jpeg'
-], 4.5, 98, false, 'Dining', '{"width": "40cm", "height": "75-95cm", "depth": "40cm"}', ARRAY['Metal Frame', 'Faux Leather'], 8, 'DN-STL-003', 40, 'Industrial'),
-
-('Marble Top Dining Set', 'marble-top-dining-set', 'Luxurious 6-seater dining set with genuine marble tabletop and velvet upholstered chairs with gold accents.', 3299.99, null, ARRAY[
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg',
-  'https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg'
-], 4.8, 76, true, 'Dining', '{"width": "200cm", "height": "76cm", "depth": "100cm"}', ARRAY['Marble', 'Velvet', 'Gold-Plated Metal'], 120, 'DN-SET-004', 6, 'Luxury'),
-
-('Industrial Bookcase Unit', 'industrial-bookcase-unit', 'Five-tier open bookshelf with metal frame and wood shelves. Perfect for displaying books, plants, and decor.', 599.99, null, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg'
-], 4.6, 143, false, 'Office', '{"width": "100cm", "height": "180cm", "depth": "35cm"}', ARRAY['Pine Wood', 'Metal'], 38, 'OF-BKC-003', 28, 'Industrial'),
-
-('Modern Filing Cabinet', 'modern-filing-cabinet', 'Three-drawer lateral filing cabinet with lock. Sleek design fits under most desks for space-saving storage.', 399.99, 329.99, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg'
-], 4.5, 87, true, 'Office', '{"width": "50cm", "height": "65cm", "depth": "50cm"}', ARRAY['Steel', 'Powder Coating'], 28, 'OF-FIL-004', 32, 'Modern'),
-
-('Large Ceramic Planter Set', 'large-ceramic-planter-set', 'Set of 3 decorative outdoor planters in graduated sizes. Frost-resistant ceramic with drainage holes.', 299.99, null, ARRAY[
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg',
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg'
-], 4.6, 167, false, 'Outdoor', '{"width": "30-50cm", "height": "35-60cm", "depth": "30-50cm"}', ARRAY['Glazed Ceramic'], 15, 'OD-PLT-003', 40, 'Modern'),
-
-('Modular Outdoor Sectional', 'modular-outdoor-sectional', 'Versatile 5-piece sectional sofa set with weather-resistant cushions. Rearrange to fit any patio layout.', 2499.99, 1999.99, ARRAY[
-  'https://images.pexels.com/photos/1648768/pexels-photo-1648768.jpeg',
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
-], 4.9, 145, true, 'Outdoor', '{"width": "280cm", "height": "75cm", "depth": "180cm"}', ARRAY['All-Weather Wicker', 'Powder-Coated Aluminum', 'Olefin Fabric'], 85, 'OD-SEC-004', 10, 'Modern'),
-
-('Harper Sectional Sofa', 'harper-sectional-sofa', 'A low-profile modular sectional with deep cushions and performance linen upholstery for family-friendly comfort.', 2150.00, NULL, ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg'], 4.8, 142, true, 'Living Room', '{"length": "112 in", "depth": "68 in", "height": "34 in"}', ARRAY['Performance linen', 'Kiln-dried hardwood', 'Feather-wrapped foam'], 165, 'LR-HAR-SEC-001', 12, 'Modern'),
-
-('Marble Orbit Coffee Table', 'marble-orbit-coffee-table', 'Round marble coffee table with a sculptural metal base and a protective resin seal for everyday use.', 780.00, NULL, ARRAY['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg'], 4.7, 88, false, 'Living Room', '{"diameter": "42 in", "height": "15 in"}', ARRAY['Carrara marble', 'Brushed brass'], 95, 'LR-MAR-COF-002', 20, 'Modern'),
-
-('Atlas Arc Floor Lamp', 'atlas-arc-floor-lamp', 'Sleek arched floor lamp with a weighted base and adjustable shade to spotlight seating areas.', 390.00, NULL, ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg'], 4.6, 67, false, 'Living Room', '{"height": "78 in", "reach": "48 in"}', ARRAY['Powder-coated steel', 'Linen shade'], 32, 'LR-ATL-LMP-003', 30, 'Modern'),
-
-('Tonal Wool Rug 8x10', 'tonal-wool-rug-8x10', 'Hand-loomed wool rug in layered neutral tones to anchor modern seating arrangements.', 960.00, NULL, ARRAY['https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg'], 4.8, 53, true, 'Living Room', '{"width": "96 in", "length": "120 in", "pile": "0.6 in"}', ARRAY['New Zealand wool', 'Cotton backing'], 45, 'LR-TON-RUG-004', 25, 'Modern'),
-
-('Nordic Oak Platform Bed (Queen)', 'nordic-oak-platform-bed', 'Solid oak platform bed with rounded corners and a slatted base for breathable support.', 1290.00, NULL, ARRAY['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg'], 4.9, 210, true, 'Bedroom', '{"width": "64 in", "length": "86 in", "height": "14 in", "headboard_height": "40 in"}', ARRAY['Solid oak', 'Baltic birch slats'], 120, 'BR-NOR-BED-001', 18, 'Scandinavian'),
-
-('Linen Bedding Set', 'linen-bedding-set', 'Four-piece garment-washed linen bedding bundle with breathable temperature regulation.', 360.00, NULL, ARRAY['https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg'], 4.7, 95, false, 'Bedroom', '{"size": "Queen", "pieces": "Duvet cover + 2 shams + sheet"}', ARRAY['European flax linen'], 12, 'BR-LIN-BED-002', 60, 'Scandinavian'),
-
-('Haze Glass Nightstands (Set of 2)', 'haze-glass-nightstands-set-of-2', 'Pair of smoked glass nightstands with concealed storage shelves and soft-close doors.', 540.00, NULL, ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg'], 4.6, 74, false, 'Bedroom', '{"width": "20 in", "depth": "18 in", "height": "24 in"}', ARRAY['Tempered glass', 'Brass hardware'], 64, 'BR-HAZ-NT-003', 22, 'Scandinavian'),
-
-('Softloom Area Rug', 'softloom-area-rug', 'Plush looped rug with subtle geometric patterning to soften bedroom floors.', 350.00, NULL, ARRAY['https://images.pexels.com/photos/6585612/pexels-photo-6585612.jpeg'], 4.8, 58, true, 'Bedroom', '{"width": "84 in", "length": "108 in"}', ARRAY['Wool blend', 'Cotton backing'], 38, 'BR-SOF-RUG-004', 28, 'Scandinavian'),
-
-('Forge Live-Edge Dining Table', 'forge-live-edge-dining-table', 'Statement dining table crafted from live-edge acacia wood with a raw steel base.', 2150.00, NULL, ARRAY['https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg'], 4.9, 132, false, 'Dining', '{"length": "96 in", "width": "40 in", "height": "30 in"}', ARRAY['Acacia wood', 'Powder-coated steel'], 210, 'DN-FOR-TBL-001', 10, 'Industrial'),
-
-('Set of 6 Rivet Leather Chairs', 'rivet-leather-dining-chairs-set-of-6', 'Six industrial-inspired leather dining chairs with welded steel frames and stitched cushioning.', 1140.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.7, 91, true, 'Dining', '{"width": "19 in", "depth": "22 in", "height": "34 in", "seat_height": "18 in"}', ARRAY['Top-grain leather', 'Steel frame'], 132, 'DN-RIV-CHR-002', 18, 'Industrial'),
-
-('Copper Cascade Chandelier', 'copper-cascade-chandelier', 'Multi-tier chandelier with hand-brushed copper shades for dramatic dining room lighting.', 490.00, NULL, ARRAY['https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg'], 4.5, 64, false, 'Dining', '{"diameter": "30 in", "height": "26 in"}', ARRAY['Copper', 'Fabric cord'], 22, 'DN-COP-CH-003', 35, 'Industrial'),
-
-('Walnut Executive Desk', 'walnut-executive-desk', 'L-shaped walnut veneer desk with integrated cable routing and soft-close storage drawers.', 1450.00, NULL, ARRAY['https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg'], 4.8, 118, true, 'Office', '{"width": "72 in", "depth": "60 in", "height": "30 in"}', ARRAY['Walnut veneer', 'Powder-coated steel'], 180, 'OF-WAL-DSK-001', 14, 'Modern'),
-
-('ErgoFlex Leather Chair', 'ergoflex-leather-chair', 'Ergonomic task chair with breathable leather, lumbar support, and fully adjustable arms.', 620.00, NULL, ARRAY['https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg'], 4.9, 256, false, 'Office', '{"width": "27 in", "depth": "27 in", "height": "48 in"}', ARRAY['Aniline leather', 'Aluminum base', 'Memory foam'], 52, 'OF-ERG-CHR-002', 30, 'Modern'),
-
-('Modular Wall Storage', 'modular-wall-storage', 'Configurable wall-mounted storage system with open shelving and concealed cabinets for home offices.', 890.00, NULL, ARRAY['https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg'], 4.7, 83, true, 'Office', '{"width": "96 in", "height": "84 in", "depth": "15 in"}', ARRAY['Engineered wood', 'Matte lacquer', 'Steel brackets'], 98, 'OF-MOD-STO-003', 16, 'Modern'),
-
-('Linear Task Lighting', 'linear-task-lighting', 'Slim LED task light with adjustable brightness and color temperature for focused work.', 320.00, NULL, ARRAY['https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg'], 4.5, 45, false, 'Office', '{"length": "38 in", "height": "18 in"}', ARRAY['Anodized aluminum', 'LED'], 8, 'OF-LIN-LGT-004', 40, 'Modern'),
-
-('Driftwood Outdoor Sofa', 'driftwood-outdoor-sofa', 'All-weather outdoor sofa with teak-inspired frame and quick-dry cushions for coastal patios.', 1980.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.8, 102, true, 'Outdoor', '{"width": "88 in", "depth": "34 in", "height": "32 in"}', ARRAY['Powder-coated aluminum', 'Olefin upholstery'], 120, 'OD-DRI-SOF-001', 12, 'Boho'),
-
-('All-Weather Lounge Chairs (Set of 2)', 'all-weather-lounge-chairs-set-of-2', 'Pair of reclining outdoor lounge chairs with UV-resistant wicker and water-repellent cushions.', 1080.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.7, 78, false, 'Outdoor', '{"width": "30 in", "depth": "58 in", "height": "34 in"}', ARRAY['Resin wicker', 'Aluminum frame', 'Polyester cushions'], 86, 'OD-ALL-LNG-002', 18, 'Boho'),
-
-('Braided Outdoor Rug', 'braided-outdoor-rug', 'Weather-resistant flatweave rug with braided edges to ground outdoor seating zones.', 420.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.6, 59, false, 'Outdoor', '{"width": "96 in", "length": "120 in"}', ARRAY['Recycled polypropylene'], 24, 'OD-BRA-RUG-003', 34, 'Boho'),
-
-('Rattan Lantern Trio', 'rattan-lantern-trio', 'Set of three handwoven lanterns with glass inserts for layered outdoor lighting.', 340.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.5, 48, true, 'Outdoor', '{"heights": "12 in / 16 in / 20 in"}', ARRAY['Natural rattan', 'Glass'], 18, 'OD-RAT-LAN-004', 40, 'Boho'),
-
-('Acacia Coffee Table', 'acacia-coffee-table', 'Outdoor coffee table crafted from solid acacia with a slatted top for quick drying.', 500.00, NULL, ARRAY['https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg'], 4.7, 41, false, 'Outdoor', '{"diameter": "38 in", "height": "16 in"}', ARRAY['Solid acacia wood'], 55, 'OD-ACA-COF-005', 22, 'Boho')
-ON CONFLICT (slug) DO NOTHING;
-
--- ============================================================================
--- 20. UPDATE PRODUCTS - LINK TO CATEGORIES AND SET 3D MODELS
--- ============================================================================
-
-UPDATE products p
-SET category_id = c.id
-FROM categories c
-WHERE p.room_type = c.name
-  AND p.category_id IS NULL;
-
-UPDATE products
-SET is_featured = true
-WHERE id IN (
-  SELECT id FROM products
-  WHERE review_count > 0
-  ORDER BY review_count DESC, rating DESC
-  LIMIT 12
-);
-
-UPDATE products
-SET model_3d_url = 'https://modelviewer.dev/shared-assets/models/Chair.glb'
-WHERE slug = 'scandinavian-accent-chair';
-
-UPDATE products
-SET model_3d_url = 'https://modelviewer.dev/shared-assets/models/Cube.gltf'
-WHERE slug = 'modern-velvet-sectional-sofa';
-
--- ============================================================================
--- 21. INSERT SAMPLE REVIEWS
--- ============================================================================
-
-ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_user_id_fkey;
-ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_order_id_fkey;
-ALTER TABLE reviews ALTER COLUMN user_id DROP NOT NULL;
-ALTER TABLE reviews ALTER COLUMN order_id DROP NOT NULL;
-
--- SỬA LỖI: Đảm bảo sử dụng cú pháp dollar-quoted ($tag$) chính xác cho PL/pgSQL DO block.
-DO $review_insert_block$
+DO $product_catalog$
 DECLARE
-  product_slug text;
-  product_id uuid;
-  sample_comments text[];
-  sample_ratings integer[];
-  i integer;
-  num_reviews integer;
+  cat RECORD;
+  product_index integer;
+  cat_vi text;
+  style_options text[] := ARRAY['Modern', 'Contemporary', 'Minimalist', 'Scandinavian', 'Industrial', 'Rustic', 'Transitional', 'Bohemian', 'Coastal', 'Luxury'];
+  material_pool text[];
+  image_pool text[];
+  style_value text;
+  style_value_vi text;
+  english_name text;
+  vietnamese_name text;
+  english_description text;
+  vietnamese_description text;
+  slug text;
+  base_price numeric;
+  sale_price numeric;
+  stock integer;
+  weight_val numeric;
+  materials text[];
+  width integer;
+  depth integer;
+  height integer;
+  dimension_json jsonb;
+  image_set text[];
+  image_count integer;
+  material_count integer;
+  cat_price_factor numeric := 1.0;
 BEGIN
-  sample_comments := ARRAY[
-    'Absolutely love this piece! The quality is outstanding and it fits perfectly in my living room.',
-    'Great value for money. Very comfortable and looks exactly like the pictures.',
-    'Delivery was smooth and the assembly was straightforward. Highly recommend!',
-    'The fabric is luxurious and the color is even better in person.',
-    'Comfortable seating, modern design. Perfect for entertaining guests.',
-    'Very happy with this purchase. The quality exceeded my expectations.',
-    'Beautiful furniture piece. Adds elegance to any room.',
-    'Good quality but took longer to deliver than expected.',
-    'Exactly what I was looking for. The craftsmanship is impressive.',
-    'Sturdy and well-made. Worth every penny.',
-    'Love the design and comfort. My family enjoys it every day.',
-    'Premium quality materials. Looks great in my home.',
-    'Easy to assemble and very comfortable. Great purchase!',
-    'The attention to detail is remarkable. Highly satisfied.',
-    'Perfect size and very comfortable. Would buy again.',
-    'Elegant and functional. Matches my decor perfectly.',
-    'Great addition to my home. Very pleased with the quality.',
-    'Comfortable and stylish. Gets lots of compliments.',
-    'Excellent craftsmanship. Built to last.',
-    'Very comfortable for daily use. Love it!',
-    'Beautiful piece of furniture. Exactly as described.',
-    'High quality and great design. Totally worth it.',
-    'Impressed with the build quality. Very satisfied.',
-    'Perfect for my space. Comfortable and elegant.',
-    'Great value. Looks and feels premium.',
-    'Wonderful addition to my home. Love the style.',
-    'Very pleased with this purchase. Excellent quality.',
-    'Comfortable, stylish, and well-made. Highly recommend.',
-    'Beautiful design and great comfort. Perfect choice.',
-    'Outstanding quality. Exceeds expectations in every way.'
+  FOR cat IN SELECT id, slug, name FROM categories ORDER BY display_order LOOP
+    CASE cat.slug
+      WHEN 'living-room' THEN
+        cat_vi := 'Phòng khách';
+        material_pool := ARRAY['Solid oak', 'Walnut veneer', 'Performance linen', 'Full-grain leather', 'Powder-coated steel', 'Tempered glass', 'Rattan weave', 'Bouclé fabric'];
+        image_pool := ARRAY[
+          'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg',
+          'https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg',
+          'https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg',
+          'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg',
+          'https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg'
+        ];
+        cat_price_factor := 1.18;
+      WHEN 'bedroom' THEN
+        cat_vi := 'Phòng ngủ';
+        material_pool := ARRAY['Solid maple', 'Engineered wood', 'Soft linen', 'Chenille upholstery', 'Brushed brass', 'Handwoven cane', 'Natural rattan', 'Frosted glass'];
+        image_pool := ARRAY[
+          'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg',
+          'https://images.pexels.com/photos/271897/pexels-photo-271897.jpeg',
+          'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg',
+          'https://images.pexels.com/photos/6480707/pexels-photo-6480707.jpeg',
+          'https://images.pexels.com/photos/8136912/pexels-photo-8136912.jpeg'
+        ];
+        cat_price_factor := 1.05;
+      WHEN 'dining' THEN
+        cat_vi := 'Phòng ăn';
+        material_pool := ARRAY['Solid walnut', 'Marble composite', 'Upholstered leather', 'Steel base', 'Ceramic top', 'Oak veneer', 'Bouclé seat', 'Hand-forged iron'];
+        image_pool := ARRAY[
+          'https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg',
+          'https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg',
+          'https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg',
+          'https://images.pexels.com/photos/1457847/pexels-photo-1457847.jpeg',
+          'https://images.pexels.com/photos/2079249/pexels-photo-2079249.jpeg'
+        ];
+        cat_price_factor := 1.08;
+      WHEN 'office' THEN
+        cat_vi := 'Văn phòng';
+        material_pool := ARRAY['Powder-coated steel', 'Mesh backrest', 'High-density foam', 'Solid ash', 'Laminate surface', 'Aluminum detail', 'Vegan leather', 'Tempered glass'];
+        image_pool := ARRAY[
+          'https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg',
+          'https://images.pexels.com/photos/245232/pexels-photo-245232.jpeg',
+          'https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg',
+          'https://images.pexels.com/photos/196655/pexels-photo-196655.jpeg',
+          'https://images.pexels.com/photos/462235/pexels-photo-462235.jpeg'
+        ];
+        cat_price_factor := 0.95;
+      WHEN 'outdoor' THEN
+        cat_vi := 'Ngoài trời';
+        material_pool := ARRAY['Solid teak', 'Weatherproof wicker', 'Outdoor acrylic', 'Galvanized steel', 'Powder-coated aluminum', 'Sunbrella fabric', 'Concrete composite', 'Sling weave'];
+        image_pool := ARRAY[
+          'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg',
+          'https://images.pexels.com/photos/2909102/pexels-photo-2909102.jpeg',
+          'https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg',
+          'https://images.pexels.com/photos/279643/pexels-photo-279643.jpeg',
+          'https://images.pexels.com/photos/1833162/pexels-photo-1833162.jpeg'
+        ];
+        cat_price_factor := 1.02;
+      ELSE
+        cat_vi := cat.name;
+        material_pool := ARRAY['Solid wood', 'Engineered veneer', 'Premium fabric'];
+        image_pool := ARRAY['https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg'];
+        cat_price_factor := 1.0;
+    END CASE;
+
+    image_count := array_length(image_pool, 1);
+    material_count := array_length(material_pool, 1);
+
+    FOR product_index IN 1..60 LOOP
+      style_value := style_options[((product_index - 1) % array_length(style_options, 1)) + 1];
+      SELECT CASE style_value
+        WHEN 'Modern' THEN 'Hiện đại'
+        WHEN 'Contemporary' THEN 'Đương đại'
+        WHEN 'Minimalist' THEN 'Tối giản'
+        WHEN 'Scandinavian' THEN 'Bắc Âu'
+        WHEN 'Industrial' THEN 'Công nghiệp'
+        WHEN 'Rustic' THEN 'Mộc mạc'
+        WHEN 'Transitional' THEN 'Giao thoa'
+        WHEN 'Bohemian' THEN 'Boho'
+        WHEN 'Coastal' THEN 'Biển cả'
+        WHEN 'Luxury' THEN 'Sang trọng'
+        ELSE 'Phong cách'
+      END INTO style_value_vi;
+
+      english_name := format('%s %s Collection Piece %s', style_value, cat.name, lpad(product_index::text, 2, '0'));
+      vietnamese_name := format('Mẫu %s %s số %s', style_value_vi, lower(cat_vi), lpad(product_index::text, 2, '0'));
+
+      english_description := format('Piece %s highlights %s design for the %s with layered textures, smart storage, and adaptable proportions.', product_index, style_value, lower(cat.name));
+      vietnamese_description := format('Thiết kế số %s mang tinh thần %s cho %s với chất liệu bền bỉ và công năng linh hoạt.', product_index, style_value_vi, lower(cat_vi));
+
+      slug := regexp_replace(lower(format('%s %s signature %s', cat.slug, style_value, product_index)), '[^a-z0-9]+', '-', 'g');
+
+      base_price := round(((520 + product_index * 14) * cat_price_factor + random() * 160)::numeric, 2);
+      IF product_index % 4 = 0 THEN
+        sale_price := round((base_price * (0.82 + random() * 0.08))::numeric, 2);
+        IF sale_price >= base_price THEN
+          sale_price := base_price - 45;
+        END IF;
+      ELSE
+        sale_price := NULL;
+      END IF;
+
+      stock := 12 + ((product_index * 3) % 48);
+      weight_val := round((22 + product_index * 0.75 + random() * 8)::numeric, 2);
+
+      materials := ARRAY[
+        material_pool[((product_index - 1) % material_count) + 1],
+        material_pool[((product_index) % material_count) + 1],
+        material_pool[((product_index + 1) % material_count) + 1]
+      ];
+
+      width := 70 + ((product_index * 3) % 120);
+      depth := 40 + ((product_index * 5) % 90);
+      height := 45 + ((product_index * 2) % 110);
+      dimension_json := jsonb_build_object(
+        'width', format('%scm', width),
+        'depth', format('%scm', depth),
+        'height', format('%scm', height)
+      );
+
+      image_set := ARRAY[
+        image_pool[((product_index - 1) % image_count) + 1],
+        image_pool[((product_index) % image_count) + 1],
+        image_pool[((product_index + 1) % image_count) + 1]
+      ];
+
+      INSERT INTO products (
+        name,
+        slug,
+        description,
+        name_i18n,
+        description_i18n,
+        category_id,
+        base_price,
+        sale_price,
+        style,
+        room_type,
+        materials,
+        dimensions,
+        weight,
+        sku,
+        stock_quantity,
+        images,
+        video_url,
+        model_3d_url,
+        rating,
+        review_count,
+        is_featured,
+        is_new,
+        status,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        english_name,
+        slug,
+        english_description,
+        jsonb_build_object('en', english_name, 'vi', vietnamese_name),
+        jsonb_build_object('en', english_description, 'vi', vietnamese_description),
+        cat.id,
+        base_price,
+        sale_price,
+        style_value,
+        cat.name,
+        materials,
+        dimension_json,
+        weight_val,
+        upper(left(cat.slug, 2)) || '-' || lpad(product_index::text, 3, '0') || '-' || lpad((100 + floor(random() * 900))::text, 3, '0'),
+        stock,
+        image_set,
+        NULL,
+        NULL,
+        0,
+        0,
+        (product_index % 12 = 0),
+        (product_index <= 10),
+        'active',
+        now() - ((product_index % 45) || ' days')::interval,
+        now()
+      )
+      ON CONFLICT (slug) DO UPDATE SET
+        name = EXCLUDED.name,
+        description = EXCLUDED.description,
+        name_i18n = EXCLUDED.name_i18n,
+        description_i18n = EXCLUDED.description_i18n,
+        category_id = EXCLUDED.category_id,
+        base_price = EXCLUDED.base_price,
+        sale_price = EXCLUDED.sale_price,
+        style = EXCLUDED.style,
+        room_type = EXCLUDED.room_type,
+        materials = EXCLUDED.materials,
+        dimensions = EXCLUDED.dimensions,
+        weight = EXCLUDED.weight,
+        sku = EXCLUDED.sku,
+        stock_quantity = EXCLUDED.stock_quantity,
+        images = EXCLUDED.images,
+        is_featured = EXCLUDED.is_featured,
+        is_new = EXCLUDED.is_new,
+        status = EXCLUDED.status,
+        updated_at = now();
+    END LOOP;
+  END LOOP;
+END $product_catalog$;
+
+-- ============================================================================
+-- 20. INSERT BULK PRODUCT REVIEWS
+-- ============================================================================
+
+DO $product_reviews$
+DECLARE
+  product_record RECORD;
+  review_total integer;
+  i integer;
+  rating_value integer;
+  review_templates text[] := ARRAY[
+    'Exceptional craftsmanship and comfort.',
+    'Beautiful finish and thoughtful detailing throughout.',
+    'Arrived well packaged and feels incredibly sturdy.',
+    'The proportions are perfect for our home.',
+    'Color and texture are exactly as described.',
+    'Easy to assemble with clear instructions.',
+    'Adds a luxurious feel to the entire space.',
+    'Quality materials that hold up to daily use.',
+    'Highly versatile styling options.',
+    'Great balance between form and function.',
+    'Soft yet supportive cushions that everyone loves.',
+    'Impressive durability even with kids and pets.',
+    'Elevated the look of our room instantly.',
+    'Thoughtful storage keeps everything organized.',
+    'Finishes look premium and timeless.',
+    'Customer service was responsive and helpful.',
+    'Packaging was secure and environmentally conscious.',
+    'Assembly took minutes and pieces fit perfectly.',
+    'A standout piece that guests always notice.',
+    'Comfortable enough for long evenings at home.'
   ];
+  sentiment_tail text;
+BEGIN
+  FOR product_record IN SELECT id FROM products LOOP
+    review_total := 20 + floor(random() * 31)::integer;
 
-  sample_ratings := ARRAY[5, 5, 4, 5, 4, 5, 5, 3, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 4, 5, 5, 5, 4, 5, 5, 5, 5, 4, 5];
+    FOR i IN 1..review_total LOOP
+      rating_value := 1 + floor(random() * 5)::integer;
+      SELECT CASE rating_value
+        WHEN 5 THEN 'Absolutely recommended for design lovers.'
+        WHEN 4 THEN 'Highly satisfied and would purchase again.'
+        WHEN 3 THEN 'Solid quality with a few minor quirks.'
+        WHEN 2 THEN 'Useful but could benefit from refinements.'
+        ELSE 'Appreciate the concept though execution could improve.'
+      END INTO sentiment_tail;
 
-  FOR product_slug IN
-    SELECT slug FROM products LIMIT 20
-  LOOP
-    SELECT id INTO product_id FROM products WHERE slug = product_slug;
-    
-    num_reviews := 15 + floor(random() * 11)::integer;
-
-    FOR i IN 1..LEAST(num_reviews, array_length(sample_comments, 1))
-    LOOP
       INSERT INTO reviews (
-        product_id, 
-        user_id, 
-        order_id, 
-        rating, 
-        comment, 
-        is_verified_purchase, 
-        status, 
+        product_id,
+        user_id,
+        order_id,
+        rating,
+        comment,
+        is_verified_purchase,
+        status,
         created_at
       )
       VALUES (
-        product_id,
+        product_record.id,
         NULL,
         NULL,
-        sample_ratings[i],
-        sample_comments[i],
+        rating_value,
+        review_templates[((i - 1) % array_length(review_templates, 1)) + 1] || ' ' || sentiment_tail,
         false,
         'approved',
-        now() - (random() * interval '180 days')
-      )
-      ON CONFLICT DO NOTHING;
+        now() - ((i + floor(random() * 90)) || ' days')::interval
+      );
     END LOOP;
 
     UPDATE products p
     SET
-      rating = (SELECT ROUND(AVG(rating)::numeric, 2) FROM reviews r WHERE r.product_id = p.id),
+      rating = COALESCE((SELECT ROUND(AVG(r.rating)::numeric, 2) FROM reviews r WHERE r.product_id = p.id), 0),
       review_count = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id)
-    WHERE p.id = product_id;
+    WHERE p.id = product_record.id;
   END LOOP;
-END $review_insert_block$ LANGUAGE plpgsql;
+END $product_reviews$;
 
 -- ============================================================================
--- 22. INSERT SAMPLE BLOG POSTS
+-- 21. INSERT MULTI-LANGUAGE BLOG POSTS
 -- ============================================================================
 
-INSERT INTO blog_posts (id, title, slug, excerpt, content, featured_image_url, author, published_at, created_at, updated_at)
-VALUES
-  (
-    'f1dd01fa-558c-4e76-9f05-5f9d2fe4c1a1',
-    '5 Interior Design Trends Defining Modern Living in 2024',
-    '5-interior-design-trends-2024',
-    'Discover the leading interior trends of 2024 to refresh your home with minimalist, sustainable, and highly curated touches.',
-    E'## Minimalism with warmth\nThe minimalist look remains popular for the calm and clarity it brings. Work with a neutral palette and layer natural textures to keep the space welcoming.\n\n## Planet-friendly materials\nSustainability is now a priority. Reclaimed woods, FSC-certified timber, and organic fabrics are top picks that balance style with responsibility.\n\n## Smart technology at home\nConnected lighting, automated shades, and multifunctional furnishings create a seamless living experience. Integrate smart features where they make daily routines easier.\n\n## Personalized styling\nDisplay art, handmade pieces, and meaningful keepsakes to give every room character. A few personal accents instantly make a space feel one-of-a-kind.\n\n## Indoor greenery\nPlants continue to shine as natural mood boosters. Cluster mini planters or hang cascading greenery to purify the air and energize the room.',
-    'https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg',
-    'Thi Interior Studio',
-    '2024-03-18T08:00:00Z',
-    '2024-03-18T08:00:00Z',
-    '2024-03-18T08:00:00Z'
+DELETE FROM comments;
+DELETE FROM blog_posts;
+
+WITH series AS (
+  SELECT
+    gs AS idx,
+    (ARRAY['Modern', 'Scandinavian', 'Industrial', 'Minimalist', 'Coastal', 'Artisan', 'Luxury', 'Mid-century'])[((gs - 1) % 8) + 1] AS style_en,
+    (ARRAY['Hiện đại', 'Bắc Âu', 'Công nghiệp', 'Tối giản', 'Biển cả', 'Thủ công', 'Sang trọng', 'Giữa thế kỷ'])[((gs - 1) % 8) + 1] AS style_vi,
+    (ARRAY['living spaces', 'bedroom retreats', 'dining gatherings', 'creative workspaces', 'outdoor lounges', 'family rooms', 'compact homes', 'seasonal décor'])[((gs - 1) % 8) + 1] AS focus_en,
+    (ARRAY['không gian sinh hoạt', 'phòng ngủ thư thái', 'bữa tiệc quây quần', 'góc làm việc sáng tạo', 'khoảng sân thư thái', 'phòng sinh hoạt gia đình', 'căn hộ nhỏ gọn', 'trang trí theo mùa'])[((gs - 1) % 8) + 1] AS focus_vi,
+    (ARRAY[
+      'https://images.pexels.com/photos/8136914/pexels-photo-8136914.jpeg',
+      'https://images.pexels.com/photos/276534/pexels-photo-276534.jpeg',
+      'https://images.pexels.com/photos/8136913/pexels-photo-8136913.jpeg',
+      'https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg',
+      'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg',
+      'https://images.pexels.com/photos/271897/pexels-photo-271897.jpeg',
+      'https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg',
+      'https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg'
+    ])[((gs - 1) % 8) + 1] AS image_url
+  FROM generate_series(1, 35) AS gs
+)
+INSERT INTO blog_posts (
+  id,
+  title,
+  slug,
+  excerpt,
+  content,
+  featured_image_url,
+  author,
+  published_at,
+  created_at,
+  updated_at,
+  title_i18n,
+  excerpt_i18n
+)
+SELECT
+  gen_random_uuid(),
+  format('%s Style Guide #%s for %s', style_en, idx, focus_en),
+  regexp_replace(lower(format('%s style guide %s %s', style_en, focus_en, idx)), '[^a-z0-9]+', '-', 'g'),
+  format('Learn how to layer %s elements into %s with materials, lighting, and styling cues from our design team.', style_en, focus_en),
+  format(
+    E'## Define your palette
+Blend tones and textures that echo %s sensibilities while keeping functionality top of mind.
+
+## Elevate the mood
+Layer lighting, greenery, and personal accents to make %s feel inviting day and night.
+
+## Curate with intention
+Combine statement pieces with everyday essentials to strike the right balance for %s.',
+    lower(style_en), focus_en, focus_en
   ),
-  (
-    'd8c3f830-08a8-4d8d-9cf9-94bf9961eb52',
-    'How to Choose the Right Sofa for Every Living Room Size',
-    'how-to-choose-the-right-sofa',
-    'The sofa is the heart of the living room. Learn how to pick the ideal dimensions, materials, and colors for your space.',
-    E'## Measure with intention\nBefore you shop, map out the room and note doorways, walkways, and other furniture placements to confirm the sofa will fit comfortably.\n\n## Match the shape to your lifestyle\nIf you host often, consider an L-shaped sectional or sleeper sofa. For compact apartments, a two-seater paired with an ottoman keeps things flexible.\n\n## Focus on fabric and color\nPerformance linen and cotton blend well with modern styles, while leather introduces polish. Stick with timeless neutrals and layer in colorful pillows for personality.\n\n## Coordinate with the rest of the room\nBalance the sofa with the coffee table, media console, and lighting. Finish the look with an area rug or wall art that ties the palette together.',
-    'https://images.pexels.com/photos/276554/pexels-photo-276554.jpeg',
-    'Thi Interior Studio',
-    '2024-03-12T08:00:00Z',
-    '2024-03-12T08:00:00Z',
-    '2024-03-12T08:00:00Z'
+  image_url,
+  'Thi Interior Studio',
+  now() - ((idx - 1) * interval '3 days'),
+  now() - ((idx - 1) * interval '3 days'),
+  now() - ((idx - 1) * interval '3 days'),
+  jsonb_build_object(
+    'en', format('%s Style Guide #%s for %s', style_en, idx, focus_en),
+    'vi', format('Cẩm nang phong cách %s #%s cho %s', style_vi, idx, focus_vi)
   ),
-  (
-    'bb20612b-71f0-4a77-91c8-fd0566f6cb99',
-    'Design a Home Office That Boosts Productivity and Creativity',
-    'design-a-productive-home-office',
-    'A thoughtful workspace keeps you focused and inspired. Explore layout, lighting, and styling ideas from the ZShop team.',
-    E'## Embrace natural light\nPosition your desk near a window to soak up daylight and stay energized. Layer sheer curtains or blinds so you can control glare during video calls.\n\n## Invest in ergonomic furniture\nChoose a chair with proper lumbar support and a height-adjustable seat. A spacious desktop keeps monitors, keyboards, and notebooks organized.\n\n## Keep clutter in check\nEdit your work surface regularly and rely on trays, shelves, or wall-mounted organizers to store paperwork. A tidy setup makes it easier to focus.\n\n## Add inspiring accents\nGreenery, sculptural lamps, or framed prints introduce texture and creativity. Rotate a few accessories seasonally to keep the space feeling fresh.',
-    'https://images.pexels.com/photos/245208/pexels-photo-245208.jpeg',
-    'Thi Interior Studio',
-    '2024-03-05T08:00:00Z',
-    '2024-03-05T08:00:00Z',
-    '2024-03-05T08:00:00Z'
+  jsonb_build_object(
+    'en', format('Learn how to layer %s elements into %s with materials, lighting, and styling cues from our design team.', style_en, focus_en),
+    'vi', format('Khám phá cách phối hợp phong cách %s trong %s với vật liệu, ánh sáng và gợi ý từ đội ngũ stylist của chúng tôi.', style_vi, focus_vi)
   )
-ON CONFLICT (slug) DO UPDATE SET
-  title = EXCLUDED.title,
-  excerpt = EXCLUDED.excerpt,
-  content = EXCLUDED.content,
-  featured_image_url = EXCLUDED.featured_image_url,
-  author = EXCLUDED.author,
-  published_at = EXCLUDED.published_at,
-  updated_at = EXCLUDED.updated_at;
+FROM series;
 
 -- ============================================================================
--- 23. INSERT SAMPLE BLOG COMMENTS
+-- 22. INSERT SAMPLE BLOG COMMENTS
 -- ============================================================================
 
 INSERT INTO comments (id, post_id, name, email, content, is_approved, created_at)
-VALUES
-  (
-    '74f6b8f4-2573-4f71-9d6b-6f1c52a6f4b9',
-    'bb20612b-71f0-4a77-91c8-fd0566f6cb99',
-    'Minh Anh',
-    'minhanh@example.com',
-    'This workspace is gorgeous! I am adding greenery and a new desk lamp this week.',
-    true,
-    '2024-03-06T09:15:00Z'
-  ),
-  (
-    '5a3c1b20-79c9-4a8e-9dbf-2f1af7a5c1f2',
-    'f1dd01fa-558c-4e76-9f05-5f9d2fe4c1a1',
-    'Hoang Nam',
-    'namhoang@example.com',
-    'This article is incredibly helpful. I especially appreciate the section on sustainable materials as my family embraces a greener lifestyle.',
-    true,
-    '2024-03-18T10:45:00Z'
-  ),
-  (
-    'c41fa61c-7b6a-4e72-8e12-4c0b5df20d35',
-    'd8c3f830-08a8-4d8d-9cf9-94bf9961eb52',
-    'Thao Linh',
-    'thaolinh@example.com',
-    'Thanks to this guide I finally know how to pick a sofa that fits my small apartment. Appreciate you, ZShop!',
-    true,
-    '2024-03-13T15:20:00Z'
-  )
-ON CONFLICT (id) DO UPDATE SET
-  post_id = EXCLUDED.post_id,
-  name = EXCLUDED.name,
-  email = EXCLUDED.email,
-  content = EXCLUDED.content,
-  is_approved = EXCLUDED.is_approved,
-  created_at = EXCLUDED.created_at;
+SELECT
+  gen_random_uuid(),
+  p.id,
+  c.name,
+  c.email,
+  c.content,
+  true,
+  now() - (c.days_ago || ' days')::interval
+FROM (
+  VALUES
+    (0, 'Minh Anh', 'minhanh@example.com', 'Không gian làm việc này quá đẹp! Mình sẽ thêm cây xanh và một chiếc đèn bàn giống trong bài.', 7),
+    (1, 'Hoàng Nam', 'namhoang@example.com', 'Những gợi ý về chất liệu bền vững thực sự hữu ích cho căn hộ của gia đình mình.', 12),
+    (2, 'Thảo Linh', 'thaolinh@example.com', 'Nhờ hướng dẫn này mà phòng ăn nhỏ của mình trở nên gọn gàng và ấm cúng hơn hẳn.', 4)
+) AS c(offset_index, name, email, content, days_ago)
+JOIN LATERAL (
+  SELECT id
+  FROM blog_posts
+  ORDER BY published_at DESC
+  OFFSET c.offset_index
+  LIMIT 1
+) AS p ON TRUE
+ON CONFLICT DO NOTHING;

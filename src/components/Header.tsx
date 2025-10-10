@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Menu, X, Moon, Sun, Languages } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
   onCartOpen: () => void;
@@ -15,29 +17,39 @@ export function Header({ onCartOpen }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t, translate } = useLanguage();
 
   const productCategories = [
-    { name: 'All Products', path: '/products' },
-    { name: 'Living Room', path: '/shop/living' },
-    { name: 'Bedroom', path: '/shop/bedroom' },
-    { name: 'Dining', path: '/shop/dining' },
-    { name: 'Office', path: '/shop/office' },
-    { name: 'Outdoor', path: '/shop/outdoor' },
+    { label: { en: 'All Products', vi: 'Tất cả sản phẩm' }, path: '/products' },
+    { label: { en: 'Living Room', vi: 'Phòng khách' }, path: '/shop/living' },
+    { label: { en: 'Bedroom', vi: 'Phòng ngủ' }, path: '/shop/bedroom' },
+    { label: { en: 'Dining', vi: 'Phòng ăn' }, path: '/shop/dining' },
+    { label: { en: 'Office', vi: 'Văn phòng' }, path: '/shop/office' },
+    { label: { en: 'Outdoor', vi: 'Ngoài trời' }, path: '/shop/outdoor' },
   ];
 
   const serviceLinks = [
-    { name: 'Assembly Services', path: '/assembly-services' },
-    { name: 'Design Services', path: '/design-services' },
-    { name: 'Virtual Showroom', path: '/virtual-showroom' },
+    { label: { en: 'Assembly Services', vi: 'Dịch vụ lắp đặt' }, path: '/assembly-services' },
+    { label: { en: 'Design Services', vi: 'Dịch vụ thiết kế' }, path: '/design-services' },
+    { label: { en: 'Virtual Showroom', vi: 'Phòng trưng bày ảo' }, path: '/virtual-showroom' },
   ];
 
   const resourceLinks = [
-    { name: 'Blog & News', path: '/blog' },
-    { name: 'Shipping & Returns', path: '/shipping-returns' },
-    { name: 'Track Order', path: '/track-order' },
-    { name: 'FAQ', path: '/faq' },
-    { name: 'Size Guide', path: '/size-guide' },
-    { name: 'Design Inspiration', path: '/design-inspiration' },
+    { label: { en: 'Blog & News', vi: 'Tin tức & Blog' }, path: '/blog' },
+    { label: { en: 'Shipping & Returns', vi: 'Vận chuyển & đổi trả' }, path: '/shipping-returns' },
+    { label: { en: 'Track Order', vi: 'Theo dõi đơn hàng' }, path: '/track-order' },
+    { label: { en: 'FAQ', vi: 'Câu hỏi thường gặp' }, path: '/faq' },
+    { label: { en: 'Size Guide', vi: 'Hướng dẫn kích thước' }, path: '/size-guide' },
+    { label: { en: 'Design Inspiration', vi: 'Gợi ý thiết kế' }, path: '/design-inspiration' },
+  ];
+
+  const quickSearchTerms = [
+    { id: 'sofa', labelKey: 'header.quickTerm.sofa', query: { en: 'Sofa', vi: 'ghế sofa' } },
+    { id: 'bed', labelKey: 'header.quickTerm.bed', query: { en: 'Bed', vi: 'giường' } },
+    { id: 'table', labelKey: 'header.quickTerm.table', query: { en: 'Table', vi: 'bàn' } },
+    { id: 'chair', labelKey: 'header.quickTerm.chair', query: { en: 'Chair', vi: 'ghế' } },
+    { id: 'outdoor', labelKey: 'header.quickTerm.outdoor', query: { en: 'Outdoor', vi: 'ngoài trời' } },
   ];
 
   return (
@@ -63,12 +75,12 @@ export function Header({ onCartOpen }: HeaderProps) {
                 to="/"
                 className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
-                Home
+                {t('common.home')}
               </Link>
 
               <div className="relative group">
                 <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
-                  <span>Products</span>
+                  <span>{t('common.products')}</span>
                   <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -77,11 +89,11 @@ export function Header({ onCartOpen }: HeaderProps) {
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
                   {productCategories.map((cat) => (
                     <Link
-                      key={cat.name}
+                      key={cat.path}
                       to={cat.path}
                       className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
                     >
-                      {cat.name}
+                      {translate(cat.label)}
                     </Link>
                   ))}
                 </div>
@@ -91,40 +103,58 @@ export function Header({ onCartOpen }: HeaderProps) {
                 to="/about"
                 className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
-                About Us
+                {t('common.about')}
               </Link>
 
               <Link
                 to="/contact"
                 className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
-                Contact
+                {t('common.contact')}
               </Link>
 
               <Link
                 to="/blog"
                 className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
               >
-                Blog
+                {t('common.blog')}
               </Link>
 
               <Link
                 to="/best-sellers"
                 className="text-sm font-medium transition-colors text-amber-600 hover:text-amber-700 flex items-center space-x-1"
               >
-                <span>Best Sellers</span>
+                <span>{t('common.bestSellers')}</span>
               </Link>
 
               <Link
                 to="/sale"
                 className="text-sm font-medium transition-colors text-red-600 hover:text-red-700 flex items-center space-x-1"
               >
-                <span>Sale</span>
-                <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">Hot</span>
+                <span>{t('common.sale')}</span>
+                <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">{t('header.hot')}</span>
               </Link>
             </nav>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <button
+                className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200 hover:border-brand-500 hover:text-brand-600 dark:hover:border-brand-500 smooth-transition"
+                onClick={toggleLanguage}
+                type="button"
+                aria-label={language === 'en' ? 'Switch to Vietnamese' : 'Chuyển sang tiếng Anh'}
+              >
+                <Languages className="w-4 h-4" />
+                {language === 'en' ? 'EN' : 'VI'}
+              </button>
+
+              <button
+                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale"
+                onClick={toggleTheme}
+                type="button"
+                aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-300" /> : <Moon className="w-5 h-5 text-neutral-600" />}
+              </button>
 
               <button
                 className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale"
@@ -166,25 +196,25 @@ export function Header({ onCartOpen }: HeaderProps) {
                         to="/profile"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                       >
-                        My Account
+                        {t('header.myAccount')}
                       </Link>
                       <Link
                         to="/favorites"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors sm:hidden"
                       >
-                        Favorites
+                        {t('header.favorites')}
                       </Link>
                       <Link
                         to="/orders"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                       >
-                        My Orders
+                        {t('header.myOrders')}
                       </Link>
                       <button
                         onClick={() => signOut()}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                       >
-                        Sign Out
+                        {t('header.signOut')}
                       </button>
                     </>
                   ) : (
@@ -193,13 +223,13 @@ export function Header({ onCartOpen }: HeaderProps) {
                         to="/login"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                       >
-                        Sign In
+                        {t('header.signIn')}
                       </Link>
                       <Link
                         to="/register"
                         className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                       >
-                        Sign Up
+                        {t('header.signUp')}
                       </Link>
                     </>
                   )}
@@ -226,7 +256,7 @@ export function Header({ onCartOpen }: HeaderProps) {
                         setSearchQuery('');
                       }
                     }}
-                    placeholder="Search for furniture..."
+                    placeholder={translate({ en: 'Search for furniture...', vi: 'Tìm nội thất...' })}
                     className="w-full pl-10 pr-20 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm transition-all bg-white dark:bg-neutral-700 dark:text-white"
                     autoFocus
                   />
@@ -240,23 +270,24 @@ export function Header({ onCartOpen }: HeaderProps) {
                     }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-600 text-white px-4 py-1.5 rounded-md hover:bg-brand-700 transition-colors text-sm font-medium"
                   >
-                    Search
+                    {t('common.search')}
                   </button>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Quick:</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{t('header.quickSearch')}</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {['Sofa', 'Bed', 'Table', 'Chair', 'Outdoor'].map((term) => (
+                    {quickSearchTerms.map((term) => (
                       <button
-                        key={term}
+                        key={term.id}
                         onClick={() => {
-                          navigate(`/products?search=${term}`);
+                          const termQuery = translate(term.query);
+                          navigate(`/products?search=${encodeURIComponent(termQuery)}`);
                           setSearchOpen(false);
                         }}
                         className="px-2.5 py-1 bg-gray-100 dark:bg-neutral-700 dark:text-gray-200 rounded-md text-xs hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-neutral-600 transition-colors"
                       >
-                        {term}
+                        {t(term.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -277,42 +308,42 @@ export function Header({ onCartOpen }: HeaderProps) {
                 className="block px-6 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Home
+                {t('common.home')}
               </Link>
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
-              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Products</div>
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{t('common.products')}</div>
               {productCategories.map((cat) => (
                 <Link
-                  key={cat.name}
+                  key={cat.path}
                   to={cat.path}
                   className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {cat.name}
+                  {translate(cat.label)}
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
-              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Services</div>
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{t('common.services')}</div>
               {serviceLinks.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.path}
                   to={item.path}
                   className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.name}
+                  {translate(item.label)}
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
-              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Resources</div>
+              <div className="px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{t('common.resources')}</div>
               {resourceLinks.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.path}
                   to={item.path}
                   className="block px-8 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.name}
+                  {translate(item.label)}
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
@@ -321,22 +352,44 @@ export function Header({ onCartOpen }: HeaderProps) {
                 className="block px-6 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                About Us
+                {t('common.about')}
               </Link>
               <Link
                 to="/contact"
                 className="block px-6 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Contact
+                {t('common.contact')}
               </Link>
               <Link
                 to="/sale"
                 className="block px-6 py-3 text-sm font-medium text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Sale 🔥
+                {`${t('common.sale')} 🔥`}
               </Link>
+              <div className="px-6 pt-4 flex items-center gap-3">
+                <button
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200 hover:border-brand-500 hover:text-brand-600 dark:hover:border-brand-500 smooth-transition"
+                  onClick={() => {
+                    toggleLanguage();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <Languages className="w-4 h-4" />
+                  {language === 'en' ? 'EN' : 'VI'}
+                </button>
+                <button
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale"
+                  onClick={() => {
+                    toggleTheme();
+                    setMobileMenuOpen(false);
+                  }}
+                  aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+                >
+                  {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-300" /> : <Moon className="w-5 h-5 text-neutral-600" />}
+                </button>
+              </div>
             </nav>
           </div>
         </div>

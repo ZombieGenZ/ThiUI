@@ -57,7 +57,6 @@ export function ReviewSection({ productId, onReviewAdded }: ReviewSectionProps) 
           )
         `)
         .eq('user_id', user.id)
-        .in('status', ['delivered', 'completed'])
         .eq('order_items.product_id', productId);
 
       if (error) throw error;

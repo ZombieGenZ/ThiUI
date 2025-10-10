@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Clock, Truck, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { formatCurrency, getLocalizedValue } from '../utils/i18n';
 
 interface Order {
   id: string;
@@ -15,6 +17,7 @@ interface Order {
     unit_price: number;
     product: {
       name: string;
+      name_i18n?: Record<string, string> | null;
       images: string[];
     } | null;
   }[];
@@ -23,8 +26,21 @@ interface Order {
 export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { language, translate } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const statusLabels: Record<string, { en: string; vi: string }> = useMemo(
+    () => ({
+      pending: { en: 'Pending', vi: 'Đang chờ' },
+      processing: { en: 'Processing', vi: 'Đang xử lý' },
+      shipped: { en: 'Shipped', vi: 'Đã gửi hàng' },
+      out_for_delivery: { en: 'Out for delivery', vi: 'Đang giao' },
+      delivered: { en: 'Delivered', vi: 'Đã giao' },
+      cancelled: { en: 'Cancelled', vi: 'Đã hủy' },
+    }),
+    []
+  );
 
   useEffect(() => {
     if (!user) {
@@ -49,6 +65,7 @@ export function OrdersPage() {
             unit_price,
             product:products (
               name,
+              name_i18n,
               images
             )
           )
@@ -60,7 +77,12 @@ export function OrdersPage() {
       setOrders(data || []);
     } catch (error) {
       console.error('Error loading orders:', error);
-      toast.error('Failed to load orders');
+      toast.error(
+        translate({
+          en: 'Failed to load orders',
+          vi: 'Không thể tải đơn hàng',
+        })
+      );
     } finally {
       setLoading(false);
     }
@@ -103,9 +125,11 @@ export function OrdersPage() {
   };
 
   const formatStatus = (status: string) => {
-    return status.split('_').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    const label = statusLabels[status];
+    if (label) {
+      return translate(label);
+    }
+    return translate({ en: status.replace(/_/g, ' '), vi: status.replace(/_/g, ' ') });
   };
 
   if (loading) {
@@ -171,9 +195,11 @@ export function OrdersPage() {
                         {formatStatus(order.status)}
                       </span>
                       <div className="text-right">
-                        <p className="text-sm text-neutral-600">Total</p>
+                        <p className="text-sm text-neutral-600">
+                          {translate({ en: 'Total', vi: 'Tổng cộng' })}
+                        </p>
                         <p className="text-lg font-bold text-neutral-900">
-                          ${order.total_amount.toFixed(2)}
+                          {formatCurrency(order.total_amount, language)}
                         </p>
                       </div>
                     </div>
@@ -187,20 +213,22 @@ export function OrdersPage() {
                         {item.product?.images?.[0] && (
                           <img
                             src={item.product.images[0]}
-                            alt={item.product.name}
+                            alt={getLocalizedValue(item.product.name_i18n, language, item.product.name)}
                             className="w-16 h-16 object-cover rounded-lg"
                           />
                         )}
                         <div className="flex-1">
                           <h4 className="font-semibold text-neutral-900">
-                            {item.product?.name || 'Product'}
+                            {item.product
+                              ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
+                              : translate({ en: 'Product', vi: 'Sản phẩm' })}
                           </h4>
                           <p className="text-sm text-neutral-600">
-                            Quantity: {item.quantity} x ${item.unit_price.toFixed(2)}
+                            {translate({ en: 'Quantity', vi: 'Số lượng' })}: {item.quantity} x {formatCurrency(item.unit_price, language)}
                           </p>
                         </div>
                         <p className="font-semibold text-neutral-900">
-                          ${(item.quantity * item.unit_price).toFixed(2)}
+                          {formatCurrency(item.quantity * item.unit_price, language)}
                         </p>
                       </div>
                     ))}

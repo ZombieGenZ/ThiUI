@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Star, SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { SlidersHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { ProductCard } from '../components/ProductCard';
 import { createAddToCartHandler } from '../utils/cartHelpers';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 interface Product {
   id: string;
   name: string;
+  name_i18n?: Record<string, string> | null;
   slug: string;
   base_price: number;
   sale_price: number | null;
@@ -26,7 +30,18 @@ export function OfficePage() {
   const [sortBy, setSortBy] = useState('featured');
   const { addToCart } = useCart();
   const { user } = useAuth();
-  const handleAddToCart = createAddToCartHandler(addToCart, user, navigate);
+  const { language, translate } = useLanguage();
+  const handleAddToCart = useMemo(
+    () => createAddToCartHandler(addToCart, user, navigate, { translate }),
+    [addToCart, user, navigate, translate]
+  );
+
+  const sortOptions = [
+    { value: 'featured', label: { en: 'Featured', vi: 'Nổi bật' } },
+    { value: 'newest', label: { en: 'Newest', vi: 'Mới nhất' } },
+    { value: 'price-low', label: { en: 'Price: Low to High', vi: 'Giá: Từ thấp đến cao' } },
+    { value: 'price-high', label: { en: 'Price: High to Low', vi: 'Giá: Từ cao đến thấp' } },
+  ];
 
   useEffect(() => {
     loadProducts();
@@ -80,8 +95,12 @@ export function OfficePage() {
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
-            <h1 className="font-display text-5xl text-white mb-4">Office</h1>
-            <p className="text-xl text-white/90">Work in comfort and style</p>
+            <h1 className="font-display text-5xl text-white mb-4">
+              {translate({ en: 'Office', vi: 'Văn phòng' })}
+            </h1>
+            <p className="text-xl text-white/90">
+              {translate({ en: 'Work in comfort and style', vi: 'Làm việc thoải mái đầy phong cách' })}
+            </p>
           </div>
         </div>
       </div>
@@ -89,7 +108,10 @@ export function OfficePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center justify-between mb-8">
           <p className="text-gray-600">
-            Showing <span className="font-semibold">{filteredProducts.length}</span> products
+            {translate({
+              en: `Showing ${filteredProducts.length} products`,
+              vi: `Hiển thị ${filteredProducts.length} sản phẩm`,
+            })}
           </p>
 
           <div className="flex items-center space-x-4">
@@ -100,10 +122,11 @@ export function OfficePage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
               >
-                <option value="featured">Featured</option>
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                {sortOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label[language]}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -112,68 +135,27 @@ export function OfficePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product, index) => (
             <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-              <ProductCard product={product} onAddToCart={() => handleAddToCart(product.id, product.name, 1)} />
+              <ProductCard
+                product={product}
+                onAddToCart={() =>
+                  handleAddToCart(
+                    product.id,
+                    getLocalizedValue(product.name_i18n, language, product.name),
+                    1
+                  )
+                }
+              />
             </div>
           ))}
         </div>
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-xl text-gray-600">No products found</p>
+            <p className="text-xl text-gray-600">
+              {translate({ en: 'No products found', vi: 'Không tìm thấy sản phẩm' })}
+            </p>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function ProductCard({ product }: { product: Product; onAddToCart: () => void }) {
-  const price = product.sale_price || product.base_price;
-  const hasDiscount = product.sale_price && product.sale_price < product.base_price;
-  const discountPercent = hasDiscount
-    ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
-    : 0;
-
-  return (
-    <div className="group relative bg-white rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
-        {product.is_new && (
-          <div className="absolute top-4 left-4 z-10 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            NEW
-          </div>
-        )}
-        {hasDiscount && (
-          <div className="absolute top-4 right-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            -{discountPercent}%
-          </div>
-        )}
-        <img
-          src={product.images[0] || 'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg'}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
-        {product.rating > 0 && (
-          <div className="flex items-center space-x-1 mb-2">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                }`}
-              />
-            ))}
-            <span className="text-sm text-gray-600">({product.review_count})</span>
-          </div>
-        )}
-        <div className="flex items-center space-x-2">
-          <span className="font-bold text-lg">${price.toFixed(2)}</span>
-          {hasDiscount && (
-            <span className="text-sm text-gray-500 line-through">${product.base_price.toFixed(2)}</span>
-          )}
-        </div>
       </div>
     </div>
   );

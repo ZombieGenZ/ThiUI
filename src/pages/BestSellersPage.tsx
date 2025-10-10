@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, SortAsc } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { createAddToCartHandler } from '../utils/cartHelpers';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 interface Product {
   id: string;
   name: string;
+  name_i18n?: Record<string, string> | null;
   slug: string;
   base_price: number;
   sale_price: number | null;
@@ -22,9 +26,15 @@ interface Product {
 export function BestSellersPage() {
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { language, translate } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'reviews' | 'rating' | 'price-low' | 'price-high'>('reviews');
+  const handleAddToCart = useMemo(
+    () => createAddToCartHandler(addToCart, user, navigate, { translate }),
+    [addToCart, user, navigate, translate]
+  );
 
   useEffect(() => {
     loadBestSellers();
@@ -46,15 +56,6 @@ export function BestSellersPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddToCart = async (product: Product) => {
-    if (!user) {
-      toast.error('Please sign in to add items to cart');
-      return;
-    }
-    await addToCart(product.id, 1);
-    toast.success(`${product.name} added to cart`);
   };
 
   const sortedProducts = [...products].sort((a, b) => {
@@ -79,13 +80,18 @@ export function BestSellersPage() {
         <div className="relative z-10 text-center px-4">
           <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
             <TrendingUp className="w-5 h-5 text-white" />
-            <span className="text-white font-semibold">Customer Favorites</span>
+            <span className="text-white font-semibold">
+              {translate({ en: 'Customer Favorites', vi: 'Được khách hàng yêu thích' })}
+            </span>
           </div>
           <h1 className="font-display text-5xl md:text-6xl text-white mb-4">
-            Best Sellers
+            {translate({ en: 'Best Sellers', vi: 'Bán chạy nhất' })}
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            Our most loved furniture pieces, chosen by customers like you
+            {translate({
+              en: 'Our most loved furniture pieces, chosen by customers like you',
+              vi: 'Những món nội thất được yêu thích nhất, được khách hàng lựa chọn',
+            })}
           </p>
         </div>
       </div>
@@ -94,7 +100,10 @@ export function BestSellersPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
           <div>
             <p className="text-neutral-600">
-              {products.length} best-selling items
+              {translate({
+                en: `${products.length} best-selling items`,
+                vi: `${products.length} sản phẩm bán chạy`,
+              })}
             </p>
           </div>
 
@@ -106,10 +115,10 @@ export function BestSellersPage() {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="border border-neutral-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
-                <option value="reviews">Most Reviews</option>
-                <option value="rating">Highest Rating</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="reviews">{translate({ en: 'Most Reviews', vi: 'Nhiều đánh giá nhất' })}</option>
+                <option value="rating">{translate({ en: 'Highest Rating', vi: 'Điểm cao nhất' })}</option>
+                <option value="price-low">{translate({ en: 'Price: Low to High', vi: 'Giá: Từ thấp đến cao' })}</option>
+                <option value="price-high">{translate({ en: 'Price: High to Low', vi: 'Giá: Từ cao đến thấp' })}</option>
               </select>
             </div>
           </div>
@@ -131,9 +140,10 @@ export function BestSellersPage() {
               <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
                 <ProductCard product={{
                   ...product,
+                  name_i18n: product.name_i18n,
                   room_type: null,
                   stock_quantity: 0
-                }} onAddToCart={() => handleAddToCart(product)} />
+                }} onAddToCart={() => handleAddToCart(product.id, getLocalizedValue(product.name_i18n, language, product.name), 1)} />
               </div>
             ))}
           </div>
@@ -141,10 +151,10 @@ export function BestSellersPage() {
           <div className="text-center py-16">
             <TrendingUp className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-              No best sellers available
+              {translate({ en: 'No best sellers available', vi: 'Chưa có sản phẩm bán chạy' })}
             </h3>
             <p className="text-neutral-600">
-              Check back soon for our top products!
+              {translate({ en: 'Check back soon for our top products!', vi: 'Quay lại sau để xem sản phẩm nổi bật của chúng tôi!' })}
             </p>
           </div>
         )}

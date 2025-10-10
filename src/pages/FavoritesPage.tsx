@@ -1,39 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
-import { toast } from 'react-toastify';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { ProductCard } from '../components/ProductCard';
+import { createAddToCartHandler } from '../utils/cartHelpers';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 export function FavoritesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { favorites, loading, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
+  const { language, translate } = useLanguage();
+  const handleAddToCart = useMemo(
+    () => createAddToCartHandler(addToCart, user, navigate, { translate }),
+    [addToCart, user, navigate, translate]
+  );
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
   }, [user]);
-
-  const handleAddToCart = async (productId: string, productName: string) => {
-    if (!user) {
-      toast.error('Please sign in to add items to cart');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      await addToCart(productId, 1);
-      toast.success(`${productName} added to cart!`);
-    } catch (error: any) {
-      console.error('Error adding to cart:', error);
-      toast.error(error.message || 'Failed to add item to cart');
-    }
-  };
 
   if (loading) {
     return (
@@ -48,32 +39,43 @@ export function FavoritesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center space-x-3 mb-8">
           <Heart className="w-8 h-8 text-red-500 fill-red-500" />
-          <h1 className="text-4xl font-display font-bold text-neutral-900">My Favorites</h1>
+          <h1 className="text-4xl font-display font-bold text-neutral-900">
+            {translate({ en: 'My Favorites', vi: 'Danh sách yêu thích' })}
+          </h1>
         </div>
 
         {favorites.length === 0 ? (
           <div className="text-center py-16">
             <Heart className="w-24 h-24 text-neutral-300 mx-auto mb-6" />
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">No favorites yet</h2>
+            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
+              {translate({ en: 'No favorites yet', vi: 'Chưa có sản phẩm yêu thích' })}
+            </h2>
             <p className="text-neutral-600 mb-8">
-              Start exploring our products and save your favorites here!
+              {translate({
+                en: 'Start exploring our products and save your favorites here!',
+                vi: 'Khám phá sản phẩm và lưu lại những món bạn yêu thích tại đây!',
+              })}
             </p>
             <button
               onClick={() => navigate('/products')}
               className="bg-brand-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-brand-700 transition-colors"
             >
-              Browse Products
+              {translate({ en: 'Browse Products', vi: 'Xem sản phẩm' })}
             </button>
           </div>
         ) : (
           <>
             <p className="text-neutral-600 mb-8">
-              You have {favorites.length} favorite {favorites.length === 1 ? 'item' : 'items'}
+              {translate({
+                en: `You have ${favorites.length} favorite ${favorites.length === 1 ? 'item' : 'items'}`,
+                vi: `Bạn có ${favorites.length} sản phẩm yêu thích`,
+              })}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {favorites.map((favorite) => {
                 const product = favorite.product;
                 if (!product) return null;
+                const displayName = getLocalizedValue(product.name_i18n, language, product.name);
 
                 return (
                   <ProductCard
@@ -81,6 +83,7 @@ export function FavoritesPage() {
                     product={{
                       id: product.id,
                       name: product.name,
+                      name_i18n: product.name_i18n,
                       slug: product.slug,
                       base_price: product.base_price,
                       sale_price: product.sale_price,
@@ -91,7 +94,7 @@ export function FavoritesPage() {
                       room_type: null,
                       stock_quantity: product.stock_quantity,
                     }}
-                    onAddToCart={() => handleAddToCart(product.id, product.name)}
+                    onAddToCart={() => handleAddToCart(product.id, displayName)}
                   />
                 );
               })}

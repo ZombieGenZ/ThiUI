@@ -4,8 +4,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Footer } from './components/Footer';
 import { CartSidebar } from './components/CartSidebar';
@@ -83,34 +84,49 @@ function App() {
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <CartProvider>
-          <FavoritesProvider>
-            <Router>
-              {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+      <LanguageProvider>
+        <AuthProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <Router>
+                {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-              {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-              <ToastContainer
-                position="top-right"
-                autoClose={3500}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-                style={{ zIndex: 9999 }}
-                toastClassName="bg-white rounded-xl shadow-strong border border-neutral-200"
-                bodyClassName="text-sm font-medium text-neutral-900"
-                progressClassName="bg-gradient-to-r from-brand-600 to-brand-700"
-              />
-            </Router>
-          </FavoritesProvider>
-        </CartProvider>
-      </AuthProvider>
+                {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+                <ThemedToastContainer />
+              </Router>
+            </FavoritesProvider>
+          </CartProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
+  );
+}
+
+function ThemedToastContainer() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  return (
+    <ToastContainer
+      position="top-right"
+      autoClose={3500}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme={isDark ? 'dark' : 'light'}
+      style={{ zIndex: 9999 }}
+      toastClassName={
+        isDark
+          ? 'bg-neutral-900 text-neutral-100 rounded-xl shadow-strong border border-neutral-700'
+          : 'bg-white rounded-xl shadow-strong border border-neutral-200'
+      }
+      bodyClassName={isDark ? 'text-sm font-medium text-neutral-100' : 'text-sm font-medium text-neutral-900'}
+      progressClassName="bg-gradient-to-r from-brand-600 to-brand-700"
+    />
   );
 }
 
@@ -124,7 +140,7 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
 
   return (
     <>
-      <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white">
+      <div className="min-h-screen flex flex-col transition-colors duration-300 bg-white dark:bg-neutral-950">
         <Header onCartOpen={() => setCartOpen(true)} />
         <main className="flex-1 pt-20 transition-all duration-300">
           <Suspense fallback={

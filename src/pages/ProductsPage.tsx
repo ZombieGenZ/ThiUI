@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SlidersHorizontal, Grid3x3, List, X, Star, Check } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -6,11 +6,15 @@ import { ProductCard } from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { createAddToCartHandler } from '../utils/cartHelpers';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getLocalizedValue } from '../utils/i18n';
 
 interface Product {
   id: string;
   name: string;
+  name_i18n?: Record<string, string> | null;
   slug: string;
+  description?: string | null;
   base_price: number;
   sale_price: number | null;
   images: string[];
@@ -20,6 +24,7 @@ interface Product {
   room_type: string | null;
   stock_quantity: number;
   in_stock: boolean;
+  description_i18n?: Record<string, string> | null;
 }
 
 export function ProductsPage() {
@@ -38,7 +43,30 @@ export function ProductsPage() {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const searchQuery = searchParams.get('search') || '';
-  const handleAddToCart = createAddToCartHandler(addToCart, user, navigate);
+  const { language, t, translate } = useLanguage();
+  const handleAddToCart = useMemo(
+    () => createAddToCartHandler(addToCart, user, navigate, { translate }),
+    [addToCart, user, navigate, translate]
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const pageSizeOptions = [12, 24, 48, 96];
+
+  const categoryLabels: Record<string, { en: string; vi: string }> = {
+    'Living Room': { en: 'Living Room', vi: 'Phòng khách' },
+    Bedroom: { en: 'Bedroom', vi: 'Phòng ngủ' },
+    Dining: { en: 'Dining', vi: 'Phòng ăn' },
+    Office: { en: 'Office', vi: 'Văn phòng' },
+    Outdoor: { en: 'Outdoor', vi: 'Ngoài trời' },
+  };
+
+  const sortOptions = [
+    { value: 'featured', label: { en: 'Featured', vi: 'Nổi bật' } },
+    { value: 'newest', label: { en: 'Newest', vi: 'Mới nhất' } },
+    { value: 'price-low', label: { en: 'Price: Low to High', vi: 'Giá: Từ thấp đến cao' } },
+    { value: 'price-high', label: { en: 'Price: High to Low', vi: 'Giá: Từ cao đến thấp' } },
+    { value: 'name', label: { en: 'Name: A to Z', vi: 'Tên: A đến Z' } },
+  ];
 
   useEffect(() => {
     loadProducts();
@@ -55,6 +83,33 @@ export function ProductsPage() {
   useEffect(() => {
     filterAndSortProducts();
   }, [products, selectedCategory, sortBy, priceRange, selectedStyles, minRating, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, priceRange, selectedStyles, minRating, searchQuery, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredProducts.slice(start, start + pageSize);
+  }, [filteredProducts, currentPage, pageSize]);
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredProducts.length);
+  const productSummaryText =
+    filteredProducts.length > 0
+      ? translate({
+          en: `Showing ${startIndex + 1}-${endIndex} of ${filteredProducts.length} products`,
+          vi: `Hiển thị ${startIndex + 1}-${endIndex} trong ${filteredProducts.length} sản phẩm`,
+        })
+      : translate({ en: 'No products available', vi: 'Không có sản phẩm' });
 
   const clearAllFilters = () => {
     setSelectedCategory('all');
@@ -103,10 +158,21 @@ export function ProductsPage() {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(query) ||
-        p.room_type?.toLowerCase().includes(query)
-      );
+      filtered = filtered.filter(p => {
+        const nameEn = (p.name_i18n?.en ?? p.name ?? '').toLowerCase();
+        const nameVi = (p.name_i18n?.vi ?? '').toLowerCase();
+        const descEn = (p.description_i18n?.en ?? p.description ?? '').toLowerCase();
+        const descVi = (p.description_i18n?.vi ?? '').toLowerCase();
+        const room = p.room_type?.toLowerCase() ?? '';
+
+        return (
+          nameEn.includes(query) ||
+          nameVi.includes(query) ||
+          descEn.includes(query) ||
+          descVi.includes(query) ||
+          room.includes(query)
+        );
+      });
     }
 
     if (selectedCategory !== 'all') {
@@ -151,11 +217,11 @@ export function ProductsPage() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHoiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIuNSIgb3BhY2l0eT0iLjEiLz48L2c+PC9zdmc+')] opacity-20" />
         <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
           <div>
-            <h1 className="font-display text-6xl text-white mb-4 font-bold">Our Products</h1>
-            <p className="text-xl text-white/90 mb-6">Discover our full collection of premium furniture</p>
+            <h1 className="font-display text-6xl text-white mb-4 font-bold">{t('products.title')}</h1>
+            <p className="text-xl text-white/90 mb-6">{t('products.subtitle')}</p>
             {searchQuery && (
               <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-white">
-                <span>Searching for:</span>
+                <span>{translate({ en: 'Searching for:', vi: 'Đang tìm:' })}</span>
                 <span className="font-semibold">{searchQuery}</span>
               </div>
             )}
@@ -173,7 +239,7 @@ export function ProductsPage() {
               >
                 <div className="flex items-center space-x-2">
                   <SlidersHorizontal className="w-5 h-5" />
-                  <span>Filters</span>
+                  <span>{t('common.filters')}</span>
                   {activeFilterCount > 0 && (
                     <span className="bg-brand-600 text-white text-xs px-2 py-1 rounded-full">
                       {activeFilterCount}
@@ -183,25 +249,25 @@ export function ProductsPage() {
                 <X className={`w-5 h-5 transition-transform ${showFilters ? 'rotate-0' : 'rotate-45'}`} />
               </button>
 
-              <div className={`bg-white rounded-xl shadow-soft p-6 space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+              <div className={`bg-white dark:bg-neutral-900 rounded-xl shadow-soft p-6 space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg">Filters</h3>
+                  <h3 className="font-bold text-lg text-neutral-900 dark:text-neutral-100">{t('common.filters')}</h3>
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearAllFilters}
                       className="text-sm text-brand-600 hover:text-brand-700 font-medium"
                     >
-                      Clear All
+                      {t('common.clearAll')}
                     </button>
                   )}
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm text-neutral-800 mb-3 flex items-center justify-between">
-                    <span>Category</span>
+                  <h4 className="font-semibold text-sm text-neutral-800 dark:text-neutral-200 mb-3 flex items-center justify-between">
+                    <span>{t('products.filters.category')}</span>
                     {selectedCategory !== 'all' && (
                       <button onClick={() => setSelectedCategory('all')} className="text-xs text-brand-600">
-                        Reset
+                        {translate({ en: 'Reset', vi: 'Thiết lập lại' })}
                       </button>
                     )}
                   </h4>
@@ -214,7 +280,7 @@ export function ProductsPage() {
                           : 'hover:bg-neutral-50 text-neutral-700'
                       }`}
                     >
-                      <span className="font-medium">All Products</span>
+                      <span className="font-medium">{translate({ en: 'All Products', vi: 'Tất cả sản phẩm' })}</span>
                       {selectedCategory === 'all' && <Check className="w-4 h-4" />}
                     </button>
                     {categories.map((cat) => (
@@ -227,7 +293,7 @@ export function ProductsPage() {
                             : 'hover:bg-neutral-50 text-neutral-700'
                         }`}
                       >
-                        <span className="font-medium">{cat}</span>
+                        <span className="font-medium">{categoryLabels[cat]?.[language] ?? cat}</span>
                         {selectedCategory === cat && <Check className="w-4 h-4" />}
                       </button>
                     ))}
@@ -235,11 +301,11 @@ export function ProductsPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm text-neutral-800 mb-3 flex items-center justify-between">
-                    <span>Price Range</span>
+                  <h4 className="font-semibold text-sm text-neutral-800 dark:text-neutral-200 mb-3 flex items-center justify-between">
+                    <span>{t('products.filters.priceRange')}</span>
                     {(priceRange[0] !== 0 || priceRange[1] !== 5000) && (
                       <button onClick={() => setPriceRange([0, 5000])} className="text-xs text-brand-600">
-                        Reset
+                        {translate({ en: 'Reset', vi: 'Thiết lập lại' })}
                       </button>
                     )}
                   </h4>
@@ -253,24 +319,24 @@ export function ProductsPage() {
                       onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
                       className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
                     />
-                    <div className="flex items-center justify-between">
-                      <div className="bg-neutral-100 px-3 py-1.5 rounded-lg">
-                        <span className="text-sm font-semibold text-neutral-700">${priceRange[0]}</span>
+                    <div className="flex items-center justify-between text-neutral-700 dark:text-neutral-200">
+                      <div className="bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-lg">
+                        <span className="text-sm font-semibold">${priceRange[0]}</span>
                       </div>
                       <span className="text-neutral-400">-</span>
-                      <div className="bg-neutral-100 px-3 py-1.5 rounded-lg">
-                        <span className="text-sm font-semibold text-neutral-700">${priceRange[1]}</span>
+                      <div className="bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-lg">
+                        <span className="text-sm font-semibold">${priceRange[1]}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm text-neutral-800 mb-3 flex items-center justify-between">
-                    <span>Minimum Rating</span>
+                  <h4 className="font-semibold text-sm text-neutral-800 dark:text-neutral-200 mb-3 flex items-center justify-between">
+                    <span>{t('products.filters.rating')}</span>
                     {minRating !== null && (
                       <button onClick={() => setMinRating(null)} className="text-xs text-brand-600">
-                        Reset
+                        {translate({ en: 'Reset', vi: 'Thiết lập lại' })}
                       </button>
                     )}
                   </h4>
@@ -285,9 +351,14 @@ export function ProductsPage() {
                       className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
                       aria-label="Minimum rating"
                     />
-                    <div className="flex items-center justify-between text-sm text-neutral-600">
+                    <div className="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-300">
                       <span className="font-medium">
-                        {minRating !== null ? `${minRating} star${minRating > 1 ? 's' : ''} & up` : 'All ratings'}
+                        {minRating !== null
+                          ? translate({
+                              en: `${minRating} star${minRating > 1 ? 's' : ''} & up`,
+                              vi: `${minRating} sao trở lên`,
+                            })
+                          : translate({ en: 'All ratings', vi: 'Tất cả đánh giá' })}
                       </span>
                       <div className="flex items-center space-x-1">
                         {Array.from({ length: 5 }).map((_, index) => (
@@ -307,59 +378,127 @@ export function ProductsPage() {
           </aside>
 
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-neutral-600">
-                Showing <span className="font-semibold">{filteredProducts.length}</span> products
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+              <p className="text-neutral-600 dark:text-neutral-300">{productSummaryText}</p>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <div className="flex items-center space-x-2">
+                  <label className="text-xs uppercase font-semibold text-neutral-500 dark:text-neutral-400">
+                    {translate({ en: 'Display', vi: 'Hiển thị' })}
+                  </label>
+                  <select
+                    value={pageSize}
+                    onChange={(event) => setPageSize(Number(event.target.value))}
+                    className="border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 text-neutral-700 dark:text-neutral-100"
+                  >
+                    {pageSizeOptions.map(option => (
+                      <option key={option} value={option}>
+                        {`${option} ${t('products.pagination.perPage')}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'grid' ? 'bg-brand-600 text-white' : 'hover:bg-neutral-100'
+                      viewMode === 'grid' ? 'bg-brand-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
                     }`}
+                    aria-label={t('products.viewMode.grid')}
                   >
                     <Grid3x3 className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
                     className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'list' ? 'bg-brand-600 text-white' : 'hover:bg-neutral-100'
+                      viewMode === 'list' ? 'bg-brand-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
                     }`}
+                    aria-label={t('products.viewMode.list')}
                   >
                     <List className="w-5 h-5" />
                   </button>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <SlidersHorizontal className="w-5 h-5 text-neutral-600" />
+                  <SlidersHorizontal className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="border border-neutral-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600"
+                    className="border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600 text-neutral-700 dark:text-neutral-100"
                   >
-                    <option value="featured">Featured</option>
-                    <option value="newest">Newest</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="name">Name: A to Z</option>
+                    {sortOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label[language]}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
             </div>
 
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
-              {filteredProducts.map((product, index) => (
-                <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
-                  <ProductCard product={product} onAddToCart={() => handleAddToCart(product.id, product.name, 1)} />
-                </div>
-              ))}
+              {paginatedProducts.map((product, index) => {
+                const displayName = getLocalizedValue(product.name_i18n, language, product.name);
+                return (
+                  <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
+                    <ProductCard product={product} onAddToCart={() => handleAddToCart(product.id, displayName, 1)} />
+                  </div>
+                );
+              })}
             </div>
+
+            {totalPages > 1 && (
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                  {translate({
+                    en: `Page ${currentPage} of ${totalPages}`,
+                    vi: `Trang ${currentPage} trên ${totalPages}`,
+                  })}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  >
+                    {t('products.pagination.previous')}
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }).map((_, index) => {
+                      const pageNumber = index + 1;
+                      const isActive = pageNumber === currentPage;
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() => setCurrentPage(pageNumber)}
+                          className={`min-w-[2.5rem] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            isActive
+                              ? 'bg-brand-600 text-white shadow-sm'
+                              : 'border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  >
+                    {t('products.pagination.next')}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {filteredProducts.length === 0 && (
               <div className="text-center py-20">
-                <p className="text-xl text-neutral-600 mb-4">No products found</p>
+                <p className="text-xl text-neutral-600 dark:text-neutral-300 mb-4">
+                  {translate({ en: 'No products found', vi: 'Không tìm thấy sản phẩm' })}
+                </p>
                 <button
                   onClick={() => {
                     setSelectedCategory('all');
@@ -368,7 +507,7 @@ export function ProductsPage() {
                   }}
                   className="text-brand-600 font-semibold hover:underline"
                 >
-                  Clear filters
+                  {t('common.clearAll')}
                 </button>
               </div>
             )}

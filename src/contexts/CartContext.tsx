@@ -10,6 +10,7 @@ interface CartItem {
   selected?: boolean;
   product?: {
     name: string;
+    name_i18n?: Record<string, string> | null;
     base_price: number;
     sale_price: number | null;
     images: string[];
@@ -59,7 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           product_id,
           variant_id,
           quantity,
-          product:products(name, base_price, sale_price, images, slug)
+          product:products(name, name_i18n, base_price, sale_price, images, slug)
         `)
         .eq('user_id', user.id);
 
@@ -114,7 +115,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             product_id,
             variant_id,
             quantity,
-            product:products(name, base_price, sale_price, images, slug)
+            product:products(name, name_i18n, base_price, sale_price, images, slug)
           `)
           .single();
 
