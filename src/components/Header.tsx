@@ -87,48 +87,6 @@ export function Header({ onCartOpen }: HeaderProps) {
                 </div>
               </div>
 
-              <div className="relative group">
-                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
-                  <span>Services</span>
-                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
-                  {serviceLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      to={link.path}
-                      className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative group">
-                <button className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 flex items-center space-x-1">
-                  <span>Resources</span>
-                  <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                <div className="absolute top-full left-0 mt-2 w-60 bg-white dark:bg-neutral-800 rounded-xl shadow-xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 border border-gray-100 dark:border-neutral-700">
-                  {resourceLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      to={link.path}
-                      className="block px-4 py-3 text-sm hover:bg-brand-50 dark:hover:bg-neutral-700 hover:text-brand-600 dark:text-gray-200 transition-colors font-medium"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
               <Link
                 to="/about"
                 className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
