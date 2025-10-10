@@ -135,6 +135,130 @@ const defaultDictionary: TranslationDictionary = {
     en: 'Vietnamese',
     vi: 'Tiếng Việt'
   },
+  'admin.panel.heading': {
+    en: 'Admin Console',
+    vi: 'Bảng điều khiển quản trị'
+  },
+  'admin.panel.sectionTitle': {
+    en: 'System administration',
+    vi: 'Quản trị hệ thống'
+  },
+  'admin.panel.refresh': {
+    en: 'Refresh data',
+    vi: 'Làm mới dữ liệu'
+  },
+  'admin.panel.backHome': {
+    en: 'Back to homepage',
+    vi: 'Về trang chủ'
+  },
+  'admin.panel.home': {
+    en: 'Home',
+    vi: 'Trang chủ'
+  },
+  'admin.panel.signOut': {
+    en: 'Sign out',
+    vi: 'Đăng xuất'
+  },
+  'admin.panel.limitedAccessTitle': {
+    en: 'Access restricted',
+    vi: 'Quyền truy cập bị hạn chế'
+  },
+  'admin.panel.limitedAccessDescription': {
+    en: 'Only accounts with the admin role can access this area. Please contact the system administrator to request access.',
+    vi: 'Chỉ những tài khoản được gán vai trò admin mới có thể truy cập khu vực quản trị. Vui lòng liên hệ quản trị viên hệ thống để được cấp quyền.'
+  },
+  'admin.panel.limitedAccessAction': {
+    en: 'Return to homepage',
+    vi: 'Quay lại trang chủ'
+  },
+  'admin.panel.routes.dashboard.label': {
+    en: 'Dashboard',
+    vi: 'Bảng điều khiển'
+  },
+  'admin.panel.routes.dashboard.description': {
+    en: 'Overview of activity and key metrics.',
+    vi: 'Tổng quan hoạt động và các số liệu quan trọng.'
+  },
+  'admin.panel.routes.analytics.label': {
+    en: 'Analytics & reports',
+    vi: 'Thống kê & báo cáo'
+  },
+  'admin.panel.routes.analytics.description': {
+    en: 'Analyze revenue, orders, and content over time.',
+    vi: 'Phân tích doanh thu, đơn hàng và nội dung theo thời gian.'
+  },
+  'admin.panel.routes.customers.label': {
+    en: 'Customer accounts',
+    vi: 'Tài khoản khách hàng'
+  },
+  'admin.panel.routes.customers.description': {
+    en: 'Track customer account information.',
+    vi: 'Theo dõi thông tin tài khoản khách hàng.'
+  },
+  'admin.panel.routes.contacts.label': {
+    en: 'Contact & feedback',
+    vi: 'Liên hệ & phản hồi'
+  },
+  'admin.panel.routes.contacts.description': {
+    en: 'View support requests and feedback from customers.',
+    vi: 'Xem các yêu cầu hỗ trợ và phản hồi từ khách hàng.'
+  },
+  'admin.panel.routes.designRequests.label': {
+    en: 'Design requests',
+    vi: 'Yêu cầu thiết kế'
+  },
+  'admin.panel.routes.designRequests.description': {
+    en: 'Manage interior design consultation requests.',
+    vi: 'Tổng hợp các yêu cầu tư vấn thiết kế nội thất.'
+  },
+  'admin.panel.routes.applications.label': {
+    en: 'Applications',
+    vi: 'Ứng tuyển'
+  },
+  'admin.panel.routes.applications.description': {
+    en: 'Review candidates and hiring status.',
+    vi: 'Thông tin ứng viên và trạng thái tuyển dụng.'
+  },
+  'admin.panel.routes.products.label': {
+    en: 'Products',
+    vi: 'Danh sách sản phẩm'
+  },
+  'admin.panel.routes.products.description': {
+    en: 'Manage products, pricing, and inventory.',
+    vi: 'Quản lý sản phẩm, giá bán và tồn kho.'
+  },
+  'admin.panel.routes.categories.label': {
+    en: 'Categories',
+    vi: 'Danh mục'
+  },
+  'admin.panel.routes.categories.description': {
+    en: 'Adjust the structure of product categories.',
+    vi: 'Điều chỉnh cấu trúc danh mục sản phẩm.'
+  },
+  'admin.panel.routes.vouchers.label': {
+    en: 'Promotion codes',
+    vi: 'Mã khuyến mãi'
+  },
+  'admin.panel.routes.vouchers.description': {
+    en: 'Set up discount and promotional programs.',
+    vi: 'Thiết lập chương trình giảm giá và ưu đãi.'
+  },
+  'admin.panel.routes.orders.label': {
+    en: 'Orders',
+    vi: 'Đơn hàng'
+  },
+  'admin.panel.routes.orders.description': {
+    en: 'Monitor processing and fulfillment progress.',
+    vi: 'Theo dõi tiến trình xử lý và giao hàng.'
+  },
+  'admin.panel.routes.blog.label': {
+    en: 'Blog & news',
+    vi: 'Bài viết & tin tức'
+  },
+  'admin.panel.routes.blog.description': {
+    en: 'Manage blog and news content.',
+    vi: 'Quản lý nội dung blog và tin tức.'
+  },
   'products.title': {
     en: 'Our Products',
     vi: 'Bộ sưu tập sản phẩm'
@@ -306,6 +430,22 @@ const defaultDictionary: TranslationDictionary = {
   'admin.analytics.title': {
     en: 'Analytics & reporting',
     vi: 'Thống kê & báo cáo'
+  },
+  'admin.analytics.realtime': {
+    en: 'Realtime',
+    vi: 'Thời gian thực'
+  },
+  'admin.analytics.export.csv': {
+    en: 'CSV',
+    vi: 'CSV'
+  },
+  'admin.analytics.export.excel': {
+    en: 'Excel',
+    vi: 'Excel'
+  },
+  'admin.analytics.export.pdf': {
+    en: 'PDF',
+    vi: 'PDF'
   },
   'admin.analytics.subtitle': {
     en: 'Track performance over time and export professional reports instantly.',

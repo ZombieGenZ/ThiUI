@@ -754,21 +754,21 @@ export function AnalyticsDashboard() {
             onClick={() => exportReport('csv')}
             className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
           >
-            <Download className="h-4 w-4" /> CSV
+            <Download className="h-4 w-4" /> {t('admin.analytics.export.csv', 'CSV')}
           </button>
           <button
             type="button"
             onClick={() => exportReport('excel')}
             className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
           >
-            <Download className="h-4 w-4" /> Excel
+            <Download className="h-4 w-4" /> {t('admin.analytics.export.excel', 'Excel')}
           </button>
           <button
             type="button"
             onClick={() => exportReport('pdf')}
             className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
           >
-            <Download className="h-4 w-4" /> PDF
+            <Download className="h-4 w-4" /> {t('admin.analytics.export.pdf', 'PDF')}
           </button>
         </div>
       </div>
