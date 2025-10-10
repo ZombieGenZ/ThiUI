@@ -708,7 +708,10 @@ export function DesignInspirationPage() {
               const isDesignBusy = loadingDesignId === design.id || savingDesignId === design.id;
 
                 return (
-                  <article key={design.id} className="overflow-hidden border border-neutral-200 bg-white shadow-lg">
+                  <article
+                    key={design.id}
+                    className="flex h-full flex-col overflow-hidden border border-neutral-200 bg-white shadow-lg"
+                  >
                   <div className="relative">
                     <img src={design.image} alt={design.title[language]} className="h-64 w-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -723,9 +726,9 @@ export function DesignInspirationPage() {
                       <p className="text-sm text-white/80">{roomLabel}</p>
                     </div>
                   </div>
-                  <div className="p-6 space-y-4">
+                  <div className="flex flex-1 flex-col gap-4 p-6">
                     <p className="text-sm text-neutral-600">{design.description[language]}</p>
-                    <div className="border border-neutral-200 p-5 bg-neutral-50">
+                    <div className="flex flex-1 flex-col border border-neutral-200 bg-neutral-50 p-5">
                       <div className="flex flex-col gap-2 mb-4">
                         <div className="flex items-center justify-between gap-3">
                           <h4 className="text-sm font-semibold text-neutral-900">
@@ -742,7 +745,7 @@ export function DesignInspirationPage() {
                           </p>
                         )}
                       </div>
-                      <ul className="space-y-3">
+                      <ul className="flex-1 space-y-3">
                         {design.products.map((product) => {
                           const availableProduct = productsBySlug[product.slug];
                           const isProductLoading = loadingProductSlug === product.slug || isDesignBusy;
@@ -823,31 +826,25 @@ export function DesignInspirationPage() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <button
-                                    onClick={() => void handleAddProduct(design, product)}
-                                    disabled={!productAvailable || isProductLoading}
-                                    className="inline-flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    {isProductLoading ? (
-                                      <>
-                                        <Loader2 className="h-4 w-4 animate-spin" /> {translate({ en: 'Adding...', vi: 'Đang thêm...' })}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <ShoppingCart className="h-4 w-4" /> {translate({ en: 'Add to Cart', vi: 'Thêm vào giỏ' })}
-                                      </>
-                                    )}
-                                  </button>
+                                <div className="mt-3 text-sm">
                                   {productAvailable ? (
-                                    <Link
-                                      to={`/product/${product.slug}`}
-                                      className="inline-flex items-center justify-center gap-1 border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 transition hover:border-brand-200 hover:text-brand-600"
+                                    <button
+                                      onClick={() => void handleAddProduct(design, product)}
+                                      disabled={!productAvailable || isProductLoading}
+                                      className="inline-flex w-full items-center justify-center gap-2 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                      {translate({ en: 'View Details', vi: 'Xem chi tiết' })}
-                                    </Link>
+                                      {isProductLoading ? (
+                                        <>
+                                          <Loader2 className="h-4 w-4 animate-spin" /> {translate({ en: 'Adding...', vi: 'Đang thêm...' })}
+                                        </>
+                                      ) : (
+                                        <>
+                                          <ShoppingCart className="h-4 w-4" /> {translate({ en: 'Add to Cart', vi: 'Thêm vào giỏ' })}
+                                        </>
+                                      )}
+                                    </button>
                                   ) : (
-                                    <span className="inline-flex items-center justify-center gap-1 border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-400">
+                                    <span className="inline-flex w-full items-center justify-center gap-1 border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-400">
                                       {translate({ en: 'Coming soon', vi: 'Sắp ra mắt' })}
                                     </span>
                                   )}
