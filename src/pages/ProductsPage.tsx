@@ -34,7 +34,7 @@ export function ProductsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
-  const [minRating, setMinRating] = useState(0);
+  const [minRating, setMinRating] = useState<number | null>(null);
   const { addToCart } = useCart();
   const { user } = useAuth();
   const searchQuery = searchParams.get('search') || '';
@@ -60,7 +60,7 @@ export function ProductsPage() {
     setSelectedCategory('all');
     setPriceRange([0, 5000]);
     setSelectedStyles([]);
-    setMinRating(0);
+    setMinRating(null);
     setSortBy('featured');
   };
 
@@ -68,7 +68,7 @@ export function ProductsPage() {
     selectedCategory !== 'all',
     priceRange[0] !== 0 || priceRange[1] !== 5000,
     selectedStyles.length > 0,
-    minRating > 0
+    minRating !== null
   ].filter(Boolean).length;
 
   const loadProducts = async () => {
@@ -78,7 +78,11 @@ export function ProductsPage() {
       .order('created_at', { ascending: false });
 
     if (data) {
-      setProducts(data);
+      const normalized = data.map((product) => ({
+        ...product,
+        rating: Number(product.rating ?? 0)
+      })) as Product[];
+      setProducts(normalized);
     }
   };
 
@@ -113,7 +117,7 @@ export function ProductsPage() {
       filtered = filtered.filter(p => selectedStyles.includes(p.room_type || ''));
     }
 
-    if (minRating > 0) {
+    if (minRating !== null) {
       filtered = filtered.filter(p => p.rating >= minRating);
     }
 
@@ -264,32 +268,38 @@ export function ProductsPage() {
                 <div>
                   <h4 className="font-semibold text-sm text-neutral-800 mb-3 flex items-center justify-between">
                     <span>Minimum Rating</span>
-                    {minRating > 0 && (
-                      <button onClick={() => setMinRating(0)} className="text-xs text-brand-600">
+                    {minRating !== null && (
+                      <button onClick={() => setMinRating(null)} className="text-xs text-brand-600">
                         Reset
                       </button>
                     )}
                   </h4>
-                  <div className="space-y-2">
-                    {[4, 3, 2, 1].map((rating) => (
-                      <button
-                        key={rating}
-                        onClick={() => setMinRating(rating)}
-                        className={`w-full text-left px-4 py-2.5 rounded-lg transition-all flex items-center justify-between ${
-                          minRating === rating
-                            ? 'bg-brand-600 text-white shadow-md'
-                            : 'hover:bg-neutral-50 text-neutral-700'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2">
-                          {[...Array(rating)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-current" />
-                          ))}
-                          <span className="text-sm font-medium">& Up</span>
-                        </div>
-                        {minRating === rating && <Check className="w-4 h-4" />}
-                      </button>
-                    ))}
+                  <div className="space-y-3">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="1"
+                      value={minRating ?? 1}
+                      onChange={(e) => setMinRating(Number(e.target.value))}
+                      className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                      aria-label="Minimum rating"
+                    />
+                    <div className="flex items-center justify-between text-sm text-neutral-600">
+                      <span className="font-medium">
+                        {minRating !== null ? `${minRating} star${minRating > 1 ? 's' : ''} & up` : 'All ratings'}
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`w-4 h-4 ${
+                              index < (minRating ?? 0) ? 'fill-current text-brand-600' : 'text-neutral-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -354,6 +364,7 @@ export function ProductsPage() {
                   onClick={() => {
                     setSelectedCategory('all');
                     setPriceRange([0, 5000]);
+                    setMinRating(null);
                   }}
                   className="text-brand-600 font-semibold hover:underline"
                 >
