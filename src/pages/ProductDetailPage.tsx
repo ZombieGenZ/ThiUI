@@ -7,6 +7,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { ReviewSection } from '../components/ReviewSection';
+import { ProductModelViewer } from '../components/ProductModelViewer';
 
 interface Product {
   id: string;
@@ -26,6 +27,7 @@ interface Product {
   sku: string;
   stock_quantity: number;
   style: string | null;
+  model_3d_url: string | null;
 }
 
 export function ProductDetailPage() {
@@ -224,6 +226,20 @@ export function ProductDetailPage() {
                     <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
+              </div>
+            )}
+
+            {product.model_3d_url && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-4">Interactive 3D Preview</h3>
+                <ProductModelViewer
+                  src={product.model_3d_url}
+                  alt={`${product.name} interactive 3D model`}
+                  poster={product.images[selectedImage]}
+                />
+                <p className="text-sm text-neutral-500 mt-3">
+                  Use your mouse or touch to rotate and explore this product from every angle.
+                </p>
               </div>
             )}
           </div>
