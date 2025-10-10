@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import type { LucideIcon } from 'lucide-react';
@@ -93,6 +94,10 @@ interface CrudManagerProps {
   disableDelete?: boolean;
   pageSize?: number;
   readOnly?: boolean;
+}
+
+function Portal({ children }: { children: React.ReactNode }) {
+  return createPortal(children, document.body);
 }
 
 interface ProductVariant {
@@ -1127,18 +1132,19 @@ function CrudManager({
         </div>
 
         {showForm && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-md"
-            onClick={event => {
-              if (event.target === event.currentTarget) {
-                handleCloseForm();
-              }
-            }}
-          >
+          <Portal>
             <div
-              className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15"
-              onClick={event => event.stopPropagation()}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-md"
+              onClick={event => {
+                if (event.target === event.currentTarget) {
+                  handleCloseForm();
+                }
+              }}
             >
+              <div
+                className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15"
+                onClick={event => event.stopPropagation()}
+              >
               <div className="flex items-center justify-between border-b border-neutral-200/70 bg-gradient-to-r from-brand-50 via-white to-white px-6 py-4">
                 <div>
                   <h3 className="text-lg font-semibold text-neutral-900">
@@ -1234,8 +1240,9 @@ function CrudManager({
                   </button>
                 </div>
               </form>
+              </div>
             </div>
-          </div>
+          </Portal>
         )}
       </div>
 
@@ -1535,8 +1542,8 @@ function VariantManager({ product, onClose }: { product: Record<string, any>; on
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-sm">
       <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15">
         <div className="flex items-center justify-between border-b border-neutral-200/70 bg-gradient-to-r from-brand-50 via-white to-white px-6 py-4">
           <div>
@@ -1945,8 +1952,8 @@ function OrderDetailsModal({ order, onClose }: { order: OrderWithRelations; onCl
     };
   }, [order.id]);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4">
       <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl border border-neutral-200">
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
           <div>
@@ -2065,7 +2072,8 @@ function OrderDetailsModal({ order, onClose }: { order: OrderWithRelations; onCl
           </section>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 function BlogPostsManager() {
