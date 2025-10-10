@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createAddToCartHandler } from '../utils/cartHelpers';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedValue } from '../utils/i18n';
+import { normalizeImageUrl } from '../utils/imageHelpers';
 
 interface Product {
   id: string;
@@ -49,7 +50,11 @@ export function SalePage() {
         .eq('status', 'active');
 
       if (error) throw error;
-      setProducts(data || []);
+      const formatted = (data || []).map((product) => ({
+        ...product,
+        images: (product.images || []).map((image) => normalizeImageUrl(image)),
+      })) as Product[];
+      setProducts(formatted);
     } catch (error) {
       console.error('Error loading sale products:', error);
     } finally {

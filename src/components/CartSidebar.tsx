@@ -1,6 +1,7 @@
 import { X, Plus, Minus, ShoppingBag, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -81,7 +82,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   </button>
                   <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     <img
-                      src={item.product?.images[0] || ''}
+                      src={normalizeImageUrl(item.product?.images?.[0], DEFAULT_PRODUCT_IMAGE)}
                       alt={item.product?.name}
                       className="w-full h-full object-cover"
                     />

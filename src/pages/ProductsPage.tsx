@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createAddToCartHandler } from '../utils/cartHelpers';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getLocalizedValue } from '../utils/i18n';
+import { normalizeImageUrl } from '../utils/imageHelpers';
 
 interface Product {
   id: string;
@@ -48,9 +49,6 @@ export function ProductsPage() {
     () => createAddToCartHandler(addToCart, user, navigate, { translate }),
     [addToCart, user, navigate, translate]
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
-  const pageSizeOptions = [12, 24, 48, 96];
 
   const categoryLabels: Record<string, { en: string; vi: string }> = {
     'Living Room': { en: 'Living Room', vi: 'Phòng khách' },
@@ -84,30 +82,11 @@ export function ProductsPage() {
     filterAndSortProducts();
   }, [products, selectedCategory, sortBy, priceRange, selectedStyles, minRating, searchQuery]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory, priceRange, selectedStyles, minRating, searchQuery, pageSize]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [totalPages, currentPage]);
-
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredProducts.slice(start, start + pageSize);
-  }, [filteredProducts, currentPage, pageSize]);
-
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, filteredProducts.length);
   const productSummaryText =
     filteredProducts.length > 0
       ? translate({
-          en: `Showing ${startIndex + 1}-${endIndex} of ${filteredProducts.length} products`,
-          vi: `Hiển thị ${startIndex + 1}-${endIndex} trong ${filteredProducts.length} sản phẩm`,
+          en: `${filteredProducts.length} products found`,
+          vi: `${filteredProducts.length} sản phẩm được tìm thấy`,
         })
       : translate({ en: 'No products available', vi: 'Không có sản phẩm' });
 
@@ -135,7 +114,8 @@ export function ProductsPage() {
     if (data) {
       const normalized = data.map((product) => ({
         ...product,
-        rating: Number(product.rating ?? 0)
+        rating: Number(product.rating ?? 0),
+        images: (product.images || []).map((image) => normalizeImageUrl(image)),
       })) as Product[];
       setProducts(normalized);
     }
@@ -383,23 +363,6 @@ export function ProductsPage() {
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                 <div className="flex items-center space-x-2">
-                  <label className="text-xs uppercase font-semibold text-neutral-500 dark:text-neutral-400">
-                    {translate({ en: 'Display', vi: 'Hiển thị' })}
-                  </label>
-                  <select
-                    value={pageSize}
-                    onChange={(event) => setPageSize(Number(event.target.value))}
-                    className="border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 text-neutral-700 dark:text-neutral-100"
-                  >
-                    {pageSizeOptions.map(option => (
-                      <option key={option} value={option}>
-                        {`${option} ${t('products.pagination.perPage')}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded-lg transition-colors ${
@@ -438,7 +401,7 @@ export function ProductsPage() {
             </div>
 
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
-              {paginatedProducts.map((product, index) => {
+              {filteredProducts.map((product, index) => {
                 const displayName = getLocalizedValue(product.name_i18n, language, product.name);
                 return (
                   <div key={product.id} data-aos="fade-up" data-aos-delay={index * 50}>
@@ -447,52 +410,6 @@ export function ProductsPage() {
                 );
               })}
             </div>
-
-            {totalPages > 1 && (
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                  {translate({
-                    en: `Page ${currentPage} of ${totalPages}`,
-                    vi: `Trang ${currentPage} trên ${totalPages}`,
-                  })}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                  >
-                    {t('products.pagination.previous')}
-                  </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }).map((_, index) => {
-                      const pageNumber = index + 1;
-                      const isActive = pageNumber === currentPage;
-                      return (
-                        <button
-                          key={pageNumber}
-                          onClick={() => setCurrentPage(pageNumber)}
-                          className={`min-w-[2.5rem] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            isActive
-                              ? 'bg-brand-600 text-white shadow-sm'
-                              : 'border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                          }`}
-                        >
-                          {pageNumber}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                  >
-                    {t('products.pagination.next')}
-                  </button>
-                </div>
-              </div>
-            )}
 
             {filteredProducts.length === 0 && (
               <div className="text-center py-20">
