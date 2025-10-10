@@ -213,7 +213,7 @@ const formatStatusLabel = (status: string) =>
 function AdminPanelPage() {
   const { user, loading, isAdmin, role, signOut } = useAuth();
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
   const currencyFormatter = useMemo(
     () => (value: number) => formatPrice(value ?? 0, language),
@@ -224,94 +224,94 @@ function AdminPanelPage() {
     () => [
       {
         key: 'dashboard',
-        label: 'Dashboard',
-        description: 'Tổng quan hoạt động và các số liệu quan trọng.',
+        label: t('admin.panel.routes.dashboard.label', 'Dashboard'),
+        description: t('admin.panel.routes.dashboard.description', 'Overview of activity and key metrics.'),
         icon: LayoutDashboard,
         path: 'dashboard',
         element: <AdminDashboard />,
       },
       {
         key: 'analytics',
-        label: 'Thống kê & báo cáo',
-        description: 'Phân tích doanh thu, đơn hàng và nội dung theo thời gian.',
+        label: t('admin.panel.routes.analytics.label', 'Analytics & reports'),
+        description: t('admin.panel.routes.analytics.description', 'Analyze revenue, orders, and content over time.'),
         icon: BarChart3,
         path: 'analytics',
         element: <AnalyticsDashboard />,
       },
       {
         key: 'customers',
-        label: 'Tài khoản khách hàng',
-        description: 'Theo dõi thông tin tài khoản khách hàng.',
+        label: t('admin.panel.routes.customers.label', 'Customer accounts'),
+        description: t('admin.panel.routes.customers.description', 'Track customer account information.'),
         icon: UsersIcon,
         path: 'customers',
         element: <ProfilesManager readOnly />,
       },
       {
         key: 'contacts',
-        label: 'Liên hệ & phản hồi',
-        description: 'Xem các yêu cầu hỗ trợ và phản hồi từ khách hàng.',
+        label: t('admin.panel.routes.contacts.label', 'Contact & feedback'),
+        description: t('admin.panel.routes.contacts.description', 'View support requests and feedback from customers.'),
         icon: Inbox,
         path: 'contacts',
         element: <ContactManager readOnly />,
       },
       {
         key: 'design-requests',
-        label: 'Yêu cầu thiết kế',
-        description: 'Tổng hợp các yêu cầu tư vấn thiết kế nội thất.',
+        label: t('admin.panel.routes.designRequests.label', 'Design requests'),
+        description: t('admin.panel.routes.designRequests.description', 'Manage interior design consultation requests.'),
         icon: Palette,
         path: 'design-requests',
         element: <DesignRequestsManager readOnly />,
       },
       {
         key: 'applications',
-        label: 'Ứng tuyển',
-        description: 'Thông tin ứng viên và trạng thái tuyển dụng.',
+        label: t('admin.panel.routes.applications.label', 'Applications'),
+        description: t('admin.panel.routes.applications.description', 'Review candidates and hiring status.'),
         icon: Briefcase,
         path: 'applications',
         element: <CareerApplicationsManager readOnly />,
       },
       {
         key: 'products',
-        label: 'Danh sách sản phẩm',
-        description: 'Quản lý sản phẩm, giá bán và tồn kho.',
+        label: t('admin.panel.routes.products.label', 'Products'),
+        description: t('admin.panel.routes.products.description', 'Manage products, pricing, and inventory.'),
         icon: Boxes,
         path: 'products',
         element: <ProductsManager />,
       },
       {
         key: 'categories',
-        label: 'Danh mục',
-        description: 'Điều chỉnh cấu trúc danh mục sản phẩm.',
+        label: t('admin.panel.routes.categories.label', 'Categories'),
+        description: t('admin.panel.routes.categories.description', 'Adjust the structure of product categories.'),
         icon: Layers,
         path: 'categories',
         element: <CategoriesManager />,
       },
       {
         key: 'vouchers',
-        label: 'Mã khuyến mãi',
-        description: 'Thiết lập chương trình giảm giá và ưu đãi.',
+        label: t('admin.panel.routes.vouchers.label', 'Promotion codes'),
+        description: t('admin.panel.routes.vouchers.description', 'Set up discount and promotional programs.'),
         icon: Ticket,
         path: 'vouchers',
         element: <VouchersManager />,
       },
       {
         key: 'orders',
-        label: 'Đơn hàng',
-        description: 'Theo dõi tiến trình xử lý và giao hàng.',
+        label: t('admin.panel.routes.orders.label', 'Orders'),
+        description: t('admin.panel.routes.orders.description', 'Monitor processing and fulfillment progress.'),
         icon: ClipboardList,
         path: 'orders',
         element: <OrdersManager />,
       },
       {
         key: 'blog',
-        label: 'Bài viết & tin tức',
-        description: 'Quản lý nội dung blog và tin tức.',
+        label: t('admin.panel.routes.blog.label', 'Blog & news'),
+        description: t('admin.panel.routes.blog.description', 'Manage blog and news content.'),
         icon: Newspaper,
         path: 'blog',
         element: <BlogPostsManager />,
       },
     ],
-    []
+    [t, language]
   );
 
   const location = useLocation();
@@ -342,16 +342,19 @@ function AdminPanelPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
             <ShieldAlert className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Quyền truy cập bị hạn chế</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">{t('admin.panel.limitedAccessTitle', 'Access restricted')}</h1>
           <p className="mt-3 text-sm text-neutral-600">
-            Chỉ những tài khoản được gán vai trò <strong>admin</strong> mới có thể truy cập khu vực quản trị. Vui lòng liên hệ quản trị viên hệ thống để được cấp quyền.
+            {t(
+              'admin.panel.limitedAccessDescription',
+              'Only accounts with the admin role can access this area. Please contact the system administrator to request access.'
+            )}
           </p>
           <button
             type="button"
             onClick={() => navigate('/')}
             className="mt-6 inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-600 hover:border-brand-200 hover:text-brand-600"
           >
-            Quay lại trang chủ
+            {t('admin.panel.limitedAccessAction', 'Return to homepage')}
           </button>
         </div>
       </div>
@@ -380,7 +383,7 @@ function AdminPanelPage() {
         <aside className="hidden w-72 flex-col border-r border-neutral-200/80 bg-white/80 backdrop-blur xl:flex">
           <div className="border-b border-neutral-200/70 px-6 pb-6 pt-8">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">Furnicraft</p>
-            <h2 className="mt-2 text-2xl font-semibold text-neutral-900">Admin Console</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-neutral-900">{t('admin.panel.heading', 'Admin Console')}</h2>
             <p className="mt-2 text-sm text-neutral-500">{userName}</p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-600">
               <span className="h-2 w-2 rounded-full bg-brand-500" /> {displayRole}
@@ -424,7 +427,7 @@ function AdminPanelPage() {
               <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/60 text-neutral-500 group-hover:border-brand-200 group-hover:text-brand-600">
                 <HomeIcon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-semibold">Về trang chủ</span>
+              <span className="text-sm font-semibold">{t('admin.panel.backHome', 'Back to homepage')}</span>
             </button>
           </nav>
           <div className="px-4 pb-6">
@@ -433,7 +436,7 @@ function AdminPanelPage() {
               onClick={handleSignOut}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-600 hover:border-brand-200 hover:text-brand-600"
             >
-              <LogOut className="h-4 w-4" /> Đăng xuất
+              <LogOut className="h-4 w-4" /> {t('admin.panel.signOut', 'Sign out')}
             </button>
           </div>
         </aside>
@@ -442,7 +445,9 @@ function AdminPanelPage() {
           <div className="relative mx-auto flex max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-10">
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-[0.38em] text-brand-500">Quản trị hệ thống</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.38em] text-brand-500">
+                  {t('admin.panel.sectionTitle', 'System administration')}
+                </span>
                 <h1 className="mt-2 text-3xl font-semibold text-neutral-900">{currentRoute.label}</h1>
                 <p className="mt-2 text-sm text-neutral-500">{currentRoute.description}</p>
               </div>
@@ -452,7 +457,7 @@ function AdminPanelPage() {
                   onClick={handleRefresh}
                   className="inline-flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-600 shadow-sm hover:border-brand-200 hover:text-brand-600"
                 >
-                  <RefreshCw className="h-4 w-4" /> Làm mới dữ liệu
+                  <RefreshCw className="h-4 w-4" /> {t('admin.panel.refresh', 'Refresh data')}
                 </button>
               </div>
             </div>
@@ -480,7 +485,7 @@ function AdminPanelPage() {
                 onClick={() => navigate('/')}
                 className="rounded-full border border-neutral-200 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 hover:border-brand-200 hover:text-brand-600"
               >
-                Trang chủ
+                {t('admin.panel.home', 'Home')}
               </button>
             </div>
             <div className="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-xl shadow-neutral-900/5 backdrop-blur">
@@ -510,6 +515,7 @@ function AdminDashboard() {
     monthlySeries: [] as { label: string; revenue: number; orders: number }[],
   });
   const formatCurrency = useAdminCurrencyFormatter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     let mounted = true;
@@ -689,7 +695,9 @@ function AdminDashboard() {
               <h3 className="text-lg font-semibold text-neutral-900">Doanh thu 6 tháng gần đây</h3>
               <p className="text-sm text-neutral-500">Theo dõi xu hướng doanh thu & số lượng đơn hàng.</p>
             </div>
-            <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">Realtime</span>
+            <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">
+              {t('admin.analytics.realtime', 'Realtime')}
+            </span>
           </div>
           <div className="mt-6">
             <RevenueTrendChart data={ordersSummary.monthlySeries} />
