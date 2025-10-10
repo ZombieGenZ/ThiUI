@@ -34,10 +34,13 @@ export function getLocalizedValue(
 
 export function formatCurrency(value: number, language: Language, currency: string = 'USD'): string {
   try {
-    return new Intl.NumberFormat(language === 'vi' ? 'vi-VN' : 'en-US', {
+    const locale = language === 'vi' ? 'vi-VN' : 'en-US';
+    const fractionDigits = currency === 'USD' ? 2 : 0;
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
     }).format(value);
   } catch (error) {
     console.error('Unable to format currency:', error);

@@ -9,7 +9,8 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import { ReviewSection } from '../components/ReviewSection';
 import { ProductModelViewer } from '../components/ProductModelViewer';
 import { useLanguage } from '../contexts/LanguageContext';
-import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { getLocalizedValue } from '../utils/i18n';
 import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 import { createAddToCartHandler } from '../utils/cartHelpers';
 
@@ -43,6 +44,7 @@ export function ProductDetailPage() {
   const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { language, translate } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -177,11 +179,12 @@ export function ProductDetailPage() {
     ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
     : 0;
   const localizedDescription = getLocalizedValue(product.description_i18n, language, product.description);
-  const formattedPrice = formatCurrency(price, language);
-  const formattedBasePrice = formatCurrency(product.base_price, language);
-  const formattedSavings = product.sale_price
-    ? formatCurrency(product.base_price - product.sale_price, language)
-    : null;
+  const formattedPrice = formatPrice(price, language);
+  const formattedBasePrice = formatPrice(product.base_price, language);
+  const formattedSavings =
+    product.sale_price && product.sale_price < product.base_price
+      ? formatPrice(product.base_price - product.sale_price, language)
+      : null;
 
   return (
     <div className="min-h-screen bg-white">

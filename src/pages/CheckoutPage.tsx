@@ -7,6 +7,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { payosClient } from '../lib/payos';
 import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type PaymentMethod = 'credit-card' | 'debit-card' | 'paypal' | 'bank-transfer' | 'cash-on-delivery';
 
@@ -24,6 +26,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { items, selectedTotal, clearCart } = useCart();
   const { user } = useAuth();
+  const { formatPrice, exchangeRate } = useCurrency();
+  const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit-card');
   const [voucherCode, setVoucherCode] = useState('');
@@ -242,13 +246,13 @@ export function CheckoutPage() {
           console.log('Creating PayOS payment link with:', {
             orderCode: numericOrderCode,
             orderNumber: order.order_number,
-            amount: finalTotal * 23000,
+            amount: finalTotal * exchangeRate,
             orderId: order.id
           });
 
           const paymentLink = await payosClient.createPaymentLink({
             orderCode: numericOrderCode,
-            amount: Math.round(finalTotal * 23000),
+            amount: Math.round(finalTotal * exchangeRate),
             description: `Order ${order.order_number}`,
             returnUrl: `${window.location.origin}/orders?payment=success&order_id=${order.id}`,
             cancelUrl: `${window.location.origin}/checkout?payment=cancelled`,
@@ -362,7 +366,9 @@ export function CheckoutPage() {
       }
 
       if (voucher.min_order_amount > selectedTotal) {
-        toast.error(`Minimum order amount of $${voucher.min_order_amount} required`);
+        toast.error(
+          `Minimum order amount of ${formatPrice(voucher.min_order_amount, language)} required`
+        );
         return;
       }
 
@@ -724,7 +730,9 @@ export function CheckoutPage() {
                 disabled={loading}
                 className="w-full bg-brand-600 text-white py-4 rounded-lg hover:bg-brand-700 transition-colors font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Processing...' : `Place Order - $${finalTotal.toFixed(2)}`}
+                {loading
+                  ? 'Processing...'
+                  : `Place Order - ${formatPrice(finalTotal, language)}`}
               </button>
             </form>
           </div>
@@ -748,7 +756,10 @@ export function CheckoutPage() {
                       <p className="text-sm text-gray-600 mt-1">Qty: {item.quantity}</p>
                     </div>
                     <div className="text-sm font-medium">
-                      ${((item.product?.sale_price || item.product?.base_price || 0) * item.quantity).toFixed(2)}
+                      {formatPrice(
+                        (item.product?.sale_price || item.product?.base_price || 0) * item.quantity,
+                        language
+                      )}
                     </div>
                   </div>
                 ))}
@@ -800,27 +811,33 @@ export function CheckoutPage() {
                 <div className="space-y-2 pt-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">${selectedTotal.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(selectedTotal, language)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping</span>
                     <span className="font-medium">
-                      {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
+                      {shippingCost === 0
+                        ? language === 'vi'
+                          ? 'Miễn phí'
+                          : 'Free'
+                        : formatPrice(shippingCost, language)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
+                    <span className="font-medium">{formatPrice(tax, language)}</span>
                   </div>
                   {voucherDiscount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-green-600">Voucher Discount</span>
-                      <span className="font-medium text-green-600">-${voucherDiscount.toFixed(2)}</span>
+                      <span className="font-medium text-green-600">
+                        -{formatPrice(voucherDiscount, language)}
+                      </span>
                     </div>
                   )}
                   <div className="border-t pt-2 flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>${finalTotal.toFixed(2)}</span>
+                    <span>{formatPrice(finalTotal, language)}</span>
                   </div>
                 </div>
               </div>

@@ -130,6 +130,7 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE IF NOT EXISTS categories (
   id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   name text NOT NULL,
+  name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   slug text UNIQUE NOT NULL,
   parent_id uuid REFERENCES categories(id) ON DELETE SET NULL,
   image_url text,
@@ -170,6 +171,7 @@ CREATE TABLE IF NOT EXISTS products (
   category_id uuid REFERENCES categories(id) ON DELETE SET NULL,
   base_price decimal(10,2) NOT NULL,
   sale_price decimal(10,2),
+  currency text NOT NULL DEFAULT 'USD',
   style text,
   room_type text,
   materials text[],
@@ -300,6 +302,7 @@ CREATE TABLE IF NOT EXISTS vouchers (
   id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   code text UNIQUE NOT NULL,
   description text DEFAULT '',
+  description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   discount_type text NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
   discount_value decimal(10,2) NOT NULL,
   min_purchase decimal(10,2) DEFAULT 0,
@@ -349,6 +352,7 @@ CREATE TABLE IF NOT EXISTS orders (
   tax decimal(10, 2) NOT NULL DEFAULT 0,
   discount decimal(10, 2) DEFAULT 0,
   total_amount decimal(10, 2) NOT NULL DEFAULT 0,
+  currency text NOT NULL DEFAULT 'USD',
 
   voucher_id uuid REFERENCES vouchers(id),
   voucher_discount decimal(10, 2) DEFAULT 0,
@@ -652,6 +656,7 @@ CREATE TABLE IF NOT EXISTS room_inspirations (
   description text,
   image_url text NOT NULL,
   style_tags text[],
+  style_tags_i18n jsonb NOT NULL DEFAULT '[]'::jsonb,
   room_type text,
   product_ids uuid[],
   is_featured boolean DEFAULT false,
@@ -671,6 +676,7 @@ ALTER TABLE room_inspirations
   ADD COLUMN IF NOT EXISTS slug text,
   ADD COLUMN IF NOT EXISTS title_i18n jsonb DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS description_i18n jsonb DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS style_tags_i18n jsonb DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS budget text,
   ADD COLUMN IF NOT EXISTS currency text DEFAULT 'USD',
   ADD COLUMN IF NOT EXISTS product_slugs text[] DEFAULT ARRAY[]::text[],
@@ -689,10 +695,13 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   name text NOT NULL,
+  name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   email text NOT NULL,
   phone text DEFAULT '',
   subject text NOT NULL,
+  subject_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   message text NOT NULL,
+  message_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'read', 'replied', 'closed')),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -740,6 +749,7 @@ CREATE TABLE IF NOT EXISTS design_service_requests (
   id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   name text NOT NULL,
+  name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   email text NOT NULL,
   phone text DEFAULT '',
   project_type text NOT NULL,
@@ -748,6 +758,8 @@ CREATE TABLE IF NOT EXISTS design_service_requests (
   budget_range text,
   desired_timeline text,
   additional_notes text,
+  title_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
+  description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_review', 'quoted', 'scheduled', 'completed', 'closed')),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -797,11 +809,14 @@ CREATE TABLE IF NOT EXISTS career_applications (
   id uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   full_name text NOT NULL,
+  full_name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   email text NOT NULL,
   phone text DEFAULT '',
   position_applied text NOT NULL,
+  position_applied_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   resume_url text NOT NULL,
   cover_letter text,
+  cover_letter_i18n jsonb NOT NULL DEFAULT '{}'::jsonb,
   portfolio_url text,
   expected_salary text,
   status text NOT NULL DEFAULT 'received' CHECK (status IN ('received', 'reviewing', 'interview', 'offer', 'hired', 'archived', 'rejected')),
@@ -922,27 +937,298 @@ CREATE POLICY "Public can insert comments"
 -- 17. INSERT SAMPLE DATA - CATEGORIES
 -- ============================================================================
 
-INSERT INTO categories (name, slug, description, display_order)
+INSERT INTO categories (name, name_i18n, slug, description, display_order)
 VALUES
-  ('Living Room', 'living-room', 'Furniture for your living room', 1),
-  ('Bedroom', 'bedroom', 'Furniture for your bedroom', 2),
-  ('Dining', 'dining', 'Dining furniture and accessories', 3),
-  ('Office', 'office', 'Home office furniture', 4),
-  ('Outdoor', 'outdoor', 'Outdoor and patio furniture', 5)
+  (
+    'Living Room',
+    jsonb_build_object('en', 'Living Room', 'vi', 'Phòng khách'),
+    'living-room',
+    'Furniture for your living room',
+    1
+  ),
+  (
+    'Bedroom',
+    jsonb_build_object('en', 'Bedroom', 'vi', 'Phòng ngủ'),
+    'bedroom',
+    'Furniture for your bedroom',
+    2
+  ),
+  (
+    'Dining',
+    jsonb_build_object('en', 'Dining', 'vi', 'Phòng ăn'),
+    'dining',
+    'Dining furniture and accessories',
+    3
+  ),
+  (
+    'Office',
+    jsonb_build_object('en', 'Office', 'vi', 'Văn phòng'),
+    'office',
+    'Home office furniture',
+    4
+  ),
+  (
+    'Outdoor',
+    jsonb_build_object('en', 'Outdoor', 'vi', 'Ngoài trời'),
+    'outdoor',
+    'Outdoor and patio furniture',
+    5
+  )
 ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- 18. INSERT SAMPLE DATA - VOUCHERS
 -- ============================================================================
 
-INSERT INTO vouchers (code, discount_type, discount_value, min_purchase, max_discount, valid_until, is_active, description)
+INSERT INTO vouchers (
+  code,
+  discount_type,
+  discount_value,
+  min_purchase,
+  max_discount,
+  valid_until,
+  is_active,
+  description,
+  description_i18n
+)
 VALUES
-  ('WELCOME10', 'percentage', 10, 100, 50, now() + interval '90 days', true, 'Welcome discount for new customers'),
-  ('SAVE20', 'fixed', 20, 50, NULL, now() + interval '60 days', true, 'Save $20 on your order'),
-  ('FURNITURE25', 'percentage', 25, 500, 200, now() + interval '30 days', true, '25% off furniture items'),
-  ('FREESHIP', 'fixed', 50, 200, NULL, now() + interval '120 days', true, 'Free shipping on orders over $200'),
-  ('MEGA50', 'fixed', 50, 300, NULL, now() + interval '45 days', true, 'Mega sale - $50 off')
+  (
+    'WELCOME10',
+    'percentage',
+    10,
+    100,
+    50,
+    now() + interval '90 days',
+    true,
+    'Welcome discount for new customers',
+    jsonb_build_object('en', 'Welcome discount for new customers', 'vi', 'Ưu đãi chào mừng khách hàng mới')
+  ),
+  (
+    'SAVE20',
+    'fixed',
+    20,
+    50,
+    NULL,
+    now() + interval '60 days',
+    true,
+    'Save $20 on your order',
+    jsonb_build_object('en', 'Save $20 on your order', 'vi', 'Giảm 20$ cho đơn hàng của bạn')
+  ),
+  (
+    'FURNITURE25',
+    'percentage',
+    25,
+    500,
+    200,
+    now() + interval '30 days',
+    true,
+    '25% off furniture items',
+    jsonb_build_object('en', '25% off furniture items', 'vi', 'Giảm 25% cho các sản phẩm nội thất')
+  ),
+  (
+    'FREESHIP',
+    'fixed',
+    50,
+    200,
+    NULL,
+    now() + interval '120 days',
+    true,
+    'Free shipping on orders over $200',
+    jsonb_build_object('en', 'Free shipping on orders over $200', 'vi', 'Miễn phí vận chuyển cho đơn từ $200')
+  ),
+  (
+    'MEGA50',
+    'fixed',
+    50,
+    300,
+    NULL,
+    now() + interval '45 days',
+    true,
+    'Mega sale - $50 off',
+    jsonb_build_object('en', 'Mega sale - $50 off', 'vi', 'Siêu khuyến mãi - giảm $50')
+  )
 ON CONFLICT (code) DO NOTHING;
+
+-- ============================================================================
+-- 18B. INSERT SAMPLE DATA - SUPPORTING COMMUNICATION TABLES
+-- ============================================================================
+
+INSERT INTO contact_messages (
+  id,
+  name,
+  name_i18n,
+  email,
+  phone,
+  subject,
+  subject_i18n,
+  message,
+  message_i18n,
+  status,
+  created_at,
+  updated_at
+)
+VALUES
+  (
+    '00000000-0000-0000-0000-000000000101',
+    'Emily Carter',
+    jsonb_build_object('en', 'Emily Carter', 'vi', 'Emily Carter'),
+    'emily.carter@example.com',
+    '+1-555-0134',
+    'Order status question',
+    jsonb_build_object('en', 'Order status question', 'vi', 'Câu hỏi về trạng thái đơn hàng'),
+    'Hi team, could you update me on the status of my recent order?',
+    jsonb_build_object(
+      'en', 'Hi team, could you update me on the status of my recent order?',
+      'vi', 'Chào đội ngũ, bạn có thể cập nhật tình trạng đơn hàng mới nhất của tôi không?'
+    ),
+    'pending',
+    now() - interval '5 days',
+    now() - interval '4 days'
+  ),
+  (
+    '00000000-0000-0000-0000-000000000102',
+    'Minh Tran',
+    jsonb_build_object('en', 'Minh Tran', 'vi', 'Minh Trần'),
+    'minh.tran@example.com',
+    '+84-28-3899-0123',
+    'Design consultation follow-up',
+    jsonb_build_object('en', 'Design consultation follow-up', 'vi', 'Theo dõi tư vấn thiết kế'),
+    'Thank you for the consultation. I would love to receive the proposal this week.',
+    jsonb_build_object(
+      'en', 'Thank you for the consultation. I would love to receive the proposal this week.',
+      'vi', 'Cảm ơn buổi tư vấn. Tôi mong nhận được đề xuất trong tuần này.'
+    ),
+    'read',
+    now() - interval '9 days',
+    now() - interval '7 days'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO design_service_requests (
+  id,
+  name,
+  name_i18n,
+  email,
+  phone,
+  project_type,
+  project_scope,
+  preferred_style,
+  budget_range,
+  desired_timeline,
+  additional_notes,
+  title_i18n,
+  description_i18n,
+  status,
+  created_at,
+  updated_at
+)
+VALUES
+  (
+    '00000000-0000-0000-0000-000000000201',
+    'Isabella Nguyen',
+    jsonb_build_object('en', 'Isabella Nguyen', 'vi', 'Isabella Nguyễn'),
+    'isabella.nguyen@example.com',
+    '+84-901-234-567',
+    'Residential apartment',
+    'Complete living room redesign',
+    'Modern',
+    '$10,000 - $15,000',
+    '6 weeks',
+    'Focus on maximizing natural light and concealed storage.',
+    jsonb_build_object('en', 'Living Room Refresh', 'vi', 'Tái tạo phòng khách'),
+    jsonb_build_object(
+      'en', 'A modern living room plan with flexible layouts and smart storage.',
+      'vi', 'Giải pháp phòng khách hiện đại với bố cục linh hoạt và lưu trữ thông minh.'
+    ),
+    'in_review',
+    now() - interval '12 days',
+    now() - interval '10 days'
+  ),
+  (
+    '00000000-0000-0000-0000-000000000202',
+    'Daniel Carter',
+    jsonb_build_object('en', 'Daniel Carter', 'vi', 'Daniel Carter'),
+    'daniel.carter@example.com',
+    '+1-555-0456',
+    'Boutique office',
+    'Workspace for a five-person creative team',
+    'Scandinavian',
+    '$18,000 - $25,000',
+    '8 weeks',
+    'Need acoustic treatment for calls and modular collaboration areas.',
+    jsonb_build_object('en', 'Creative Studio Concept', 'vi', 'Ý tưởng studio sáng tạo'),
+    jsonb_build_object(
+      'en', 'Design a calming office with collaborative zones and acoustic solutions.',
+      'vi', 'Thiết kế văn phòng thư thái với khu vực hợp tác và xử lý âm thanh hiệu quả.'
+    ),
+    'quoted',
+    now() - interval '20 days',
+    now() - interval '14 days'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO career_applications (
+  id,
+  full_name,
+  full_name_i18n,
+  email,
+  phone,
+  position_applied,
+  position_applied_i18n,
+  resume_url,
+  cover_letter,
+  cover_letter_i18n,
+  portfolio_url,
+  expected_salary,
+  status,
+  notes,
+  created_at,
+  updated_at
+)
+VALUES
+  (
+    '00000000-0000-0000-0000-000000000301',
+    'Linh Pham',
+    jsonb_build_object('en', 'Linh Pham', 'vi', 'Linh Phạm'),
+    'linh.pham@example.com',
+    '+84-915-678-900',
+    'Senior Interior Designer',
+    jsonb_build_object('en', 'Senior Interior Designer', 'vi', 'Chuyên gia thiết kế nội thất cao cấp'),
+    'https://example.com/resumes/linh-pham.pdf',
+    'I bring 8 years of experience leading residential design projects across APAC.',
+    jsonb_build_object(
+      'en', 'I bring 8 years of experience leading residential design projects across APAC.',
+      'vi', 'Tôi có 8 năm kinh nghiệm dẫn dắt các dự án thiết kế nhà ở tại khu vực châu Á - Thái Bình Dương.'
+    ),
+    'https://example.com/portfolios/linh-pham',
+    '$48,000',
+    'reviewing',
+    'Top candidate for Q3 hiring pipeline.',
+    now() - interval '15 days',
+    now() - interval '8 days'
+  ),
+  (
+    '00000000-0000-0000-0000-000000000302',
+    'Ethan Walker',
+    jsonb_build_object('en', 'Ethan Walker', 'vi', 'Ethan Walker'),
+    'ethan.walker@example.com',
+    '+1-555-0899',
+    'Visual Merchandising Specialist',
+    jsonb_build_object('en', 'Visual Merchandising Specialist', 'vi', 'Chuyên viên trưng bày trực quan'),
+    'https://example.com/resumes/ethan-walker.pdf',
+    'Passionate about retail storytelling and in-store experience design.',
+    jsonb_build_object(
+      'en', 'Passionate about retail storytelling and in-store experience design.',
+      'vi', 'Đam mê kể chuyện thương hiệu và thiết kế trải nghiệm mua sắm tại cửa hàng.'
+    ),
+    'https://example.com/portfolios/ethan-walker',
+    '$42,000',
+    'received',
+    'Schedule portfolio review with creative director.',
+    now() - interval '6 days',
+    now() - interval '2 days'
+  )
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- 19. INSERT MULTI-LANGUAGE PRODUCT CATALOG
@@ -1116,6 +1402,7 @@ BEGIN
         category_id,
         base_price,
         sale_price,
+        currency,
         style,
         room_type,
         materials,
@@ -1143,6 +1430,7 @@ BEGIN
         cat.id,
         base_price,
         sale_price,
+        'USD',
         style_value,
         cat.name,
         materials,
@@ -1169,6 +1457,7 @@ BEGIN
         category_id = EXCLUDED.category_id,
         base_price = EXCLUDED.base_price,
         sale_price = EXCLUDED.sale_price,
+        currency = EXCLUDED.currency,
         style = EXCLUDED.style,
         room_type = EXCLUDED.room_type,
         materials = EXCLUDED.materials,
@@ -1455,6 +1744,7 @@ INSERT INTO room_inspirations (
   description,
   image_url,
   style_tags,
+  style_tags_i18n,
   room_type,
   product_slugs,
   product_ids,
@@ -1472,6 +1762,27 @@ SELECT
   data.description_en,
   data.image_url,
   data.style_tags,
+  jsonb_build_object(
+    'en', data.style_tags,
+    'vi', COALESCE(
+      (
+        SELECT ARRAY_AGG(
+          CASE lower(tag)
+            WHEN 'modern' THEN 'hiện đại'
+            WHEN 'scandinavian' THEN 'bắc âu'
+            WHEN 'minimalist' THEN 'tối giản'
+            WHEN 'industrial' THEN 'công nghiệp'
+            WHEN 'bohemian' THEN 'boho'
+            WHEN 'coastal' THEN 'ven biển'
+            WHEN 'luxury' THEN 'sang trọng'
+            ELSE initcap(replace(tag, '-', ' '))
+          END
+        )
+        FROM unnest(data.style_tags) AS tag
+      ),
+      ARRAY[]::text[]
+    )
+  ),
   data.room_type,
   data.product_slugs,
   COALESCE(
@@ -1496,6 +1807,7 @@ SET
   description = EXCLUDED.description,
   image_url = EXCLUDED.image_url,
   style_tags = EXCLUDED.style_tags,
+  style_tags_i18n = EXCLUDED.style_tags_i18n,
   room_type = EXCLUDED.room_type,
   product_slugs = EXCLUDED.product_slugs,
   product_ids = EXCLUDED.product_ids,

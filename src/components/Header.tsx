@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Menu, X, Languages } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Menu, X, Languages, Coins } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface HeaderProps {
   onCartOpen: () => void;
@@ -17,6 +18,7 @@ export function Header({ onCartOpen }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { language, toggleLanguage, t, translate } = useLanguage();
+  const { currency, toggleCurrency } = useCurrency();
 
   const productCategories = [
     { label: { en: 'All Products', vi: 'Tất cả sản phẩm' }, path: '/products' },
@@ -172,6 +174,15 @@ export function Header({ onCartOpen }: HeaderProps) {
             </nav>
 
             <div className="flex items-center space-x-3 sm:space-x-4">
+              <button
+                className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200 hover:border-brand-500 hover:text-brand-600 dark:hover:border-brand-500 smooth-transition"
+                onClick={toggleCurrency}
+                type="button"
+                aria-label={currency === 'USD' ? 'Switch to Vietnamese Dong' : 'Chuyển sang đô la Mỹ'}
+              >
+                <Coins className="w-4 h-4" />
+                {currency}
+              </button>
               <button
                 className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200 hover:border-brand-500 hover:text-brand-600 dark:hover:border-brand-500 smooth-transition"
                 onClick={toggleLanguage}

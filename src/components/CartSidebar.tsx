@@ -1,6 +1,9 @@
 import { X, Plus, Minus, ShoppingBag, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { getLocalizedValue } from '../utils/i18n';
 import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 
 interface CartSidebarProps {
@@ -11,8 +14,17 @@ interface CartSidebarProps {
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const navigate = useNavigate();
   const { items, selectedTotal, loading, updateQuantity, removeFromCart, toggleItemSelection, selectAll, deselectAll } = useCart();
+  const { language, translate } = useLanguage();
+  const { formatPrice } = useCurrency();
   const allSelected = items.length > 0 && items.every(item => item.selected);
   const selectedCount = items.filter(item => item.selected).length;
+  const selectedLabel = language === 'vi' ? `${selectedCount} đã chọn` : `${selectedCount} selected`;
+  const subtotalLabel = language === 'vi'
+    ? `Tạm tính (${selectedCount} sản phẩm)`
+    : `Subtotal (${selectedCount} items)`;
+  const checkoutLabel = language === 'vi'
+    ? `Tiến hành thanh toán (${selectedCount} sản phẩm)`
+    : `Proceed to Checkout (${selectedCount} items)`;
 
   if (!isOpen) return null;
 
@@ -26,7 +38,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       <div className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl transform transition-all duration-400 flex flex-col animate-slide-in-right will-change-transform">
         <div className="p-6 border-b space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Shopping Cart ({items.length})</h2>
+            <h2 className="text-xl font-semibold">
+              {translate({ en: 'Shopping Cart', vi: 'Giỏ hàng' })} ({items.length})
+            </h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale active:scale-90 ripple-effect"
@@ -41,9 +55,13 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 className="flex items-center space-x-2 text-sm font-medium text-brand-600 hover:text-brand-700 smooth-transition"
               >
                 {allSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                <span>{allSelected ? 'Deselect All' : 'Select All'}</span>
+                <span>
+                  {allSelected
+                    ? translate({ en: 'Deselect All', vi: 'Bỏ chọn tất cả' })
+                    : translate({ en: 'Select All', vi: 'Chọn tất cả' })}
+                </span>
               </button>
-              <span className="text-sm text-gray-600">{selectedCount} selected</span>
+              <span className="text-sm text-gray-600">{selectedLabel}</span>
             </div>
           )}
         </div>
@@ -56,14 +74,17 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Your cart is empty</h3>
-              <p className="text-gray-600 mb-6">Start adding items to your cart</p>
+              <h3 className="text-lg font-semibold mb-2">
+                {translate({ en: 'Your cart is empty', vi: 'Giỏ hàng của bạn trống' })}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {translate({ en: 'Start adding items to your cart', vi: 'Hãy thêm sản phẩm vào giỏ hàng' })}
+              </p>
               <button
                 onClick={onClose}
                 className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-               
               >
-                Continue Shopping
+                {translate({ en: 'Continue Shopping', vi: 'Tiếp tục mua sắm' })}
               </button>
             </div>
           ) : (
@@ -90,10 +111,10 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium mb-1 line-clamp-2">
-                      {item.product?.name}
+                      {getLocalizedValue(item.product?.name_i18n ?? null, language, item.product?.name ?? '')}
                     </h3>
                     <p className="text-sm text-gray-600 mb-2">
-                      ${(item.product?.sale_price || item.product?.base_price || 0).toFixed(2)}
+                      {formatPrice(item.product?.sale_price || item.product?.base_price || 0, language)}
                     </p>
 
                     <div className="flex items-center justify-between">
@@ -116,9 +137,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="text-sm text-red-600 hover:underline"
-                       
                       >
-                        Remove
+                        {translate({ en: 'Remove', vi: 'Xóa' })}
                       </button>
                     </div>
                   </div>
@@ -131,16 +151,18 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         {items.length > 0 && (
           <div className="border-t p-6 space-y-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Subtotal ({selectedCount} items)</span>
-              <span className="font-medium">${selectedTotal.toFixed(2)}</span>
+              <span className="text-gray-600">{subtotalLabel}</span>
+              <span className="font-medium">{formatPrice(selectedTotal, language)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Shipping</span>
-              <span className="font-medium">Calculated at checkout</span>
+              <span className="text-gray-600">{translate({ en: 'Shipping', vi: 'Vận chuyển' })}</span>
+              <span className="font-medium">
+                {translate({ en: 'Calculated at checkout', vi: 'Tính tại bước thanh toán' })}
+              </span>
             </div>
             <div className="flex items-center justify-between text-lg font-semibold pt-4 border-t">
-              <span>Total</span>
-              <span>${selectedTotal.toFixed(2)}</span>
+              <span>{translate({ en: 'Total', vi: 'Tổng cộng' })}</span>
+              <span>{formatPrice(selectedTotal, language)}</span>
             </div>
 
             <button
@@ -152,15 +174,14 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               disabled={selectedCount === 0}
               className="w-full bg-black text-white py-4 rounded-lg hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Proceed to Checkout ({selectedCount} items)
+              {checkoutLabel}
             </button>
 
             <button
               onClick={onClose}
               className="w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-             
             >
-              Continue Shopping
+              {translate({ en: 'Continue Shopping', vi: 'Tiếp tục mua sắm' })}
             </button>
           </div>
         )}

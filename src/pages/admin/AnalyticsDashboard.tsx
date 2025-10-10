@@ -1,4 +1,4 @@
-import { type ChangeEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BarChart3,
   Calendar,
@@ -11,6 +11,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../lib/supabase';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { getLocalizedValue } from '../../utils/i18n';
 
 type OrdersRow = Database['public']['Tables']['orders']['Row'];
@@ -201,14 +202,6 @@ function formatNumber(value: number, locale: string) {
   return new Intl.NumberFormat(locale).format(value);
 }
 
-function formatCurrency(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 function buildCsv(snapshot: AnalyticsSnapshot) {
   const lines: string[] = [];
   lines.push('Metric,Value');
@@ -239,16 +232,20 @@ function buildCsv(snapshot: AnalyticsSnapshot) {
   return new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
 }
 
-function buildExcel(snapshot: AnalyticsSnapshot, locale: string) {
+function buildExcel(
+  snapshot: AnalyticsSnapshot,
+  locale: string,
+  formatCurrencyValue: (value: number) => string
+) {
   const rows: string[] = [];
   const metrics = [
     ['Timeframe', snapshot.label],
-    ['Total Revenue', formatCurrency(snapshot.revenue, locale)],
+    ['Total Revenue', formatCurrencyValue(snapshot.revenue)],
     ['Total Orders', formatNumber(snapshot.orders.total, locale)],
     ['Completed Orders', formatNumber(snapshot.orders.completed, locale)],
     ['Processing Orders', formatNumber(snapshot.orders.processing, locale)],
     ['Cancelled Orders', formatNumber(snapshot.orders.cancelled, locale)],
-    ['Average Order Value', formatCurrency(snapshot.averageOrderValue, locale)],
+    ['Average Order Value', formatCurrencyValue(snapshot.averageOrderValue)],
     ['New Customers', formatNumber(snapshot.newCustomers, locale)],
     ['Blog Posts', formatNumber(snapshot.content.blogPosts, locale)],
     ['Contact Messages', formatNumber(snapshot.content.contactMessages, locale)],
@@ -268,7 +265,7 @@ function buildExcel(snapshot: AnalyticsSnapshot, locale: string) {
     rows.push('<tr><th>Product</th><th>Quantity</th><th>Revenue</th></tr>');
     snapshot.bestSellers.forEach(item => {
       rows.push(
-        `<tr><td>${item.name}</td><td>${formatNumber(item.quantity, locale)}</td><td>${formatCurrency(item.revenue, locale)}</td></tr>`
+        `<tr><td>${item.name}</td><td>${formatNumber(item.quantity, locale)}</td><td>${formatCurrencyValue(item.revenue)}</td></tr>`
       );
     });
     rows.push('</table>');
@@ -280,15 +277,19 @@ function buildExcel(snapshot: AnalyticsSnapshot, locale: string) {
   });
 }
 
-function buildPdf(snapshot: AnalyticsSnapshot, locale: string) {
+function buildPdf(
+  snapshot: AnalyticsSnapshot,
+  locale: string,
+  formatCurrencyValue: (value: number) => string
+) {
   const summaryLines = [
     `Timeframe: ${snapshot.label}`,
-    `Total revenue: ${formatCurrency(snapshot.revenue, locale)}`,
+    `Total revenue: ${formatCurrencyValue(snapshot.revenue)}`,
     `Total orders: ${formatNumber(snapshot.orders.total, locale)}`,
     `Completed orders: ${formatNumber(snapshot.orders.completed, locale)}`,
     `Processing orders: ${formatNumber(snapshot.orders.processing, locale)}`,
     `Cancelled orders: ${formatNumber(snapshot.orders.cancelled, locale)}`,
-    `Average order value: ${formatCurrency(snapshot.averageOrderValue, locale)}`,
+    `Average order value: ${formatCurrencyValue(snapshot.averageOrderValue)}`,
     `New customers: ${formatNumber(snapshot.newCustomers, locale)}`,
     `Blog posts: ${formatNumber(snapshot.content.blogPosts, locale)}`,
     `Contact messages: ${formatNumber(snapshot.content.contactMessages, locale)}`,
@@ -297,10 +298,10 @@ function buildPdf(snapshot: AnalyticsSnapshot, locale: string) {
   ];
 
   const bestSellerLines = snapshot.bestSellers.map(
-    item => `${item.name} — ${item.quantity} (${formatCurrency(item.revenue, locale)})`
+    item => `${item.name} — ${item.quantity} (${formatCurrencyValue(item.revenue)})`
   );
   const trendLines = snapshot.orders.trend.map(
-    point => `${point.bucket}: ${formatCurrency(point.revenue, locale)} / ${formatNumber(point.orders, locale)}`
+    point => `${point.bucket}: ${formatCurrencyValue(point.revenue)} / ${formatNumber(point.orders, locale)}`
   );
 
   const content = [
@@ -612,7 +613,9 @@ function DonutChart({ values }: { values: { label: string; value: number; color:
 
 export function AnalyticsDashboard() {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const locale = language === 'vi' ? 'vi-VN' : 'en-US';
+  const formatCurrency = useCallback((value: number) => formatPrice(value ?? 0, language), [formatPrice, language]);
   const [primaryFilter, setPrimaryFilter] = useState<TimeFilterValue>(() => ({
     granularity: 'month',
     value: new Date().toISOString().slice(0, 7),
@@ -671,11 +674,11 @@ export function AnalyticsDashboard() {
       return;
     }
     if (format === 'excel') {
-      const blob = buildExcel(snapshot, locale);
+      const blob = buildExcel(snapshot, locale, formatCurrency);
       downloadBlob(blob, `analytics-${snapshot.range.value}.xls`);
       return;
     }
-    const blob = buildPdf(snapshot, locale);
+    const blob = buildPdf(snapshot, locale, formatCurrency);
     downloadBlob(blob, `analytics-${snapshot.range.value}.pdf`);
   };
 
@@ -886,7 +889,7 @@ export function AnalyticsDashboard() {
                   <TrendingUp className="h-4 w-4 text-brand-600" />
                 </div>
                 <p className="text-2xl font-semibold text-neutral-900">
-                  {formatCurrency(primaryAnalytics.data.revenue, locale)}
+                  {formatCurrency(primaryAnalytics.data.revenue)}
                 </p>
                 {revenueDiff && <ComparisonBadge diff={revenueDiff} />}
               </div>
@@ -933,7 +936,7 @@ export function AnalyticsDashboard() {
                   <PieChart className="h-4 w-4 text-brand-600" />
                 </div>
                 <p className="text-2xl font-semibold text-neutral-900">
-                  {formatCurrency(primaryAnalytics.data.averageOrderValue, locale)}
+                  {formatCurrency(primaryAnalytics.data.averageOrderValue)}
                 </p>
               </div>
             </div>
@@ -1008,7 +1011,7 @@ export function AnalyticsDashboard() {
                         </p>
                       </div>
                       <div className="text-right text-sm font-semibold text-neutral-700">
-                        {formatCurrency(item.revenue, locale)}
+                        {formatCurrency(item.revenue)}
                       </div>
                     </div>
                   ))}
