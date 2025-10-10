@@ -13,6 +13,10 @@
   5.  Chức năng khác: contact_messages, room_inspirations, blog_posts, comments.
   6.  Tất cả RLS Policies, Constraints, và Indexes.
   7.  Dữ liệu mẫu cho vouchers và products.
+
+  ## FIX LỖI 20251010
+  - Đã sửa lỗi "column reference "slug" is ambiguous" trong khối DO $product_catalog$ bằng cách
+    đổi tên biến PL/pgSQL 'slug' thành 'product_slug'.
 */
 
 -- ============================================================================
@@ -264,13 +268,13 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   order_number text UNIQUE NOT NULL DEFAULT generate_order_number(),
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')),
-  
+
   subtotal decimal(10, 2) NOT NULL DEFAULT 0,
   shipping_cost decimal(10, 2) NOT NULL DEFAULT 0,
   tax decimal(10, 2) NOT NULL DEFAULT 0,
   discount decimal(10, 2) DEFAULT 0,
   total_amount decimal(10, 2) NOT NULL DEFAULT 0,
-  
+
   voucher_id uuid REFERENCES vouchers(id),
   voucher_discount decimal(10, 2) DEFAULT 0,
 
@@ -324,11 +328,11 @@ CREATE TABLE IF NOT EXISTS order_items (
   product_id uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
   variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
   quantity integer NOT NULL DEFAULT 1,
-  
+
   unit_price decimal(10, 2) NOT NULL DEFAULT 0,
   price decimal(10, 2) NOT NULL DEFAULT 0,
   subtotal decimal(10, 2) NOT NULL DEFAULT 0,
-  
+
   dimensions text,
   material text,
   created_at timestamptz DEFAULT now()
@@ -714,7 +718,7 @@ DECLARE
   vietnamese_name text;
   english_description text;
   vietnamese_description text;
-  slug text;
+  product_slug text; -- RENAMED 'slug' to 'product_slug' to resolve ambiguity
   base_price numeric;
   sale_price numeric;
   stock integer;
@@ -818,7 +822,7 @@ BEGIN
       english_description := format('Piece %s highlights %s design for the %s with layered textures, smart storage, and adaptable proportions.', product_index, style_value, lower(cat.name));
       vietnamese_description := format('Thiết kế số %s mang tinh thần %s cho %s với chất liệu bền bỉ và công năng linh hoạt.', product_index, style_value_vi, lower(cat_vi));
 
-      slug := regexp_replace(lower(format('%s %s signature %s', cat.slug, style_value, product_index)), '[^a-z0-9]+', '-', 'g');
+      product_slug := regexp_replace(lower(format('%s %s signature %s', cat.slug, style_value, product_index)), '[^a-z0-9]+', '-', 'g'); -- Use product_slug
 
       base_price := round(((520 + product_index * 14) * cat_price_factor + random() * 160)::numeric, 2);
       IF product_index % 4 = 0 THEN
@@ -856,7 +860,7 @@ BEGIN
 
       INSERT INTO products (
         name,
-        slug,
+        slug, -- Column name is still 'slug'
         description,
         name_i18n,
         description_i18n,
@@ -883,7 +887,7 @@ BEGIN
       )
       VALUES (
         english_name,
-        slug,
+        product_slug, -- Pass the variable product_slug
         english_description,
         jsonb_build_object('en', english_name, 'vi', vietnamese_name),
         jsonb_build_object('en', english_description, 'vi', vietnamese_description),
@@ -908,7 +912,7 @@ BEGIN
         now() - ((product_index % 45) || ' days')::interval,
         now()
       )
-      ON CONFLICT (slug) DO UPDATE SET
+      ON CONFLICT (slug) DO UPDATE SET -- Now 'slug' here clearly refers to the column
         name = EXCLUDED.name,
         description = EXCLUDED.description,
         name_i18n = EXCLUDED.name_i18n,
