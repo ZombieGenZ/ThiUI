@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Filter, Heart, Layers, Loader2, Search } from 'lucide-react';
+import { Filter, Heart, Layers, Loader2, Search, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { usePageMetadata } from '../hooks/usePageMetadata';
@@ -40,6 +40,9 @@ interface AvailableProduct {
   slug: string;
   name: string;
   name_i18n?: Record<string, string> | null;
+  base_price: number;
+  sale_price: number | null;
+  images: string[] | null;
 }
 
 interface FilterOption {
@@ -212,7 +215,7 @@ const designProductSlugs = Array.from(new Set(designIdeas.flatMap(design => desi
 
 export function DesignInspirationPage() {
   const { addToCart } = useCart();
-  const { addFavorites } = useFavorites();
+  const { addFavorites, isFavorite, toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const { language, translate } = useLanguage();
   const [styleFilter, setStyleFilter] = useState<string>('all');
@@ -223,6 +226,7 @@ export function DesignInspirationPage() {
   const [loadingProductSlug, setLoadingProductSlug] = useState<string | null>(null);
   const [loadingDesignId, setLoadingDesignId] = useState<string | null>(null);
   const [savingDesignId, setSavingDesignId] = useState<string | null>(null);
+  const [favoriteSlugLoading, setFavoriteSlugLoading] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const pageSizeOptions = [6, 9, 12];
@@ -245,7 +249,7 @@ export function DesignInspirationPage() {
 
       const { data, error } = await supabase
         .from('products')
-        .select('id, slug, name, name_i18n')
+        .select('id, slug, name, name_i18n, base_price, sale_price, images')
         .in('slug', designProductSlugs);
 
       if (error) {
@@ -270,6 +274,9 @@ export function DesignInspirationPage() {
             slug: product.slug,
             name: product.name,
             name_i18n: product.name_i18n,
+            base_price: product.base_price,
+            sale_price: product.sale_price,
+            images: product.images,
           };
         }
         return accumulator;
@@ -407,6 +414,53 @@ export function DesignInspirationPage() {
       );
     } finally {
       setLoadingProductSlug(null);
+    }
+  };
+
+  const handleToggleProductFavorite = async (designProduct: DesignProduct) => {
+    if (!ensureAuthenticated()) {
+      return;
+    }
+
+    const product = productsBySlug[designProduct.slug];
+    const fallbackName = translate(designProduct.name);
+
+    if (!product) {
+      toast.error(
+        translate({
+          en: `${fallbackName} is currently unavailable.`,
+          vi: `${fallbackName} hiện không khả dụng.`,
+        })
+      );
+      return;
+    }
+
+    const localizedName = getLocalizedValue(product.name_i18n, language, product.name);
+    const alreadyFavorite = isFavorite(product.id);
+
+    try {
+      setFavoriteSlugLoading(designProduct.slug);
+      await toggleFavorite(product.id);
+      toast.success(
+        translate({
+          en: alreadyFavorite
+            ? `Removed ${localizedName} from your favorites.`
+            : `Saved ${localizedName} to your favorites.`,
+          vi: alreadyFavorite
+            ? `Đã xóa ${localizedName} khỏi danh sách yêu thích.`
+            : `Đã lưu ${localizedName} vào danh sách yêu thích.`,
+        })
+      );
+    } catch (error) {
+      console.error('Failed to toggle favorite', error);
+      toast.error(
+        translate({
+          en: 'We were unable to update your favorites. Please try again.',
+          vi: 'Không thể cập nhật danh sách yêu thích. Vui lòng thử lại.',
+        })
+      );
+    } finally {
+      setFavoriteSlugLoading(null);
     }
   };
 
@@ -620,9 +674,22 @@ export function DesignInspirationPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {paginatedDesigns.map((design) => {
-              const total = design.products.reduce((sum, product) => sum + product.price, 0);
               const currency = design.currency ?? 'USD';
-              const formattedTotal = formatCurrency(total, language, currency);
+              const designTotals = design.products.reduce(
+                (accumulator, product) => {
+                  const availableProduct = productsBySlug[product.slug];
+                  const priceValue =
+                    availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price;
+
+                  return {
+                    total: accumulator.total + priceValue,
+                    missing: accumulator.missing + (availableProduct ? 0 : 1),
+                  };
+                },
+                { total: 0, missing: 0 }
+              );
+              const formattedTotal = formatCurrency(designTotals.total, language, currency);
+              const hasUnavailableProducts = designTotals.missing > 0;
               const styleLabel = styleLabelMap[design.style]?.[language] ?? design.style;
               const roomLabel = roomLabelMap[design.room]?.[language] ?? design.room;
               const budgetLabel = budgetLabelMap[design.budget]?.[language] ?? design.budget;
@@ -647,68 +714,158 @@ export function DesignInspirationPage() {
                   </div>
                   <div className="p-6 space-y-4">
                     <p className="text-sm text-neutral-600">{design.description[language]}</p>
-                    <div className="border border-neutral-200 rounded-2xl p-4 bg-neutral-50">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-semibold text-neutral-900">
-                          {translate({ en: 'Shop This Look', vi: 'Mua bộ sản phẩm này' })}
-                        </h4>
-                        <span className="text-sm font-semibold text-brand-600">{formattedTotal}</span>
+                    <div className="border border-neutral-200 rounded-2xl p-5 bg-neutral-50">
+                      <div className="flex flex-col gap-2 mb-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <h4 className="text-sm font-semibold text-neutral-900">
+                            {translate({ en: 'Shop This Look', vi: 'Mua bộ sản phẩm này' })}
+                          </h4>
+                          <span className="text-sm font-semibold text-brand-600">{formattedTotal}</span>
+                        </div>
+                        {hasUnavailableProducts && (
+                          <p className="text-xs font-medium text-amber-600">
+                            {translate({
+                              en: 'Some pieces are temporarily unavailable.',
+                              vi: 'Một vài sản phẩm tạm thời chưa sẵn có.',
+                            })}
+                          </p>
+                        )}
                       </div>
                       <ul className="space-y-3">
                         {design.products.map((product) => {
                           const availableProduct = productsBySlug[product.slug];
                           const isProductLoading = loadingProductSlug === product.slug || isDesignBusy;
+                          const isFavoriteLoading = favoriteSlugLoading === product.slug;
                           const productName = availableProduct
                             ? getLocalizedValue(availableProduct.name_i18n, language, availableProduct.name)
                             : translate(product.name);
-                          const productPrice = formatCurrency(product.price, language, currency);
+                          const productAvailable = Boolean(availableProduct);
+                          const productImage = availableProduct?.images?.[0] ?? null;
+                          const priceValue =
+                            availableProduct?.sale_price ?? availableProduct?.base_price ?? product.price;
+                          const compareAtPrice =
+                            availableProduct &&
+                            availableProduct.sale_price &&
+                            availableProduct.sale_price < availableProduct.base_price
+                              ? availableProduct.base_price
+                              : null;
+                          const formattedPrice = formatCurrency(priceValue, language, currency);
+                          const formattedCompare = compareAtPrice
+                            ? formatCurrency(compareAtPrice, language, currency)
+                            : null;
+                          const isFavorited = availableProduct ? isFavorite(availableProduct.id) : false;
 
                           return (
                             <li
                               key={product.slug}
-                              className="flex flex-col gap-2 rounded-xl border border-transparent bg-white/70 px-3 py-3 text-sm transition-colors hover:border-brand-200"
+                              className="flex gap-3 rounded-2xl border border-neutral-200 bg-white/90 p-3 shadow-sm transition hover:border-brand-200"
                             >
-                              <div className="flex items-center justify-between gap-3">
-                                <Link to={`/product/${product.slug}`} className="font-medium text-neutral-900 hover:text-brand-600">
-                                  {productName}
-                                </Link>
-                                <span className="text-neutral-500">{productPrice}</span>
+                              {productImage ? (
+                                <img
+                                  src={productImage}
+                                  alt={productName}
+                                  className="h-16 w-16 flex-none rounded-xl object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
+                                  <Layers className="h-5 w-5" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0 space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  {productAvailable ? (
+                                    <Link
+                                      to={`/product/${product.slug}`}
+                                      className="font-semibold text-neutral-900 transition-colors hover:text-brand-600 line-clamp-2"
+                                    >
+                                      {productName}
+                                    </Link>
+                                  ) : (
+                                    <span className="font-semibold text-neutral-500 line-clamp-2">{productName}</span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleToggleProductFavorite(product)}
+                                    disabled={!productAvailable || isFavoriteLoading}
+                                    aria-pressed={productAvailable ? isFavorited : false}
+                                    className={`inline-flex h-9 w-9 flex-none items-center justify-center rounded-full border text-sm transition-colors ${
+                                      isFavorited
+                                        ? 'border-rose-200 bg-rose-50 text-rose-500'
+                                        : 'border-neutral-200 text-neutral-400 hover:border-rose-200 hover:text-rose-500'
+                                    } ${(!productAvailable || isFavoriteLoading) ? 'cursor-not-allowed opacity-60' : ''}`}
+                                  >
+                                    {isFavoriteLoading ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Heart className="h-4 w-4" fill={isFavorited ? 'currentColor' : 'none'} />
+                                    )}
+                                  </button>
+                                </div>
+                                <div className="flex flex-wrap items-baseline gap-2 text-sm">
+                                  <span className="font-semibold text-neutral-900">{formattedPrice}</span>
+                                  {formattedCompare && (
+                                    <span className="text-xs text-neutral-400 line-through">{formattedCompare}</span>
+                                  )}
+                                  {!productAvailable && (
+                                    <span className="ml-auto inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+                                      {translate({ en: 'Unavailable', vi: 'Tạm hết hàng' })}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <button
+                                    onClick={() => void handleAddProduct(design, product)}
+                                    disabled={!productAvailable || isProductLoading}
+                                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    {isProductLoading ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 animate-spin" /> {translate({ en: 'Adding...', vi: 'Đang thêm...' })}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ShoppingCart className="h-4 w-4" /> {translate({ en: 'Add to Cart', vi: 'Thêm vào giỏ' })}
+                                      </>
+                                    )}
+                                  </button>
+                                  {productAvailable ? (
+                                    <Link
+                                      to={`/product/${product.slug}`}
+                                      className="inline-flex items-center justify-center gap-1 rounded-full border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 transition hover:border-brand-200 hover:text-brand-600"
+                                    >
+                                      {translate({ en: 'View Details', vi: 'Xem chi tiết' })}
+                                    </Link>
+                                  ) : (
+                                    <span className="inline-flex items-center justify-center gap-1 rounded-full border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-400">
+                                      {translate({ en: 'Coming soon', vi: 'Sắp ra mắt' })}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                              <button
-                                onClick={() => void handleAddProduct(design, product)}
-                                disabled={isProductLoading}
-                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-200 bg-white px-3 py-2 text-xs font-semibold text-brand-600 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                {isProductLoading ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 animate-spin" /> {translate({ en: 'Adding...', vi: 'Đang thêm...' })}
-                                  </>
-                                ) : (
-                                  translate({ en: 'Add to Cart', vi: 'Thêm vào giỏ' })
-                                )}
-                              </button>
                             </li>
                           );
                         })}
                       </ul>
-                      <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                      <div className="mt-6 flex flex-col sm:flex-row gap-3">
                         <button
                           onClick={() => void handleAddDesign(design)}
                           disabled={isDesignBusy || loadingProductSlug !== null}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {loadingDesignId === design.id ? (
                             <>
                               <Loader2 className="h-5 w-5 animate-spin" /> {translate({ en: 'Adding Look...', vi: 'Đang thêm bộ sưu tập...' })}
                             </>
                           ) : (
-                            translate({ en: 'Add Entire Look to Cart', vi: 'Thêm toàn bộ vào giỏ' })
+                            <>
+                              <ShoppingBag className="h-5 w-5" /> {translate({ en: 'Add Entire Look to Cart', vi: 'Thêm toàn bộ vào giỏ' })}
+                            </>
                           )}
                         </button>
                         <button
                           onClick={() => void handleSaveLook(design)}
                           disabled={savingDesignId === design.id || loadingProductSlug !== null}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-brand-600 text-brand-600 py-2.5 text-sm font-semibold transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border-2 border-brand-500 bg-white py-3 text-sm font-semibold text-brand-600 shadow-sm transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {savingDesignId === design.id ? (
                             <>
@@ -716,7 +873,7 @@ export function DesignInspirationPage() {
                             </>
                           ) : (
                             <>
-                              <Heart className="w-4 h-4" /> {translate({ en: 'Save Look to Favorites', vi: 'Lưu bộ sưu tập vào yêu thích' })}
+                              <Heart className="w-5 h-5" fill="currentColor" /> {translate({ en: 'Save Look to Favorites', vi: 'Lưu bộ sưu tập vào yêu thích' })}
                             </>
                           )}
                         </button>
