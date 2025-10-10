@@ -31,6 +31,7 @@ export function Header({ onCartOpen }: HeaderProps) {
     { label: { en: 'About Us', vi: 'Về chúng tôi' }, path: '/about' },
     { label: { en: 'Design Services', vi: 'Dịch vụ thiết kế' }, path: '/design-services' },
     { label: { en: 'Careers', vi: 'Tuyển dụng' }, path: '/careers' },
+    { label: { en: 'Contact', vi: 'Liên hệ' }, path: '/contact' },
   ];
 
   const exploreLinks = [
@@ -146,13 +147,6 @@ export function Header({ onCartOpen }: HeaderProps) {
                   ))}
                 </div>
               </div>
-
-              <Link
-                to="/contact"
-                className="text-sm font-medium smooth-transition hover:text-brand-600 dark:text-gray-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-600 after:transition-all after:duration-300 hover:after:w-full"
-              >
-                {t('common.contact')}
-              </Link>
 
               <Link
                 to="/blog"
@@ -411,13 +405,6 @@ export function Header({ onCartOpen }: HeaderProps) {
                 </Link>
               ))}
               <div className="border-t border-gray-200 dark:border-neutral-700 my-2" />
-              <Link
-                to="/contact"
-                className="block px-6 py-3 text-sm font-medium hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t('common.contact')}
-              </Link>
               <Link
                 to="/sale"
                 className="block px-6 py-3 text-sm font-medium text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
