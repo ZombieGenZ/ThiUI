@@ -26,6 +26,26 @@ export type Database = {
         Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
       };
+      blog_posts: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string | null;
+          content: string;
+          featured_image_url: string | null;
+          author: string | null;
+          published_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['blog_posts']['Row'], 'id' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['blog_posts']['Insert']>;
+      };
       products: {
         Row: {
           id: string;
@@ -126,6 +146,22 @@ export type Database = {
           is_active: boolean;
           created_at: string;
         };
+      };
+      comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          name: string;
+          email: string;
+          content: string;
+          is_approved: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['comments']['Row'], 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['comments']['Insert']>;
       };
       reviews: {
         Row: {

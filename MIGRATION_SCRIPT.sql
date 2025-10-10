@@ -108,3 +108,52 @@ CREATE TRIGGER update_product_rating_trigger
 AFTER INSERT OR UPDATE OR DELETE ON reviews
 FOR EACH ROW
 EXECUTE FUNCTION update_product_rating();
+-- 9. Create blog_posts table
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  excerpt text,
+  content text NOT NULL,
+  featured_image_url text,
+  author text,
+  published_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_blog_posts_published_at ON blog_posts(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_created_at ON blog_posts(created_at DESC);
+
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Blog posts are readable by everyone"
+  ON blog_posts FOR SELECT
+  TO public
+  USING (true);
+
+-- 10. Create comments table for blog posts
+CREATE TABLE IF NOT EXISTS comments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id uuid NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  email text NOT NULL,
+  content text NOT NULL,
+  is_approved boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
+
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Approved comments are visible"
+  ON comments FOR SELECT
+  TO public
+  USING (is_approved = true);
+
+CREATE POLICY IF NOT EXISTS "Anyone can create comments"
+  ON comments FOR INSERT
+  TO public
+  WITH CHECK (true);
