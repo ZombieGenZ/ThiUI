@@ -48,6 +48,7 @@ export type Database = {
           stock_quantity: number;
           images: string[];
           video_url: string | null;
+          model_3d_url: string | null;
           rating: number;
           review_count: number;
           is_featured: boolean;

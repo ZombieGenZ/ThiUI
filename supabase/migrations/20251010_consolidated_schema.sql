@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS products (
   stock_quantity integer DEFAULT 0,
   images text[] DEFAULT ARRAY[]::text[],
   video_url text,
+  model_3d_url text,
   rating decimal(3,2) DEFAULT 0,
   review_count integer DEFAULT 0,
   is_featured boolean DEFAULT false,
@@ -148,6 +149,9 @@ CREATE POLICY "Products are viewable by everyone"
   ON products FOR SELECT
   TO public
   USING (status = 'active' OR status = 'out_of_stock');
+
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS model_3d_url text;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
@@ -741,6 +745,15 @@ INSERT INTO products (name, slug, description, base_price, sale_price, images, r
   'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'
 ], 4.9, 145, true, 'Outdoor', '{"width": "280cm", "height": "75cm", "depth": "180cm"}', ARRAY['All-Weather Wicker', 'Powder-Coated Aluminum', 'Olefin Fabric'], 85, 'OD-SEC-004', 10, 'Modern')
 ON CONFLICT (slug) DO NOTHING;
+
+-- Provide sample 3D models for selected hero products
+UPDATE products
+SET model_3d_url = 'https://modelviewer.dev/shared-assets/models/Chair.glb'
+WHERE slug = 'scandinavian-accent-chair';
+
+UPDATE products
+SET model_3d_url = 'https://modelviewer.dev/shared-assets/models/Cube.gltf'
+WHERE slug = 'modern-velvet-sectional-sofa';
 
 -- ============================================================================
 -- 16. DISABLE FOREIGN KEY CONSTRAINTS FOR SAMPLE DATA
