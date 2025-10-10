@@ -5,6 +5,7 @@ import { supabase, type Database } from '../lib/supabase';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { BlogCommentSection } from '../components/BlogCommentSection';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { blogPostsFallback } from '../data/blogFallback';
 
 type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
@@ -62,8 +63,21 @@ export function BlogPostPage() {
 
       if (error || !data) {
         console.error('Error fetching blog post:', error);
-        setErrorMessage('Bài viết không tồn tại hoặc đã bị xoá.');
-        setPost(null);
+
+        if (error?.message?.includes("Could not find the table 'public.blog_posts'")) {
+          const fallbackPost = blogPostsFallback.find((item) => item.slug === slug);
+
+          if (fallbackPost) {
+            setPost(fallbackPost);
+            setErrorMessage(null);
+          } else {
+            setErrorMessage('Bài viết không tồn tại hoặc đã bị xoá.');
+            setPost(null);
+          }
+        } else {
+          setErrorMessage('Bài viết không tồn tại hoặc đã bị xoá.');
+          setPost(null);
+        }
       } else {
         setPost(data);
         setErrorMessage(null);

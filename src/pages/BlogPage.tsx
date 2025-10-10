@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { supabase, type Database } from '../lib/supabase';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { blogPostsFallback } from '../data/blogFallback';
 
 type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
@@ -46,8 +47,19 @@ export function BlogPage() {
 
       if (error) {
         console.error('Error fetching blog posts:', error);
-        setErrorMessage('Không thể tải danh sách bài viết. Vui lòng thử lại sau.');
-        setPosts([]);
+
+        if (error.message?.includes("Could not find the table 'public.blog_posts'")) {
+          setErrorMessage(null);
+          setPosts(
+            [...blogPostsFallback].sort((a, b) =>
+              new Date(b.published_at || b.created_at).getTime() -
+              new Date(a.published_at || a.created_at).getTime(),
+            ),
+          );
+        } else {
+          setErrorMessage('Không thể tải danh sách bài viết. Vui lòng thử lại sau.');
+          setPosts([]);
+        }
       } else {
         setErrorMessage(null);
         setPosts(data ?? []);

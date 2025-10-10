@@ -10,6 +10,7 @@ interface UserProfile {
   full_name: string;
   phone: string;
   avatar_url: string;
+  address?: string;
 }
 
 export function ProfilePage() {
@@ -47,6 +48,16 @@ export function ProfilePage() {
     if (!user) return;
 
     setLoading(true);
+    const metadataFullName =
+      typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim().length > 0
+        ? user.user_metadata.full_name.trim()
+        : typeof user.user_metadata?.name === 'string' && user.user_metadata.name.trim().length > 0
+          ? user.user_metadata.name.trim()
+          : '';
+    const metadataAvatar =
+      typeof user.user_metadata?.avatar_url === 'string' && user.user_metadata.avatar_url.trim().length > 0
+        ? user.user_metadata.avatar_url
+        : '';
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -57,14 +68,18 @@ export function ProfilePage() {
       if (error && error.code !== 'PGRST116') throw error;
 
       if (data) {
-        setProfile(data);
+        setProfile({
+          ...data,
+          full_name: data.full_name || metadataFullName,
+          avatar_url: data.avatar_url || metadataAvatar,
+        });
         setAddress(data.address || '');
       } else {
         setProfile({
           id: user.id,
-          full_name: '',
+          full_name: metadataFullName,
           phone: '',
-          avatar_url: '',
+          avatar_url: metadataAvatar,
         });
       }
 
@@ -200,6 +215,14 @@ export function ProfilePage() {
     );
   }
 
+  const displayName =
+    profile.full_name ||
+    (typeof user?.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim().length > 0
+      ? user.user_metadata.full_name.trim()
+      : typeof user?.user_metadata?.name === 'string' && user.user_metadata.name.trim().length > 0
+        ? user.user_metadata.name.trim()
+        : user?.email?.split('@')[0] || '');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -225,7 +248,7 @@ export function ProfilePage() {
                       <User className="w-12 h-12" />
                     )}
                   </div>
-                  <h2 className="text-center text-xl font-bold mb-1">{profile.full_name || 'Full Name'}</h2>
+                  <h2 className="text-center text-xl font-bold mb-1">{displayName}</h2>
                   <p className="text-center text-brand-100 text-sm">{user?.email}</p>
                 </div>
               </div>
