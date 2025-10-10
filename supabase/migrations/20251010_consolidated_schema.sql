@@ -565,6 +565,20 @@ CREATE POLICY "Room inspirations are viewable by everyone"
   TO public
   USING (true);
 
+ALTER TABLE room_inspirations
+  ADD COLUMN IF NOT EXISTS slug text,
+  ADD COLUMN IF NOT EXISTS title_i18n jsonb DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS description_i18n jsonb DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS budget text,
+  ADD COLUMN IF NOT EXISTS currency text DEFAULT 'USD',
+  ADD COLUMN IF NOT EXISTS product_slugs text[] DEFAULT ARRAY[]::text[],
+  ADD COLUMN IF NOT EXISTS product_details jsonb DEFAULT '[]'::jsonb;
+
+ALTER TABLE room_inspirations
+  ALTER COLUMN product_ids SET DEFAULT ARRAY[]::uuid[];
+
+CREATE UNIQUE INDEX IF NOT EXISTS room_inspirations_slug_unique ON room_inspirations(slug);
+
 -- ============================================================================
 -- 14. CONTACT MESSAGES TABLE
 -- ============================================================================
@@ -937,7 +951,328 @@ BEGIN
 END $product_catalog$;
 
 -- ============================================================================
--- 20. INSERT BULK PRODUCT REVIEWS
+-- 20. UPSERT CURATED ROOM INSPIRATIONS
+-- ============================================================================
+
+DELETE FROM room_inspirations;
+
+WITH inspiration_data AS (
+  SELECT * FROM (VALUES
+    (
+      'living-modern-lounge',
+      'Sunlit Modern Lounge',
+      'Phòng khách hiện đại ngập nắng',
+      'A creamy sectional anchors the lounge with a velvet accent chair, marble coffee table, and warm brass lighting for an inviting modern retreat.',
+      'Ghế sofa chữ L màu kem kết hợp ghế nhung, bàn cà phê mặt đá và đèn đồng ấm áp tạo nên không gian tiếp khách hiện đại, thư thái.',
+      'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      ARRAY['modern'],
+      'living',
+      'under-5000',
+      'USD',
+      ARRAY['living-room-modern-signature-1', 'living-room-modern-signature-11', 'living-room-modern-signature-21', 'living-room-modern-signature-31'],
+      jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'living-room-modern-signature-1',
+          'fallback_name', jsonb_build_object('en', 'Harper Sectional Sofa', 'vi', 'Sofa góc Harper'),
+          'fallback_price', 2150,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'living-room-modern-signature-11',
+          'fallback_name', jsonb_build_object('en', 'Marble Orbit Coffee Table', 'vi', 'Bàn cà phê Marble Orbit'),
+          'fallback_price', 780,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'living-room-modern-signature-21',
+          'fallback_name', jsonb_build_object('en', 'Atlas Arc Floor Lamp', 'vi', 'Đèn sàn Atlas Arc'),
+          'fallback_price', 390,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'living-room-modern-signature-31',
+          'fallback_name', jsonb_build_object('en', 'Tonal Wool Rug 8x10', 'vi', 'Thảm len Tonal 8x10'),
+          'fallback_price', 960,
+          'currency', 'USD'
+        )
+      ),
+      true
+    ),
+    (
+      'bedroom-scandi-hideaway',
+      'Scandinavian Calm Bedroom',
+      'Phòng ngủ phong cách Bắc Âu',
+      'Layered oak tones, breathable linen bedding, and airy glass lighting make this bedroom a serene Scandinavian hideaway.',
+      'Sắc gỗ sồi, chăn ga vải lanh thoáng mát và đèn thủy tinh nhẹ nhàng mang đến phòng ngủ Bắc Âu yên bình.',
+      'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      ARRAY['scandinavian'],
+      'bedroom',
+      'under-3000',
+      'USD',
+      ARRAY['bedroom-scandinavian-signature-4', 'bedroom-minimalist-signature-3', 'bedroom-contemporary-signature-2', 'bedroom-luxury-signature-10'],
+      jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'bedroom-scandinavian-signature-4',
+          'fallback_name', jsonb_build_object('en', 'Nordic Oak Platform Bed (Queen)', 'vi', 'Giường bệt gỗ sồi Nordic (Queen)'),
+          'fallback_price', 1290,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'bedroom-minimalist-signature-3',
+          'fallback_name', jsonb_build_object('en', 'Linen Bedding Set', 'vi', 'Bộ ga giường vải lanh'),
+          'fallback_price', 360,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'bedroom-contemporary-signature-2',
+          'fallback_name', jsonb_build_object('en', 'Haze Glass Nightstands (Set of 2)', 'vi', 'Tab đầu giường kính Haze (Bộ 2 chiếc)'),
+          'fallback_price', 540,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'bedroom-luxury-signature-10',
+          'fallback_name', jsonb_build_object('en', 'Softloom Area Rug', 'vi', 'Thảm Softloom'),
+          'fallback_price', 350,
+          'currency', 'USD'
+        )
+      ),
+      true
+    ),
+    (
+      'dining-industrial-loft',
+      'Industrial Loft Dining',
+      'Phòng ăn phong cách loft công nghiệp',
+      'A live-edge dining table, leather and metal seating, and a copper statement chandelier capture an authentic loft mood.',
+      'Bàn ăn gỗ nguyên tấm, ghế da kết hợp kim loại và đèn chùm đồng tạo nên sắc thái loft đậm chất công nghiệp.',
+      'https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      ARRAY['industrial'],
+      'dining',
+      'under-4000',
+      'USD',
+      ARRAY['dining-industrial-signature-5', 'dining-contemporary-signature-2', 'dining-luxury-signature-10'],
+      jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'dining-industrial-signature-5',
+          'fallback_name', jsonb_build_object('en', 'Forge Live-Edge Dining Table', 'vi', 'Bàn ăn Forge mép tự nhiên'),
+          'fallback_price', 2150,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'dining-contemporary-signature-2',
+          'fallback_name', jsonb_build_object('en', 'Set of 6 Rivet Leather Chairs', 'vi', 'Bộ 6 ghế da Rivet'),
+          'fallback_price', 1140,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'dining-luxury-signature-10',
+          'fallback_name', jsonb_build_object('en', 'Copper Cascade Chandelier', 'vi', 'Đèn chùm Copper Cascade'),
+          'fallback_price', 490,
+          'currency', 'USD'
+        )
+      ),
+      false
+    ),
+    (
+      'office-modern-suite',
+      'Modern Home Office Suite',
+      'Góc làm việc hiện đại tại nhà',
+      'A walnut L-desk, ergonomic seating, and modular storage deliver a streamlined work-from-home command center.',
+      'Bàn chữ L gỗ óc chó, ghế công thái học và tủ lưu trữ mô-đun tạo nên trung tâm làm việc tại nhà gọn gàng.',
+      'https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      ARRAY['modern'],
+      'office',
+      'under-3500',
+      'USD',
+      ARRAY['office-modern-signature-1', 'office-transitional-signature-7', 'office-contemporary-signature-2', 'office-minimalist-signature-3'],
+      jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'office-modern-signature-1',
+          'fallback_name', jsonb_build_object('en', 'Walnut Executive Desk', 'vi', 'Bàn làm việc gỗ óc chó'),
+          'fallback_price', 1450,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'office-transitional-signature-7',
+          'fallback_name', jsonb_build_object('en', 'ErgoFlex Leather Chair', 'vi', 'Ghế da ErgoFlex'),
+          'fallback_price', 620,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'office-contemporary-signature-2',
+          'fallback_name', jsonb_build_object('en', 'Modular Wall Storage', 'vi', 'Tủ lưu trữ treo tường mô-đun'),
+          'fallback_price', 890,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'office-minimalist-signature-3',
+          'fallback_name', jsonb_build_object('en', 'Linear Task Lighting', 'vi', 'Đèn làm việc Linear'),
+          'fallback_price', 320,
+          'currency', 'USD'
+        )
+      ),
+      false
+    ),
+    (
+      'studio-compact-haven',
+      'Compact Studio Haven',
+      'Căn hộ studio tiện nghi',
+      'Multifunctional pieces keep the studio flexible and clutter-free, from a sleeper sofa to folding dining set.',
+      'Nội thất đa năng giúp căn studio linh hoạt và gọn gàng, từ sofa giường đến bộ bàn ăn gấp gọn.',
+      'https://images.pexels.com/photos/276551/pexels-photo-276551.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      ARRAY['minimalist'],
+      'studio',
+      'under-2500',
+      'USD',
+      ARRAY['living-room-minimalist-signature-3', 'dining-transitional-signature-7', 'living-room-bohemian-signature-8', 'living-room-coastal-signature-9'],
+      jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'living-room-minimalist-signature-3',
+          'fallback_name', jsonb_build_object('en', 'Convertible Sofa Bed', 'vi', 'Sofa giường đa năng'),
+          'fallback_price', 940,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'dining-transitional-signature-7',
+          'fallback_name', jsonb_build_object('en', 'Foldaway Dining Set', 'vi', 'Bộ bàn ăn gấp gọn'),
+          'fallback_price', 520,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'living-room-bohemian-signature-8',
+          'fallback_name', jsonb_build_object('en', 'Wall-Mounted Shelving System', 'vi', 'Kệ treo tường đa năng'),
+          'fallback_price', 390,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'living-room-coastal-signature-9',
+          'fallback_name', jsonb_build_object('en', 'Soft Glow Pendant', 'vi', 'Đèn thả Soft Glow'),
+          'fallback_price', 330,
+          'currency', 'USD'
+        )
+      ),
+      false
+    ),
+    (
+      'outdoor-coastal-retreat',
+      'Coastal Outdoor Retreat',
+      'Góc thư giãn ngoài trời phong cách biển',
+      'Water-resistant lounge seating, textured rugs, and woven lanterns bring a breezy coastal vibe outside.',
+      'Ghế lounge chống thấm, thảm dệt và lồng đèn mây mang hơi thở biển cả ra không gian ngoài trời.',
+      'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      ARRAY['boho'],
+      'outdoor',
+      'under-4500',
+      'USD',
+      ARRAY['outdoor-coastal-signature-9', 'outdoor-bohemian-signature-8', 'outdoor-rustic-signature-6', 'outdoor-transitional-signature-7', 'outdoor-modern-signature-1'],
+      jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'outdoor-coastal-signature-9',
+          'fallback_name', jsonb_build_object('en', 'Driftwood Outdoor Sofa', 'vi', 'Sofa ngoài trời Driftwood'),
+          'fallback_price', 1980,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'outdoor-bohemian-signature-8',
+          'fallback_name', jsonb_build_object('en', 'All-Weather Lounge Chairs (Set of 2)', 'vi', 'Bộ 2 ghế lounge mọi thời tiết'),
+          'fallback_price', 1080,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'outdoor-rustic-signature-6',
+          'fallback_name', jsonb_build_object('en', 'Braided Outdoor Rug', 'vi', 'Thảm ngoài trời Braided'),
+          'fallback_price', 420,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'outdoor-transitional-signature-7',
+          'fallback_name', jsonb_build_object('en', 'Rattan Lantern Trio', 'vi', 'Bộ ba đèn mây'),
+          'fallback_price', 340,
+          'currency', 'USD'
+        ),
+        jsonb_build_object(
+          'slug', 'outdoor-modern-signature-1',
+          'fallback_name', jsonb_build_object('en', 'Acacia Coffee Table', 'vi', 'Bàn cà phê gỗ keo'),
+          'fallback_price', 500,
+          'currency', 'USD'
+        )
+      ),
+      false
+    )
+  ) AS v(
+    slug,
+    title_en,
+    title_vi,
+    description_en,
+    description_vi,
+    image_url,
+    style_tags,
+    room_type,
+    budget,
+    currency,
+    product_slugs,
+    product_details,
+    is_featured
+  )
+)
+INSERT INTO room_inspirations (
+  slug,
+  title,
+  description,
+  image_url,
+  style_tags,
+  room_type,
+  product_slugs,
+  product_ids,
+  is_featured,
+  title_i18n,
+  description_i18n,
+  budget,
+  currency,
+  product_details,
+  created_at
+)
+SELECT
+  data.slug,
+  data.title_en,
+  data.description_en,
+  data.image_url,
+  data.style_tags,
+  data.room_type,
+  data.product_slugs,
+  COALESCE(
+    (
+      SELECT ARRAY_AGG(p.id ORDER BY array_position(data.product_slugs, p.slug))
+      FROM products p
+      WHERE p.slug = ANY(data.product_slugs)
+    ),
+    ARRAY[]::uuid[]
+  ),
+  data.is_featured,
+  jsonb_build_object('en', data.title_en, 'vi', data.title_vi),
+  jsonb_build_object('en', data.description_en, 'vi', data.description_vi),
+  data.budget,
+  data.currency,
+  data.product_details,
+  now()
+FROM inspiration_data AS data
+ON CONFLICT (slug) DO UPDATE
+SET
+  title = EXCLUDED.title,
+  description = EXCLUDED.description,
+  image_url = EXCLUDED.image_url,
+  style_tags = EXCLUDED.style_tags,
+  room_type = EXCLUDED.room_type,
+  product_slugs = EXCLUDED.product_slugs,
+  product_ids = EXCLUDED.product_ids,
+  is_featured = EXCLUDED.is_featured,
+  title_i18n = EXCLUDED.title_i18n,
+  description_i18n = EXCLUDED.description_i18n,
+  budget = EXCLUDED.budget,
+  currency = EXCLUDED.currency,
+  product_details = EXCLUDED.product_details;
+
+-- ============================================================================
+-- 21. INSERT BULK PRODUCT REVIEWS
 -- ============================================================================
 
 DO $product_reviews$
@@ -1014,7 +1349,7 @@ BEGIN
 END $product_reviews$;
 
 -- ============================================================================
--- 21. INSERT MULTI-LANGUAGE BLOG POSTS
+-- 22. INSERT MULTI-LANGUAGE BLOG POSTS
 -- ============================================================================
 
 DELETE FROM comments;
@@ -1085,7 +1420,7 @@ Combine statement pieces with everyday essentials to strike the right balance fo
 FROM series;
 
 -- ============================================================================
--- 22. INSERT SAMPLE BLOG COMMENTS
+-- 23. INSERT SAMPLE BLOG COMMENTS
 -- ============================================================================
 
 INSERT INTO comments (id, post_id, name, email, content, is_approved, created_at)
