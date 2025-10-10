@@ -32,6 +32,18 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage').then(m => ({ default: m.FavoritesPage })));
 const OrdersPage = lazy(() => import('./pages/OrdersPage').then(m => ({ default: m.OrdersPage })));
 const PaymentInstructionsPage = lazy(() => import('./pages/PaymentInstructionsPage').then(m => ({ default: m.PaymentInstructionsPage })));
+const ShippingReturnsPage = lazy(() => import('./pages/ShippingReturnsPage').then(m => ({ default: m.ShippingReturnsPage })));
+const AssemblyServicesPage = lazy(() => import('./pages/AssemblyServicesPage').then(m => ({ default: m.AssemblyServicesPage })));
+const TrackOrderPage = lazy(() => import('./pages/TrackOrderPage').then(m => ({ default: m.TrackOrderPage })));
+const FAQPage = lazy(() => import('./pages/FAQPage').then(m => ({ default: m.FAQPage })));
+const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage').then(m => ({ default: m.SizeGuidePage })));
+const DesignInspirationPage = lazy(() => import('./pages/DesignInspirationPage').then(m => ({ default: m.DesignInspirationPage })));
+const VirtualShowroomPage = lazy(() => import('./pages/VirtualShowroomPage').then(m => ({ default: m.VirtualShowroomPage })));
+const DesignServicesPage = lazy(() => import('./pages/DesignServicesPage').then(m => ({ default: m.DesignServicesPage })));
+const CareersPage = lazy(() => import('./pages/CareersPage').then(m => ({ default: m.CareersPage })));
+const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
+const CookiePolicyPage = lazy(() => import('./pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })));
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -140,6 +152,18 @@ function AppContent({ cartOpen, setCartOpen }: { cartOpen: boolean; setCartOpen:
               <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/payment-instructions/:orderId" element={<PaymentInstructionsPage />} />
+              <Route path="/shipping-returns" element={<ShippingReturnsPage />} />
+              <Route path="/assembly-services" element={<AssemblyServicesPage />} />
+              <Route path="/track-order" element={<TrackOrderPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/size-guide" element={<SizeGuidePage />} />
+              <Route path="/design-inspiration" element={<DesignInspirationPage />} />
+              <Route path="/virtual-showroom" element={<VirtualShowroomPage />} />
+              <Route path="/design-services" element={<DesignServicesPage />} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/cookie-policy" element={<CookiePolicyPage />} />
             </Routes>
           </Suspense>
         </main>
