@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-
 import { toast } from 'react-toastify';
 import type { LucideIcon } from 'lucide-react';
 import {
+  BarChart3,
   Boxes,
   ChevronLeft,
   ChevronRight,
@@ -28,6 +29,7 @@ import {
   X,
   Briefcase,
 } from 'lucide-react';
+import AnalyticsDashboard from './admin/AnalyticsDashboard';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -214,6 +216,14 @@ function AdminPanelPage() {
         icon: LayoutDashboard,
         path: 'dashboard',
         element: <AdminDashboard />,
+      },
+      {
+        key: 'analytics',
+        label: 'Thống kê & báo cáo',
+        description: 'Phân tích doanh thu, đơn hàng và nội dung theo thời gian.',
+        icon: BarChart3,
+        path: 'analytics',
+        element: <AnalyticsDashboard />,
       },
       {
         key: 'customers',

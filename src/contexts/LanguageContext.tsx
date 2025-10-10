@@ -302,6 +302,126 @@ const defaultDictionary: TranslationDictionary = {
   'blog.noPostsDescription': {
     en: 'We are curating standout stories for you. Please check back soon!',
     vi: 'Chúng tôi đang tuyển chọn những câu chuyện nổi bật dành cho bạn. Hãy quay lại sau nhé!'
+  },
+  'admin.analytics.title': {
+    en: 'Analytics & reporting',
+    vi: 'Thống kê & báo cáo'
+  },
+  'admin.analytics.subtitle': {
+    en: 'Track performance over time and export professional reports instantly.',
+    vi: 'Theo dõi hiệu suất theo thời gian và xuất báo cáo chuyên nghiệp ngay lập tức.'
+  },
+  'admin.analytics.primary': {
+    en: 'Primary range',
+    vi: 'Khoảng thời gian'
+  },
+  'admin.analytics.compare': {
+    en: 'Comparison',
+    vi: 'So sánh'
+  },
+  'admin.analytics.enableCompare': {
+    en: 'Enable comparison',
+    vi: 'Bật so sánh'
+  },
+  'admin.analytics.compareHint': {
+    en: 'Select to compare against a different range.',
+    vi: 'Chọn để so sánh với một khoảng thời gian khác.'
+  },
+  'admin.analytics.day': {
+    en: 'Day',
+    vi: 'Ngày'
+  },
+  'admin.analytics.month': {
+    en: 'Month',
+    vi: 'Tháng'
+  },
+  'admin.analytics.year': {
+    en: 'Year',
+    vi: 'Năm'
+  },
+  'admin.analytics.today': {
+    en: 'Latest',
+    vi: 'Mới nhất'
+  },
+  'admin.analytics.totalRevenue': {
+    en: 'Total revenue',
+    vi: 'Tổng doanh thu'
+  },
+  'admin.analytics.totalOrders': {
+    en: 'Total orders',
+    vi: 'Số lượng đơn hàng'
+  },
+  'admin.analytics.completed': {
+    en: 'Completed',
+    vi: 'Hoàn thành'
+  },
+  'admin.analytics.processing': {
+    en: 'Processing',
+    vi: 'Đang xử lý'
+  },
+  'admin.analytics.cancelled': {
+    en: 'Cancelled',
+    vi: 'Đã hủy'
+  },
+  'admin.analytics.newCustomers': {
+    en: 'New customers',
+    vi: 'Khách hàng mới'
+  },
+  'admin.analytics.averageOrderValue': {
+    en: 'Average order value',
+    vi: 'Giá trị đơn hàng TB'
+  },
+  'admin.analytics.revenueTrendTitle': {
+    en: 'Revenue over time',
+    vi: 'Doanh thu theo thời gian'
+  },
+  'admin.analytics.revenueTrendSubtitle': {
+    en: 'Monitor revenue and orders for the selected period.',
+    vi: 'Theo dõi doanh thu và đơn hàng trong giai đoạn đã chọn.'
+  },
+  'admin.analytics.statusBreakdownTitle': {
+    en: 'Order status breakdown',
+    vi: 'Trạng thái đơn hàng'
+  },
+  'admin.analytics.statusBreakdownSubtitle': {
+    en: 'Distribution of orders by fulfillment status.',
+    vi: 'Tỷ trọng đơn hàng theo trạng thái xử lý.'
+  },
+  'admin.analytics.bestSellers': {
+    en: 'Top selling products',
+    vi: 'Sản phẩm bán chạy'
+  },
+  'admin.analytics.noBestSellers': {
+    en: 'No sales data available yet',
+    vi: 'Chưa có dữ liệu bán hàng'
+  },
+  'admin.analytics.unitsSold': {
+    en: 'Units sold',
+    vi: 'Số lượng bán'
+  },
+  'admin.analytics.contentUpdates': {
+    en: 'Content activity',
+    vi: 'Hoạt động nội dung'
+  },
+  'admin.analytics.blogPosts': {
+    en: 'New blog posts',
+    vi: 'Bài viết mới'
+  },
+  'admin.analytics.contactMessages': {
+    en: 'New contact messages',
+    vi: 'Liên hệ mới'
+  },
+  'admin.analytics.designRequests': {
+    en: 'Design requests',
+    vi: 'Yêu cầu thiết kế'
+  },
+  'admin.analytics.careerApplications': {
+    en: 'New applications',
+    vi: 'Ứng tuyển mới'
+  },
+  'admin.analytics.comparisonSummary': {
+    en: 'Quick comparison',
+    vi: 'So sánh nhanh'
   }
 };
 
