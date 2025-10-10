@@ -74,13 +74,28 @@ CREATE POLICY "Admins manage profiles"
   ON profiles
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 
 -- Lưu ý: khối DO $$ tự động tạo tài khoản quản trị đã được loại bỏ.
 -- Quản trị viên cần được tạo và quản lý thủ công thông qua Supabase.
 -- 0. HÀM HỖ TRỢ
+
+CREATE OR REPLACE FUNCTION auth_is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT COALESCE(
+    (auth.jwt() -> 'app_metadata') ->> 'role',
+    (auth.jwt() -> 'user_metadata') ->> 'role',
+    auth.jwt() ->> 'role',
+    ''
+  ) = 'admin';
+$$;
+
+
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION generate_order_number()
@@ -137,8 +152,8 @@ CREATE POLICY "Admins manage categories"
   ON categories
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 3. PRODUCTS TABLE
@@ -193,8 +208,8 @@ CREATE POLICY "Admins manage products"
   ON products
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 4. PRODUCT VARIANTS TABLE
@@ -226,8 +241,8 @@ CREATE POLICY "Admins manage product variants"
   ON product_variants
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 5. ADDRESSES TABLE
@@ -315,8 +330,8 @@ CREATE POLICY "Admins manage vouchers"
   ON vouchers
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 7. ORDERS TABLE
@@ -383,8 +398,8 @@ CREATE POLICY "Admins manage orders"
   ON orders
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 8. ORDER ITEMS TABLE
@@ -442,8 +457,8 @@ CREATE POLICY "Admins manage order items"
   ON order_items
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 9. VOUCHER USAGE TABLE
@@ -603,8 +618,8 @@ CREATE POLICY "Admins manage reviews"
   ON reviews
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 CREATE POLICY "Users can insert own reviews"
   ON reviews FOR INSERT
@@ -713,8 +728,8 @@ CREATE POLICY "Admins manage contact messages"
   ON contact_messages
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 14B. DESIGN SERVICE REQUESTS TABLE
@@ -770,8 +785,8 @@ CREATE POLICY "Admins manage design requests"
   ON design_service_requests
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 14C. CAREER APPLICATIONS TABLE
@@ -827,8 +842,8 @@ CREATE POLICY "Admins manage career applications"
   ON career_applications
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 15. BLOG POSTS TABLE
@@ -867,8 +882,8 @@ CREATE POLICY "Admins manage blog posts"
   ON blog_posts
   FOR ALL
   TO authenticated
-  USING (coalesce(auth.jwt() ->> 'role', '') = 'admin')
-  WITH CHECK (coalesce(auth.jwt() ->> 'role', '') = 'admin');
+  USING (auth_is_admin())
+  WITH CHECK (auth_is_admin());
 
 -- ============================================================================
 -- 16. BLOG COMMENTS TABLE
