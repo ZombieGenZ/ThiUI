@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Menu, X, Moon, Sun, Languages } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Menu, X, Languages } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
@@ -17,7 +16,6 @@ export function Header({ onCartOpen }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t, translate } = useLanguage();
 
   const productCategories = [
@@ -145,15 +143,6 @@ export function Header({ onCartOpen }: HeaderProps) {
               >
                 <Languages className="w-4 h-4" />
                 {language === 'en' ? 'EN' : 'VI'}
-              </button>
-
-              <button
-                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale"
-                onClick={toggleTheme}
-                type="button"
-                aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
-              >
-                {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-300" /> : <Moon className="w-5 h-5 text-neutral-600" />}
               </button>
 
               <button
@@ -378,16 +367,6 @@ export function Header({ onCartOpen }: HeaderProps) {
                 >
                   <Languages className="w-4 h-4" />
                   {language === 'en' ? 'EN' : 'VI'}
-                </button>
-                <button
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full smooth-transition hover-scale"
-                  onClick={() => {
-                    toggleTheme();
-                    setMobileMenuOpen(false);
-                  }}
-                  aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
-                >
-                  {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-300" /> : <Moon className="w-5 h-5 text-neutral-600" />}
                 </button>
               </div>
             </nav>

@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -83,29 +82,24 @@ function App() {
   }, [cartOpen]);
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <Router>
-                {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+    <LanguageProvider>
+      <AuthProvider>
+        <CartProvider>
+          <FavoritesProvider>
+            <Router>
+              {loading && <LoadingScreen onLoadComplete={handleLoadComplete} />}
 
-                {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
-                <ThemedToastContainer />
-              </Router>
-            </FavoritesProvider>
-          </CartProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+              {!loading && <AppContent cartOpen={cartOpen} setCartOpen={setCartOpen} />}
+              <ThemedToastContainer />
+            </Router>
+          </FavoritesProvider>
+        </CartProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 
 function ThemedToastContainer() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   return (
     <ToastContainer
       position="top-right"
@@ -117,14 +111,10 @@ function ThemedToastContainer() {
       pauseOnFocusLoss
       draggable
       pauseOnHover
-      theme={isDark ? 'dark' : 'light'}
+      theme="light"
       style={{ zIndex: 9999 }}
-      toastClassName={
-        isDark
-          ? 'bg-neutral-900 text-neutral-100 rounded-xl shadow-strong border border-neutral-700'
-          : 'bg-white rounded-xl shadow-strong border border-neutral-200'
-      }
-      bodyClassName={isDark ? 'text-sm font-medium text-neutral-100' : 'text-sm font-medium text-neutral-900'}
+      toastClassName="bg-white rounded-xl shadow-strong border border-neutral-200"
+      bodyClassName="text-sm font-medium text-neutral-900"
       progressClassName="bg-gradient-to-r from-brand-600 to-brand-700"
     />
   );
