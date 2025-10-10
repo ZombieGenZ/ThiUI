@@ -1,5 +1,5 @@
 /*
-  # SCHEMA TỔNG HỢP: Furniture Store Database Schema (20251010_fixed_v4)
+  # SCHEMA TỔNG HỢP: Furniture Store Database Schema (20251010_fixed_v5)
 
   ## Mục đích
   File này hợp nhất tất cả các file migration đã tạo trước đó thành một script SQL duy nhất,
@@ -15,15 +15,15 @@
   7.  Dữ liệu mẫu cho vouchers và products.
 
   ## CÁC LỖI ĐÃ FIX
-  1.  **Fixed "column reference "slug" is ambiguous"** (Đã đổi tên biến PL/pgSQL 'slug' thành 'product_slug').
-  2.  **Fixed "function gen_salt(unknown) does not exist"** (Đã chỉ định rõ schema 'extensions' cho các hàm pgcrypto).
-  3.  **Fixed "column "instance_id" is of type uuid but expression is of type text"** (Đã ép kiểu '00000000-0000-0000-0000-000000000000' thành UUID).
-  4.  **Fixed "relation "profiles" does not exist"** (Đã di chuyển phần tạo bảng `profiles` lên trước khối `DO $$`).
-  5.  **FIX LỖI MỚI: "relation "products_to_remove" does not exist"** (Đã hợp nhất các câu lệnh DELETE sử dụng CTE `products_to_remove` thành một khối CTE duy nhất).
+  1.  **FIX MỚI (42883): function auth_is_admin() does not exist** (Đã di chuyển định nghĩa hàm auth_is_admin() lên trước các CREATE POLICY sử dụng nó).
+  2.  Fixed "column reference "slug" is ambiguous" (Đã đổi tên biến PL/pgSQL 'slug' thành 'product_slug').
+  3.  Fixed "function gen_salt(unknown) does not exist" (Đã chỉ định rõ schema 'extensions' cho các hàm pgcrypto).
+  4.  Fixed "column "instance_id" is of type uuid but expression is of type text" (Đã ép kiểu '00000000-0000-0000-0000-000000000000' thành UUID).
+  5.  Fixed "relation "profiles" does not exist" (Đã di chuyển phần tạo bảng `profiles` lên trước khối `DO $$`).
+  6.  FIX LỖI MỚI: "relation "products_to_remove" does not exist" (Đã hợp nhất các câu lệnh DELETE sử dụng CTE `products_to_remove` thành một khối CTE duy nhất).
 */
 
 -- Đảm bảo các tiện ích mật mã cần thiết luôn khả dụng
--- Các hàm này (crypt, gen_salt) thường được truy cập qua schema 'extensions' trong Supabase.
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 -- Đảm bảo các hàm này có thể được gọi mà không cần chỉ định schema
 GRANT EXECUTE ON FUNCTION extensions.gen_salt(text) TO PUBLIC;
@@ -31,7 +31,26 @@ GRANT EXECUTE ON FUNCTION extensions.crypt(text, text) TO PUBLIC;
 
 
 -- ============================================================================
--- 1. PROFILES TABLE (ĐÃ DI CHUYỂN LÊN TRƯỚC KHỐI DO $$)
+-- 0. HÀM HỖ TRỢ (ĐÃ DI CHUYỂN LÊN ĐẦU ĐỂ KHẮC PHỤC LỖI 42883)
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION auth_is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  -- Hàm kiểm tra xem người dùng hiện tại có vai trò 'admin' trong JWT hay không.
+  SELECT COALESCE(
+    (auth.jwt() -> 'app_metadata') ->> 'role',
+    (auth.jwt() -> 'user_metadata') ->> 'role',
+    auth.jwt() ->> 'role',
+    ''
+  ) = 'admin';
+$$;
+
+
+-- ============================================================================
+-- 1. PROFILES TABLE
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS profiles (
@@ -51,6 +70,7 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Admins manage profiles" ON profiles; -- Lệnh DROP POLICY không cần sửa
 
 CREATE POLICY "Users can view own profile"
   ON profiles FOR SELECT
@@ -68,32 +88,13 @@ CREATE POLICY "Users can update own profile"
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
-DROP POLICY IF EXISTS "Admins manage profiles" ON profiles;
-
+-- Bây giờ hàm auth_is_admin() đã tồn tại nên lệnh này sẽ chạy thành công
 CREATE POLICY "Admins manage profiles"
   ON profiles
   FOR ALL
   TO authenticated
   USING (auth_is_admin())
   WITH CHECK (auth_is_admin());
-
-
--- Lưu ý: khối DO $$ tự động tạo tài khoản quản trị đã được loại bỏ.
--- Quản trị viên cần được tạo và quản lý thủ công thông qua Supabase.
--- 0. HÀM HỖ TRỢ
-
-CREATE OR REPLACE FUNCTION auth_is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT COALESCE(
-    (auth.jwt() -> 'app_metadata') ->> 'role',
-    (auth.jwt() -> 'user_metadata') ->> 'role',
-    auth.jwt() ->> 'role',
-    ''
-  ) = 'admin';
-$$;
 
 
 -- ============================================================================
