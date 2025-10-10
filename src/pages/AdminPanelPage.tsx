@@ -1,25 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import type { LucideIcon } from 'lucide-react';
 import {
-  BarChart3,
   Boxes,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   Edit,
   Eye,
+  Home as HomeIcon,
+  Inbox,
   LayoutDashboard,
   Layers,
   Loader2,
   LogOut,
+  Newspaper,
+  Palette,
   Plus,
   RefreshCw,
-  ShieldAlert,
   Search,
+  ShieldAlert,
+  Ticket,
   Trash2,
   Users as UsersIcon,
   X,
+  Briefcase,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -62,12 +68,13 @@ interface ColumnConfig {
   render?: (value: any, row: Record<string, any>) => JSX.Element | string | number | null;
 }
 
-interface AdminNavItem {
+interface AdminRouteConfig {
   key: string;
   label: string;
   description: string;
   icon: LucideIcon;
-  sections: { key: string; label: string; component: JSX.Element }[];
+  path: string;
+  element: JSX.Element;
 }
 
 interface CrudManagerProps {
@@ -85,6 +92,7 @@ interface CrudManagerProps {
   disableCreate?: boolean;
   disableDelete?: boolean;
   pageSize?: number;
+  readOnly?: boolean;
 }
 
 interface ProductVariant {
@@ -192,67 +200,104 @@ function AdminPanelPage() {
   const { user, loading, isAdmin, role, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const navigation = useMemo<AdminNavItem[]>(
+  const adminRoutes = useMemo<AdminRouteConfig[]>(
     () => [
       {
         key: 'dashboard',
         label: 'Dashboard',
         description: 'Tổng quan hoạt động và các số liệu quan trọng.',
         icon: LayoutDashboard,
-        sections: [{ key: 'overview', label: 'Tổng quan', component: <AdminDashboard /> }],
+        path: 'dashboard',
+        element: <AdminDashboard />,
       },
       {
-        key: 'users',
-        label: 'Quản lý người dùng',
-        description: 'Theo dõi khách hàng và các yêu cầu hỗ trợ.',
+        key: 'customers',
+        label: 'Tài khoản khách hàng',
+        description: 'Theo dõi thông tin tài khoản khách hàng.',
         icon: UsersIcon,
-        sections: [
-          { key: 'profiles', label: 'Tài khoản khách hàng', component: <ProfilesManager /> },
-          { key: 'contact', label: 'Liên hệ & phản hồi', component: <ContactManager /> },
-          { key: 'design', label: 'Yêu cầu thiết kế', component: <DesignRequestsManager /> },
-          { key: 'careers', label: 'Ứng tuyển', component: <CareerApplicationsManager /> },
-        ],
+        path: 'customers',
+        element: <ProfilesManager readOnly />,
+      },
+      {
+        key: 'contacts',
+        label: 'Liên hệ & phản hồi',
+        description: 'Xem các yêu cầu hỗ trợ và phản hồi từ khách hàng.',
+        icon: Inbox,
+        path: 'contacts',
+        element: <ContactManager readOnly />,
+      },
+      {
+        key: 'design-requests',
+        label: 'Yêu cầu thiết kế',
+        description: 'Tổng hợp các yêu cầu tư vấn thiết kế nội thất.',
+        icon: Palette,
+        path: 'design-requests',
+        element: <DesignRequestsManager readOnly />,
+      },
+      {
+        key: 'applications',
+        label: 'Ứng tuyển',
+        description: 'Thông tin ứng viên và trạng thái tuyển dụng.',
+        icon: Briefcase,
+        path: 'applications',
+        element: <CareerApplicationsManager readOnly />,
       },
       {
         key: 'products',
-        label: 'Quản lý sản phẩm',
-        description: 'Điều chỉnh danh mục, sản phẩm và chương trình khuyến mãi.',
+        label: 'Danh sách sản phẩm',
+        description: 'Quản lý sản phẩm, giá bán và tồn kho.',
         icon: Boxes,
-        sections: [
-          { key: 'catalogue', label: 'Danh sách sản phẩm', component: <ProductsManager /> },
-          { key: 'categories', label: 'Danh mục', component: <CategoriesManager /> },
-          { key: 'vouchers', label: 'Mã khuyến mãi', component: <VouchersManager /> },
-        ],
+        path: 'products',
+        element: <ProductsManager />,
       },
       {
-        key: 'analytics',
-        label: 'Thống kê',
-        description: 'Theo dõi đơn hàng và nội dung truyền thông.',
-        icon: BarChart3,
-        sections: [
-          { key: 'orders', label: 'Đơn hàng', component: <OrdersManager /> },
-          { key: 'blog', label: 'Bài viết & tin tức', component: <BlogPostsManager /> },
-        ],
+        key: 'categories',
+        label: 'Danh mục',
+        description: 'Điều chỉnh cấu trúc danh mục sản phẩm.',
+        icon: Layers,
+        path: 'categories',
+        element: <CategoriesManager />,
+      },
+      {
+        key: 'vouchers',
+        label: 'Mã khuyến mãi',
+        description: 'Thiết lập chương trình giảm giá và ưu đãi.',
+        icon: Ticket,
+        path: 'vouchers',
+        element: <VouchersManager />,
+      },
+      {
+        key: 'orders',
+        label: 'Đơn hàng',
+        description: 'Theo dõi tiến trình xử lý và giao hàng.',
+        icon: ClipboardList,
+        path: 'orders',
+        element: <OrdersManager />,
+      },
+      {
+        key: 'blog',
+        label: 'Bài viết & tin tức',
+        description: 'Quản lý nội dung blog và tin tức.',
+        icon: Newspaper,
+        path: 'blog',
+        element: <BlogPostsManager />,
       },
     ],
     []
   );
 
-  const [activeNav, setActiveNav] = useState<string>(() => navigation[0]?.key ?? 'dashboard');
-  const [activeSection, setActiveSection] = useState<string>(() => navigation[0]?.sections[0]?.key ?? 'overview');
+  const location = useLocation();
+  const activePath = location.pathname.replace(/^\/?admin\/?/, '') || 'dashboard';
+  const activeRoute = useMemo(
+    () => adminRoutes.find(route => route.path === activePath) ?? adminRoutes[0],
+    [adminRoutes, activePath]
+  );
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
     }
   }, [loading, user, navigate]);
-
-  useEffect(() => {
-    const nav = navigation.find(item => item.key === activeNav);
-    if (nav && !nav.sections.some(section => section.key === activeSection)) {
-      setActiveSection(nav.sections[0]?.key ?? activeSection);
-    }
-  }, [activeNav, activeSection, navigation]);
 
   if (loading) {
     return (
@@ -285,8 +330,8 @@ function AdminPanelPage() {
     );
   }
 
-  const currentNav = navigation.find(item => item.key === activeNav) ?? navigation[0];
-  const currentSection = currentNav.sections.find(section => section.key === activeSection) ?? currentNav.sections[0];
+  const activeKey = activeRoute.key;
+  const currentRoute = activeRoute;
 
   const handleRefresh = () => {
     window.location.reload();
@@ -313,17 +358,14 @@ function AdminPanelPage() {
             </div>
           </div>
           <nav className="flex-1 space-y-1 px-4 py-6">
-            {navigation.map(item => {
-              const Icon = item.icon;
-              const active = item.key === activeNav;
+            {adminRoutes.map(route => {
+              const Icon = route.icon;
+              const active = route.key === activeKey;
               return (
                 <button
-                  key={item.key}
+                  key={route.key}
                   type="button"
-                  onClick={() => {
-                    setActiveNav(item.key);
-                    setActiveSection(item.sections[0]?.key ?? item.key);
-                  }}
+                  onClick={() => navigate(`/admin/${route.path}`)}
                   className={`group w-full rounded-2xl border px-4 py-3 text-left transition-all ${
                     active
                       ? 'border-brand-200 bg-gradient-to-r from-brand-500/10 via-brand-500/5 to-transparent text-brand-700 shadow-lg shadow-brand-500/10'
@@ -340,11 +382,21 @@ function AdminPanelPage() {
                     >
                       <Icon className="h-5 w-5" />
                     </span>
-                    <span className="text-sm font-semibold">{item.label}</span>
+                    <span className="text-sm font-semibold">{route.label}</span>
                   </div>
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="group mt-6 flex w-full items-center gap-3 rounded-2xl border border-transparent px-4 py-3 text-left text-neutral-500 transition-all hover:border-brand-200 hover:bg-neutral-100/80 hover:text-brand-600"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/60 text-neutral-500 group-hover:border-brand-200 group-hover:text-brand-600">
+                <HomeIcon className="h-5 w-5" />
+              </span>
+              <span className="text-sm font-semibold">Về trang chủ</span>
+            </button>
           </nav>
           <div className="px-4 pb-6">
             <button
@@ -362,8 +414,8 @@ function AdminPanelPage() {
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-[0.38em] text-brand-500">Quản trị hệ thống</span>
-                <h1 className="mt-2 text-3xl font-semibold text-neutral-900">{currentNav.label}</h1>
-                <p className="mt-2 text-sm text-neutral-500">{currentNav.description}</p>
+                <h1 className="mt-2 text-3xl font-semibold text-neutral-900">{currentRoute.label}</h1>
+                <p className="mt-2 text-sm text-neutral-500">{currentRoute.description}</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -377,52 +429,39 @@ function AdminPanelPage() {
             </div>
 
             <div className="mb-4 flex flex-wrap items-center gap-3 xl:hidden">
-              {navigation.map(item => {
-                const active = item.key === activeNav;
+              {adminRoutes.map(route => {
+                const active = route.key === activeKey;
                 return (
                   <button
-                    key={item.key}
+                    key={route.key}
                     type="button"
-                    onClick={() => {
-                      setActiveNav(item.key);
-                      setActiveSection(item.sections[0]?.key ?? item.key);
-                    }}
+                    onClick={() => navigate(`/admin/${route.path}`)}
                     className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
                       active
                         ? 'border-brand-200 bg-brand-100 text-brand-700'
                         : 'border-neutral-200 bg-white/70 text-neutral-500'
                     }`}
                   >
-                    {item.label}
+                    {route.label}
                   </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="rounded-full border border-neutral-200 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 hover:border-brand-200 hover:text-brand-600"
+              >
+                Trang chủ
+              </button>
             </div>
-
-            {currentNav.sections.length > 1 && (
-              <div className="mb-6 flex flex-wrap gap-3">
-                {currentNav.sections.map(section => {
-                  const active = section.key === activeSection;
-                  return (
-                    <button
-                      key={section.key}
-                      type="button"
-                      onClick={() => setActiveSection(section.key)}
-                      className={`rounded-2xl px-4 py-2 text-sm font-semibold transition-all ${
-                        active
-                          ? 'bg-neutral-900 text-white shadow-lg shadow-neutral-900/20'
-                          : 'border border-neutral-200 bg-white/80 text-neutral-600 hover:border-brand-200 hover:text-brand-600'
-                      }`}
-                    >
-                      {section.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
             <div className="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-xl shadow-neutral-900/5 backdrop-blur">
-              {currentSection.component}
+              <Routes>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                {adminRoutes.map(route => (
+                  <Route key={route.key} path={route.path} element={route.element} />
+                ))}
+                <Route path="*" element={<Navigate to="dashboard" replace />} />
+              </Routes>
             </div>
           </div>
         </main>
@@ -778,6 +817,7 @@ function CrudManager({
   disableCreate,
   disableDelete,
   pageSize = PAGE_SIZE,
+  readOnly = false,
 }: CrudManagerProps) {
   const [items, setItems] = useState<Record<string, any>[]>([]);
   const [count, setCount] = useState(0);
@@ -953,6 +993,8 @@ function CrudManager({
       toast.error('Unable to save your changes');
     }
   };
+  const hasActionsColumn = !readOnly || Boolean(renderActions);
+
   return (
     <>
       <div className="space-y-6">
@@ -971,7 +1013,7 @@ function CrudManager({
                 placeholder="Search records"
               />
             </div>
-            {!disableCreate && (
+            {!disableCreate && !readOnly && (
               <button
                 type="button"
                 onClick={handleOpenCreate}
@@ -996,7 +1038,9 @@ function CrudManager({
                     {column.label}
                   </th>
                 ))}
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Actions</th>
+                {hasActionsColumn && (
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
@@ -1024,27 +1068,31 @@ function CrudManager({
                         {column.render ? column.render(item[column.key], item) : (item[column.key] ?? '')}
                       </td>
                     ))}
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {renderActions?.(item, fetchItems)}
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(item)}
-                          className="inline-flex items-center gap-1 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:border-brand-300 hover:text-brand-600"
-                        >
-                          <Edit className="h-3.5 w-3.5" /> Edit
-                        </button>
-                        {!disableDelete && (
-                          <button
-                            type="button"
-                            onClick={() => requestDelete(item)}
-                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" /> Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                    {hasActionsColumn && (
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {renderActions?.(item, fetchItems)}
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(item)}
+                              className="inline-flex items-center gap-1 rounded-xl border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:border-brand-300 hover:text-brand-600"
+                            >
+                              <Edit className="h-3.5 w-3.5" /> Edit
+                            </button>
+                          )}
+                          {!readOnly && !disableDelete && (
+                            <button
+                              type="button"
+                              onClick={() => requestDelete(item)}
+                              className="inline-flex items-center gap-1 rounded-xl border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
             </tbody>
@@ -1079,8 +1127,18 @@ function CrudManager({
         </div>
 
         {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-sm">
-            <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 px-4 py-8 backdrop-blur-md"
+            onClick={event => {
+              if (event.target === event.currentTarget) {
+                handleCloseForm();
+              }
+            }}
+          >
+            <div
+              className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-neutral-200/70 bg-white shadow-2xl shadow-neutral-900/15"
+              onClick={event => event.stopPropagation()}
+            >
               <div className="flex items-center justify-between border-b border-neutral-200/70 bg-gradient-to-r from-brand-50 via-white to-white px-6 py-4">
                 <div>
                   <h3 className="text-lg font-semibold text-neutral-900">
@@ -2057,7 +2115,7 @@ function BlogPostsManager() {
     />
   );
 }
-function ContactManager() {
+function ContactManager({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <CrudManager
       title="Contact submissions"
@@ -2110,10 +2168,13 @@ function ContactManager() {
         phone: values.phone || '',
         status: values.status ?? 'pending',
       })}
+      disableCreate={readOnly}
+      disableDelete={readOnly}
+      readOnly={readOnly}
     />
   );
 }
-function DesignRequestsManager() {
+function DesignRequestsManager({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <CrudManager
       title="Design service requests"
@@ -2177,10 +2238,13 @@ function DesignRequestsManager() {
         phone: values.phone || '',
         status: values.status ?? 'pending',
       })}
+      disableCreate={readOnly}
+      disableDelete={readOnly}
+      readOnly={readOnly}
     />
   );
 }
-function CareerApplicationsManager() {
+function CareerApplicationsManager({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <CrudManager
       title="Career applications"
@@ -2246,10 +2310,13 @@ function CareerApplicationsManager() {
         expected_salary: values.expected_salary || '',
         status: values.status ?? 'received',
       })}
+      disableCreate={readOnly}
+      disableDelete={readOnly}
+      readOnly={readOnly}
     />
   );
 }
-function ProfilesManager() {
+function ProfilesManager({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <CrudManager
       title="Customer profiles"
@@ -2294,6 +2361,9 @@ function ProfilesManager() {
         ...values,
         loyalty_points: Number(values.loyalty_points ?? 0),
       })}
+      disableCreate={readOnly}
+      disableDelete={readOnly}
+      readOnly={readOnly}
     />
   );
 }

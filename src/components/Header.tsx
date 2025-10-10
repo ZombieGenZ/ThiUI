@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export function Header({ onCartOpen }: HeaderProps) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const { itemCount } = useCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -199,6 +199,14 @@ export function Header({ onCartOpen }: HeaderProps) {
                       >
                         {t('header.myOrders')}
                       </Link>
+                      {isAdmin && (
+                        <Link
+                          to="/admin/dashboard"
+                          className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
+                        >
+                          Bảng điều khiển
+                        </Link>
+                      )}
                       <button
                         onClick={() => signOut()}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
