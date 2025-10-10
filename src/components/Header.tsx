@@ -32,7 +32,7 @@ export function Header({ onCartOpen }: HeaderProps) {
   ];
 
   const resourceLinks = [
-    { name: 'Blog & Tin tức', path: '/blog' },
+    { name: 'Blog & News', path: '/blog' },
     { name: 'Shipping & Returns', path: '/shipping-returns' },
     { name: 'Track Order', path: '/track-order' },
     { name: 'FAQ', path: '/faq' },

@@ -24,31 +24,31 @@ const packages = [
     name: 'Basic Consultation',
     price: '$200',
     features: [
-      '1 giờ video call với interior designer',
-      'Gợi ý bố cục, bảng màu, style định hướng',
-      'Danh sách mua sắm sản phẩm gợi ý',
+      '1-hour video call with an interior designer',
+      'Layout suggestions, color palettes, and style direction',
+      'Curated shopping list with recommended products',
     ],
   },
   {
     name: 'Room Design Package',
     price: '$800',
     features: [
-      'Phiên tư vấn chuyên sâu',
-      '2D floor plan với kích thước chi tiết',
-      'Mood board & bảng màu',
-      'Danh sách sản phẩm kèm link mua',
-      '2 vòng chỉnh sửa',
+      'In-depth design consultation',
+      'Detailed 2D floor plan with measurements',
+      'Mood board and color story',
+      'Product list with shoppable links',
+      'Two rounds of revisions',
     ],
   },
   {
     name: 'Full Home Design',
     price: '$3,000+',
     features: [
-      'Khảo sát tại nhà',
-      'Floor plan toàn bộ không gian',
-      '3D rendering chất lượng cao',
-      'Sourcing sản phẩm và quản lý dự án',
-      'Phối hợp lắp đặt trọn gói',
+      'On-site home assessment',
+      'Comprehensive floor plans for every space',
+      'High-quality 3D renderings',
+      'Product sourcing and project management',
+      'Coordinated installation support',
     ],
   },
 ];
@@ -78,13 +78,13 @@ export function DesignServicesPage() {
   const validate = () => {
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = 'Vui lòng nhập họ và tên.';
-    if (!formData.email.trim()) newErrors.email = 'Email là bắt buộc.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Email không hợp lệ.';
-    if (!formData.phone.trim()) newErrors.phone = 'Vui lòng nhập số điện thoại.';
-    if (!formData.projectType) newErrors.projectType = 'Chọn loại dự án bạn quan tâm.';
-    if (!formData.budget) newErrors.budget = 'Chọn mức ngân sách dự kiến.';
-    if (!formData.timeline) newErrors.timeline = 'Chọn mốc thời gian mong muốn.';
+    if (!formData.name.trim()) newErrors.name = 'Please provide your full name.';
+    if (!formData.email.trim()) newErrors.email = 'Email is required.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Enter a valid email address.';
+    if (!formData.phone.trim()) newErrors.phone = 'Please enter your phone number.';
+    if (!formData.projectType) newErrors.projectType = 'Select the type of project you are interested in.';
+    if (!formData.budget) newErrors.budget = 'Choose your estimated budget.';
+    if (!formData.timeline) newErrors.timeline = 'Choose your preferred timeline.';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -129,8 +129,8 @@ export function DesignServicesPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Design Services</h1>
               <p className="text-white/80 text-lg">
-                Đội ngũ interior designer của ZShop sẽ đồng hành từ concept đến thi công, tạo nên không gian sống phản ánh cá
-                tính và nhu cầu của bạn.
+                Partner with ZShop interior designers from concept to installation to build a home that reflects your style and
+                daily routines.
               </p>
             </div>
           </div>
@@ -144,34 +144,35 @@ export function DesignServicesPage() {
               <div className="p-6 rounded-2xl border border-neutral-200 bg-white shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <Sparkles className="w-6 h-6 text-brand-600" />
-                  <h3 className="font-semibold text-lg text-neutral-900">Styling cá nhân hóa</h3>
+                  <h3 className="font-semibold text-lg text-neutral-900">Personalized Styling</h3>
                 </div>
                 <p className="text-sm text-neutral-600">
-                  Chúng tôi khám phá phong cách sống, thói quen và gu thẩm mỹ của bạn để tạo nên concept độc đáo và thực tế.
+                  We get to know your lifestyle, routines, and aesthetic preferences to develop a concept that feels uniquely
+                  yours.
                 </p>
               </div>
               <div className="p-6 rounded-2xl border border-neutral-200 bg-white shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <PenTool className="w-6 h-6 text-brand-600" />
-                  <h3 className="font-semibold text-lg text-neutral-900">Quy trình rõ ràng</h3>
+                  <h3 className="font-semibold text-lg text-neutral-900">Clear Process</h3>
                 </div>
                 <p className="text-sm text-neutral-600">
-                  Từ phác thảo ý tưởng, phát triển moodboard, floor plan, đến sourcing sản phẩm - mọi bước đều minh bạch.
+                  From sketches and mood boards to floor plans and sourcing, every milestone is transparent and documented.
                 </p>
               </div>
               <div className="p-6 rounded-2xl border border-neutral-200 bg-white shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <Video className="w-6 h-6 text-brand-600" />
-                  <h3 className="font-semibold text-lg text-neutral-900">Hỗ trợ linh hoạt</h3>
+                  <h3 className="font-semibold text-lg text-neutral-900">Flexible Support</h3>
                 </div>
                 <p className="text-sm text-neutral-600">
-                  Gặp gỡ trực tiếp tại showroom, qua video call hoặc onsite visit tùy theo nhu cầu và lịch trình của bạn.
+                  Meet in person at the showroom, over video call, or on-site depending on your needs and schedule.
                 </p>
               </div>
             </div>
 
             <div>
-              <h2 className="font-display text-3xl text-neutral-900 mb-6">Các gói dịch vụ</h2>
+              <h2 className="font-display text-3xl text-neutral-900 mb-6">Service Packages</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {packages.map((pkg) => (
                   <div key={pkg.name} className="p-6 rounded-2xl border border-neutral-200 bg-white shadow-lg">
@@ -197,13 +198,13 @@ export function DesignServicesPage() {
               <h2 className="font-display text-2xl text-neutral-900">Schedule Discovery Call</h2>
             </div>
             <p className="text-sm text-neutral-600 mb-6">
-              Điền thông tin bên dưới để chúng tôi liên hệ trong 24 giờ làm việc. Bạn có thể đính kèm hình ảnh hiện trạng ở bước
-              tiếp theo sau khi gửi form.
+              Share a few project details and our team will reach out within 24 business hours. You can attach inspiration or
+              room photos in the follow-up email after submitting.
             </p>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-neutral-700">
-                  Họ và tên
+                  Full name
                 </label>
                 <input
                   id="name"
@@ -213,7 +214,7 @@ export function DesignServicesPage() {
                   className={`mt-1 w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors ${
                     errors.name ? 'border-red-500' : 'border-neutral-300'
                   }`}
-                  placeholder="Nguyễn Thị B"
+                  placeholder="Alex Morgan"
                 />
                 {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
               </div>
@@ -237,7 +238,7 @@ export function DesignServicesPage() {
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-neutral-700">
-                    Số điện thoại
+                    Phone number
                   </label>
                   <input
                     id="phone"
@@ -255,7 +256,7 @@ export function DesignServicesPage() {
 
               <div>
                 <label htmlFor="projectType" className="block text-sm font-medium text-neutral-700">
-                  Loại dự án
+                  Project type
                 </label>
                 <select
                   id="projectType"
@@ -265,7 +266,7 @@ export function DesignServicesPage() {
                     errors.projectType ? 'border-red-500' : 'border-neutral-300'
                   }`}
                 >
-                  <option value="">Chọn dự án</option>
+                  <option value="">Select a project</option>
                   <option value="Living Room">Living Room Refresh</option>
                   <option value="Bedroom">Bedroom Retreat</option>
                   <option value="Full Home">Full Home Design</option>
@@ -278,7 +279,7 @@ export function DesignServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="budget" className="block text-sm font-medium text-neutral-700">
-                    Ngân sách dự kiến
+                    Estimated budget
                   </label>
                   <select
                     id="budget"
@@ -288,7 +289,7 @@ export function DesignServicesPage() {
                       errors.budget ? 'border-red-500' : 'border-neutral-300'
                     }`}
                   >
-                    <option value="">Chọn ngân sách</option>
+                    <option value="">Select budget</option>
                     <option value="Under $5,000">Under $5,000</option>
                     <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                     <option value="$10,000 - $25,000">$10,000 - $25,000</option>
@@ -298,7 +299,7 @@ export function DesignServicesPage() {
                 </div>
                 <div>
                   <label htmlFor="timeline" className="block text-sm font-medium text-neutral-700">
-                    Thời gian mong muốn
+                    Preferred timeline
                   </label>
                   <select
                     id="timeline"
@@ -308,11 +309,11 @@ export function DesignServicesPage() {
                       errors.timeline ? 'border-red-500' : 'border-neutral-300'
                     }`}
                   >
-                    <option value="">Chọn thời gian</option>
-                    <option value="1-2 months">1-2 tháng</option>
-                    <option value="3-4 months">3-4 tháng</option>
-                    <option value="5-6 months">5-6 tháng</option>
-                    <option value="Flexible">Linh hoạt</option>
+                    <option value="">Select timeline</option>
+                    <option value="1-2 months">1-2 months</option>
+                    <option value="3-4 months">3-4 months</option>
+                    <option value="5-6 months">5-6 months</option>
+                    <option value="Flexible">Flexible</option>
                   </select>
                   {errors.timeline && <p className="mt-1 text-xs text-red-600">{errors.timeline}</p>}
                 </div>
@@ -320,7 +321,7 @@ export function DesignServicesPage() {
 
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-neutral-700">
-                  Thời điểm bắt đầu dự kiến (tuỳ chọn)
+                  Target project start date (optional)
                 </label>
                 <input
                   id="startDate"
@@ -333,7 +334,7 @@ export function DesignServicesPage() {
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-neutral-700">
-                  Mô tả dự án
+                  Project description
                 </label>
                 <textarea
                   id="message"
@@ -341,7 +342,7 @@ export function DesignServicesPage() {
                   onChange={(event) => handleChange('message', event.target.value)}
                   rows={4}
                   className="mt-1 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  placeholder="Chia sẻ mục tiêu, phong cách yêu thích, diện tích..."
+                  placeholder="Tell us about your goals, preferred style, square footage, and any must-haves."
                 />
               </div>
 
@@ -370,12 +371,12 @@ export function DesignServicesPage() {
                 className="w-full inline-flex items-center justify-center rounded-xl bg-brand-600 text-white py-3 text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-70"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Đang gửi...' : 'Schedule Free Discovery Call'}
+                {isSubmitting ? 'Sending...' : 'Schedule Free Discovery Call'}
               </button>
 
               {submitted && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                  Cảm ơn bạn! Chúng tôi đã nhận được thông tin và sẽ liên hệ để sắp lịch Discovery Call.
+                  Thank you! We received your details and will reach out shortly to schedule your discovery call.
                 </div>
               )}
             </form>
@@ -383,13 +384,13 @@ export function DesignServicesPage() {
         </section>
 
         <section className="bg-neutral-50 border border-neutral-200 rounded-3xl p-10">
-          <h2 className="font-display text-3xl text-neutral-900 mb-6">Quy trình hợp tác</h2>
+          <h2 className="font-display text-3xl text-neutral-900 mb-6">How We Work Together</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { title: 'Discovery Call', description: 'Tìm hiểu nhu cầu, phong cách và ngân sách của bạn.' },
-              { title: 'Concept & Moodboard', description: 'Xây dựng moodboard và đề xuất bảng màu.' },
-              { title: 'Design Development', description: 'Triển khai bản vẽ, floor plan, danh sách sản phẩm chi tiết.' },
-              { title: 'Installation Support', description: 'Theo sát quá trình đặt hàng, lắp đặt và styling hoàn thiện.' },
+              { title: 'Discovery Call', description: 'Understand your goals, aesthetic, and budget.' },
+              { title: 'Concept & Moodboard', description: 'Present mood boards, palettes, and a design direction.' },
+              { title: 'Design Development', description: 'Deliver drawings, floor plans, and detailed product lists.' },
+              { title: 'Installation Support', description: 'Coordinate ordering, delivery, installation, and styling.' },
             ].map((step, index) => (
               <div key={step.title} className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold mb-3">

@@ -37,16 +37,16 @@ const jobOpenings: JobOpening[] = [
     type: 'Full-time',
     department: 'Retail',
     description:
-      'Chào đón khách hàng tại showroom, tư vấn sản phẩm phù hợp và đảm bảo trải nghiệm mua sắm cao cấp.',
+      'Welcome clients in the showroom, guide them to the right pieces, and deliver a luxury shopping experience.',
     requirements: [
-      'Ít nhất 2 năm kinh nghiệm bán lẻ nội thất hoặc luxury lifestyle',
-      'Kỹ năng giao tiếp xuất sắc, nói được tiếng Anh và Việt',
-      'Yêu thích thiết kế nội thất và cập nhật xu hướng',
+      'At least 2 years of furniture or luxury retail sales experience.',
+      'Outstanding communication skills; bilingual in English and Vietnamese is a plus.',
+      'Passion for interior design and emerging style trends.',
     ],
     responsibilities: [
-      'Đón tiếp, khai thác nhu cầu và giới thiệu sản phẩm phù hợp',
-      'Theo dõi pipeline khách hàng và phối hợp với bộ phận thiết kế',
-      'Đảm bảo trưng bày showroom luôn chỉn chu',
+      'Greet visitors, uncover their needs, and present curated product recommendations.',
+      'Manage the client pipeline and collaborate with the design team.',
+      'Maintain an elevated, on-brand showroom presentation.',
     ],
     applyEmail: 'careers@zshop.com',
   },
@@ -57,16 +57,16 @@ const jobOpenings: JobOpening[] = [
     type: 'Part-time',
     department: 'Design',
     description:
-      'Tư vấn thiết kế nội thất trực tuyến cho khách hàng trên toàn quốc, từ moodboard đến đề xuất sản phẩm chi tiết.',
+      'Provide virtual interior design consultations nationwide, from mood boards to detailed product recommendations.',
     requirements: [
-      'Bằng cấp hoặc chứng chỉ thiết kế nội thất',
-      'Có portfolio dự án thực tế và kỹ năng trình bày 2D/3D',
-      'Làm việc độc lập, tự quản lý thời gian',
+      'Interior design degree or certification.',
+      'Portfolio of completed projects with strong 2D/3D presentation skills.',
+      'Self-starter who manages time independently.',
     ],
     responsibilities: [
-      'Tiếp nhận brief từ khách hàng và phát triển concept',
-      'Phối hợp stylist chọn sản phẩm phù hợp ngân sách',
-      'Thuyết trình giải pháp thông qua video call',
+      'Interpret client briefs and build compelling concepts.',
+      'Partner with stylists to source products that match budget and style.',
+      'Present solutions and revisions over video calls.',
     ],
     applyEmail: 'design-careers@zshop.com',
   },
@@ -77,16 +77,16 @@ const jobOpenings: JobOpening[] = [
     type: 'Full-time',
     department: 'Operations',
     description:
-      'Quản lý kho, kiểm đếm, đóng gói và hỗ trợ điều phối giao hàng đúng tiến độ.',
+      'Oversee inventory, handle picking and packing, and support on-time delivery coordination.',
     requirements: [
-      'Sức khỏe tốt, có thể nâng vật nặng tới 50 lbs',
-      'Kinh nghiệm làm việc kho ít nhất 1 năm',
-      'Cẩn thận, tuân thủ quy trình an toàn lao động',
+      'Able to safely lift up to 50 lbs.',
+      '1+ year of warehouse operations experience.',
+      'Detail oriented and committed to safety procedures.',
     ],
     responsibilities: [
-      'Nhận và kiểm tra hàng hoá nhập kho',
-      'Đóng gói đơn hàng theo tiêu chuẩn ZShop',
-      'Phối hợp với đội giao nhận và cập nhật tồn kho',
+      'Receive and inspect inbound merchandise.',
+      'Pack outgoing orders to ZShop standards.',
+      'Coordinate with the delivery team and update inventory records.',
     ],
     applyEmail: 'ops-careers@zshop.com',
   },
@@ -97,16 +97,16 @@ const jobOpenings: JobOpening[] = [
     type: 'Full-time',
     department: 'Customer Experience',
     description:
-      'Hỗ trợ khách hàng qua email, chat và điện thoại, đảm bảo trải nghiệm dịch vụ đồng nhất.',
+      'Support customers via email, chat, and phone to deliver a consistent, high-touch experience.',
     requirements: [
-      'Kinh nghiệm CSKH 2 năm trong lĩnh vực bán lẻ hoặc e-commerce',
-      'Kỹ năng xử lý tình huống và giao tiếp chuyên nghiệp',
-      'Có thể làm việc theo ca, bao gồm cuối tuần',
+      '2+ years of customer service in retail or e-commerce.',
+      'Strong problem-solving abilities and polished communication.',
+      'Flexible schedule with availability for weekend shifts.',
     ],
     responsibilities: [
-      'Trả lời ticket trong SLA quy định',
-      'Phối hợp các bộ phận liên quan giải quyết vấn đề',
-      'Ghi nhận phản hồi khách hàng để cải thiện quy trình',
+      'Respond to customer tickets within the defined SLA.',
+      'Collaborate with cross-functional teams to resolve issues.',
+      'Capture customer feedback and surface insights for process improvements.',
     ],
     applyEmail: 'cx-careers@zshop.com',
   },
@@ -117,16 +117,16 @@ const jobOpenings: JobOpening[] = [
     type: 'Full-time',
     department: 'Logistics',
     description:
-      'Giao hàng nội thất cao cấp tới khách hàng, đảm bảo đúng giờ và an toàn.',
+      'Deliver premium furniture to customers with punctuality and care.',
     requirements: [
-      'Bằng lái hạng C, hồ sơ lái xe sạch',
-      'Kinh nghiệm giao hàng chặng cuối 2 năm',
-      'Kỹ năng chăm sóc khách hàng tốt, thái độ chuyên nghiệp',
+      "Valid Class C driver's license with a clean driving record.",
+      '2+ years of final-mile delivery experience.',
+      'Customer-first mindset and professional demeanor.',
     ],
     responsibilities: [
-      'Vận chuyển, lắp đặt cơ bản và hướng dẫn khách sử dụng',
-      'Kiểm tra tình trạng sản phẩm trước và sau giao',
-      'Báo cáo nhanh cho quản lý khi phát sinh sự cố',
+      'Transport, perform light assembly, and walk customers through product care.',
+      'Inspect merchandise before loading and after delivery.',
+      'Report issues promptly to the logistics manager.',
     ],
     applyEmail: 'logistics-careers@zshop.com',
   },
@@ -212,7 +212,7 @@ export function CareersPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Careers</h1>
               <p className="text-white/80 text-lg">
-                Gia nhập đội ngũ ZShop, nơi chúng tôi tôn vinh sự sáng tạo, tinh thần dịch vụ và phát triển sự nghiệp bền vững.
+                Join the ZShop team where creativity, service excellence, and long-term career growth are celebrated.
               </p>
             </div>
           </div>
@@ -228,8 +228,7 @@ export function CareersPage() {
                 <h2 className="font-display text-3xl text-neutral-900">Why Join Us</h2>
               </div>
               <p className="text-neutral-600 mb-6">
-                Chúng tôi xây dựng môi trường tôn trọng, sáng tạo và minh bạch. Đội ngũ ZShop gồm những con người đam mê thiết
-                kế, dịch vụ khách hàng và công nghệ, sẵn sàng hỗ trợ nhau đạt mục tiêu chung.
+                We foster a respectful, creative, and transparent workplace. The ZShop team is made up of people who love design, customer experience, and technology, and who support one another to achieve shared goals.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="border border-neutral-200 rounded-2xl p-4">
@@ -239,7 +238,7 @@ export function CareersPage() {
                   </div>
                   <ul className="text-xs text-neutral-600 space-y-1.5">
                     <li>Health, dental & vision insurance</li>
-                    <li>401(k) với employer match</li>
+                    <li>401(k) with employer match</li>
                     <li>Employee discount 30%</li>
                     <li>Flexible hours & hybrid policy</li>
                   </ul>
@@ -251,9 +250,9 @@ export function CareersPage() {
                   </div>
                   <ul className="text-xs text-neutral-600 space-y-1.5">
                     <li>Quarterly team retreats</li>
-                    <li>Learning stipend $1,000/năm</li>
+                    <li>Learning stipend of $1,000 per year</li>
                     <li>Mentorship & growth plan</li>
-                    <li>Đa dạng & hòa nhập</li>
+                    <li>Diversity & inclusion programs</li>
                   </ul>
                 </div>
               </div>
@@ -443,7 +442,7 @@ export function CareersPage() {
                     onChange={(event) => handleChange('coverLetter', event.target.value)}
                     rows={5}
                     className="mt-1 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    placeholder="Chia sẻ thành tích nổi bật, lý do bạn muốn gia nhập ZShop..."
+                    placeholder="Share your achievements and tell us why you want to join ZShop..."
                   />
                 </div>
 
@@ -457,7 +456,7 @@ export function CareersPage() {
 
                 {submitted && (
                   <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                    Cảm ơn bạn đã ứng tuyển! Chúng tôi sẽ xem xét hồ sơ và phản hồi trong 5 ngày làm việc.
+                    Thank you for applying! Our talent team will review your submission and respond within five business days.
                   </div>
                 )}
               </form>

@@ -27,14 +27,14 @@ const roomTemplates: RoomTemplate[] = [
     name: 'Contemporary Living Room',
     style: 'Contemporary',
     description:
-      'Tông trung tính hiện đại với sofa modular, bàn trà đá và thảm len mang lại cảm giác sang trọng nhưng vẫn ấm áp.',
+      'A modern neutral palette featuring a modular sofa, stone coffee table, and wool rug for a luxe yet welcoming feel.',
     image: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1600',
     products: [
       {
         id: 'sofa-contempo',
         name: 'Modular Cloud Sofa',
         price: '$3,450',
-        description: 'Vải hiệu suất cao chống bám bẩn, có thể cấu hình linh hoạt.',
+        description: 'Performance fabric resists stains and the modular design reconfigures effortlessly.',
         position: { top: '55%', left: '38%' },
         colors: [
           { label: 'Oat', value: '#e8dfd2' },
@@ -46,14 +46,14 @@ const roomTemplates: RoomTemplate[] = [
         id: 'table-aurora',
         name: 'Aurora Marble Coffee Table',
         price: '$780',
-        description: 'Mặt đá cẩm thạch Ý kết hợp chân thép phủ đồng.',
+        description: 'Italian marble top with brass-plated steel legs.',
         position: { top: '63%', left: '56%' },
       },
       {
         id: 'lamp-arc',
         name: 'Arc Studio Floor Lamp',
         price: '$420',
-        description: 'Đèn sàn dạng vòm cung cấp ánh sáng tập trung mềm mại.',
+        description: 'Arc floor lamp delivers focused yet soft lighting.',
         position: { top: '35%', left: '68%' },
       },
     ],
@@ -63,14 +63,14 @@ const roomTemplates: RoomTemplate[] = [
     name: 'Scandinavian Bedroom',
     style: 'Scandinavian',
     description:
-      'Không gian nghỉ ngơi tối giản với gỗ sáng màu, ánh sáng tự nhiên và chất liệu linen thoáng nhẹ.',
+      'A serene retreat with light woods, abundant natural light, and breathable linen textiles.',
     image: 'https://images.pexels.com/photos/6585611/pexels-photo-6585611.jpeg?auto=compress&cs=tinysrgb&w=1600',
     products: [
       {
         id: 'bed-nordic',
         name: 'Nordic Oak Bed Frame',
         price: '$1,280',
-        description: 'Gỗ sồi FSC bền vững, đầu giường bọc nỉ thoải mái.',
+        description: 'Crafted from FSC-certified oak with an upholstered, cushioned headboard.',
         position: { top: '58%', left: '48%' },
         colors: [
           { label: 'Natural Oak', value: '#d8c7ab' },
@@ -81,14 +81,14 @@ const roomTemplates: RoomTemplate[] = [
         id: 'nightstand-glas',
         name: 'Glass Globe Nightstand',
         price: '$420',
-        description: 'Bàn đầu giường mặt kính mờ cùng chân thép không gỉ.',
+        description: 'Frosted glass top paired with stainless-steel legs.',
         position: { top: '62%', left: '30%' },
       },
       {
         id: 'rug-softloom',
         name: 'Softloom Rug 8x10',
         price: '$520',
-        description: 'Thảm len dệt tay với gam màu trung tính dễ kết hợp.',
+        description: 'Hand-loomed wool rug in a versatile neutral palette.',
         position: { top: '73%', left: '57%' },
       },
     ],
@@ -98,28 +98,28 @@ const roomTemplates: RoomTemplate[] = [
     name: 'Industrial Dining',
     style: 'Industrial',
     description:
-      'Bàn gỗ nguyên khối kết hợp đèn treo ống đồng và ghế da mang hơi thở loft đô thị.',
+      'Live-edge wood dining table, copper pendants, and leather seating lend an elevated urban loft vibe.',
     image: 'https://images.pexels.com/photos/279806/pexels-photo-279806.jpeg?auto=compress&cs=tinysrgb&w=1600',
     products: [
       {
         id: 'table-forge',
         name: 'Forge Dining Table',
         price: '$2,050',
-        description: 'Gỗ óc chó ghép sống kết hợp chân kim loại phủ tĩnh điện.',
+        description: 'Live-edge walnut slab with powder-coated metal legs.',
         position: { top: '58%', left: '52%' },
       },
       {
         id: 'chair-rivet',
         name: 'Rivet Leather Chair',
         price: '$320',
-        description: 'Ghế da thật với đường chỉ nổi và khung thép đen mờ.',
+        description: 'Top-grain leather chair with contrast stitching and matte black steel frame.',
         position: { top: '60%', left: '34%' },
       },
       {
         id: 'pendant-copper',
         name: 'Copper Cascade Pendant',
         price: '$620',
-        description: 'Hệ đèn 3 cụm ánh sáng ấm, điều chỉnh độ cao linh hoạt.',
+        description: 'Triple pendant with warm LEDs and adjustable hanging heights.',
         position: { top: '30%', left: '50%' },
       },
     ],
@@ -129,21 +129,21 @@ const roomTemplates: RoomTemplate[] = [
     name: 'Modern Office',
     style: 'Modern',
     description:
-      'Không gian làm việc với bàn chữ L phủ veneer óc chó, ghế công thái học và hệ tủ lưu trữ âm tường.',
+      'A productivity-focused office with walnut veneer L-desk, ergonomic seating, and built-in storage.',
     image: 'https://images.pexels.com/photos/518244/pexels-photo-518244.jpeg?auto=compress&cs=tinysrgb&w=1600',
     products: [
       {
         id: 'desk-walnut',
         name: 'Walnut L-Desk',
         price: '$1,680',
-        description: 'Bàn chữ L có module dây điện ẩn và ngăn kéo mềm.',
+        description: 'L-shaped desk includes concealed cable management and soft-close drawers.',
         position: { top: '58%', left: '38%' },
       },
       {
         id: 'chair-ergoflex',
         name: 'ErgoFlex Chair',
         price: '$540',
-        description: 'Tựa lưng lưới, đệm memory foam hỗ trợ cột sống.',
+        description: 'Mesh backrest with memory foam seat to support posture all day.',
         position: { top: '62%', left: '55%' },
         colors: [
           { label: 'Slate', value: '#5b6167' },
@@ -154,7 +154,7 @@ const roomTemplates: RoomTemplate[] = [
         id: 'shelving-wall',
         name: 'Wall Storage System',
         price: '$820',
-        description: 'Hệ tủ treo modular có thể mở rộng thêm module.',
+        description: 'Modular wall system that expands with additional storage units.',
         position: { top: '36%', left: '70%' },
       },
     ],
@@ -164,14 +164,14 @@ const roomTemplates: RoomTemplate[] = [
     name: 'Outdoor Patio',
     style: 'Boho Coastal',
     description:
-      'Bộ sofa chống nước, đèn lồng mây và cây xanh tạo nên khu patio thư giãn.',
+      'Water-resistant seating, woven lanterns, and lush greenery create a relaxed patio escape.',
     image: 'https://images.pexels.com/photos/2179217/pexels-photo-2179217.jpeg?auto=compress&cs=tinysrgb&w=1600',
     products: [
       {
         id: 'sofa-outdoor',
         name: 'Driftwood Outdoor Sofa',
         price: '$1,980',
-        description: 'Khung gỗ dầu chống thời tiết, nệm quick-dry có thể tháo vỏ.',
+        description: 'Weather-treated teak-style frame with removable quick-dry cushions.',
         position: { top: '58%', left: '38%' },
         colors: [
           { label: 'Seashell', value: '#f1ede4' },
@@ -182,14 +182,14 @@ const roomTemplates: RoomTemplate[] = [
         id: 'table-outdoor',
         name: 'Acacia Coffee Table',
         price: '$480',
-        description: 'Bề mặt gỗ acacia tự nhiên được xử lý chống tia UV.',
+        description: 'Solid acacia surface sealed to withstand UV exposure.',
         position: { top: '62%', left: '58%' },
       },
       {
         id: 'lantern-set',
         name: 'Rattan Lantern Set',
         price: '$340',
-        description: 'Bộ 3 đèn lồng mây, dùng được với đèn led hoặc nến.',
+        description: 'Set of three woven lanterns compatible with LED candles or real flames.',
         position: { top: '40%', left: '65%' },
       },
     ],
@@ -226,8 +226,8 @@ export function VirtualShowroomPage() {
             <div className="mt-6 max-w-3xl">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Virtual Showroom</h1>
               <p className="text-white/80 text-lg">
-                Trải nghiệm không gian 360° được thiết kế sẵn. Nhấn vào các hotspot để xem chi tiết sản phẩm, thay đổi màu sắc
-                và thêm vào giỏ hàng ngay lập tức.
+                Explore fully styled 360-degree environments. Tap each hotspot to reveal product details, try alternate finishes, and
+                add pieces to your cart instantly.
               </p>
             </div>
           </div>
@@ -240,7 +240,7 @@ export function VirtualShowroomPage() {
             <div>
               <h2 className="font-display text-3xl text-neutral-900">Room Templates</h2>
               <p className="text-sm text-neutral-500">
-                Chọn phong cách yêu thích và khám phá sản phẩm trong từng không gian.
+                Choose a room style to discover featured products inside each scene.
               </p>
             </div>
             <a
@@ -367,8 +367,8 @@ export function VirtualShowroomPage() {
             <div className="border border-neutral-200 rounded-3xl p-6 bg-white shadow-sm">
               <h3 className="font-semibold text-lg text-neutral-900 mb-4">Need more help?</h3>
               <p className="text-sm text-neutral-600">
-                Đặt lịch hẹn trực tiếp tại showroom hoặc tư vấn trực tuyến 1:1 với nhà thiết kế nội thất của ZShop để tạo nên
-                không gian mơ ước.
+                Book an in-store visit or schedule a 1:1 virtual consultation with a ZShop designer to bring your vision to
+                life.
               </p>
               <div className="mt-4 space-y-2">
                 <a

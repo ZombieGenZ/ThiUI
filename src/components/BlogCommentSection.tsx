@@ -18,7 +18,7 @@ interface CommentFormState {
 
 const formatCommentDate = (isoString: string) => {
   try {
-    return new Intl.DateTimeFormat('vi-VN', {
+    return new Intl.DateTimeFormat('en-US', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -61,7 +61,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
       }
     }
 
-    return 'Thành viên ZShop';
+    return 'ZShop Member';
   }, [user]);
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
       .catch((error: unknown) => {
         console.error('Error loading comments:', error);
         if (isMounted) {
-          toast.error('Không thể tải bình luận. Vui lòng thử lại sau.');
+          toast.error("We couldn't load the comments. Please try again later.");
         }
       })
       .finally(() => {
@@ -152,17 +152,17 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
     let emailToSubmit = formState.email.trim();
 
     if (!trimmedContent) {
-      toast.warn('Vui lòng nhập nội dung bình luận.');
+      toast.warn('Please enter a comment before submitting.');
       return;
     }
 
     if (isAuthenticated) {
-      nameToSubmit = (authenticatedName || '').trim() || 'Thành viên ZShop';
+      nameToSubmit = (authenticatedName || '').trim() || 'ZShop Member';
       emailToSubmit = authenticatedEmail.trim();
     }
 
     if (!nameToSubmit || !emailToSubmit) {
-      toast.warn('Vui lòng nhập đầy đủ thông tin trước khi gửi bình luận.');
+      toast.warn('Please fill out all required fields before submitting your comment.');
       return;
     }
 
@@ -178,7 +178,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
 
       if (error) {
         if (error.message?.includes("Could not find the table 'public.comments'")) {
-          throw new Error('Tính năng bình luận đang được thiết lập. Vui lòng thử lại sau.');
+          throw new Error('The comment feature is still being configured. Please try again later.');
         }
 
         throw error;
@@ -191,10 +191,10 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
         email: isAuthenticated ? prev.email : '',
         content: '',
       }));
-      toast.success('Cảm ơn bạn! Bình luận đã được gửi thành công.');
+      toast.success('Thank you! Your comment has been submitted successfully.');
     } catch (error) {
       console.error('Error submitting comment:', error);
-      const message = error instanceof Error ? error.message : 'Không thể gửi bình luận. Vui lòng thử lại.';
+      const message = error instanceof Error ? error.message : 'Unable to submit your comment. Please try again.';
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -203,14 +203,14 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
 
   const commentCountLabel = useMemo(() => {
     if (isLoading) {
-      return 'Đang tải bình luận...';
+      return 'Loading comments...';
     }
 
     if (!comments.length) {
-      return 'Chưa có bình luận nào';
+      return 'No comments yet';
     }
 
-    return `${comments.length} bình luận`;
+    return `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
   }, [comments.length, isLoading]);
 
   return (
@@ -220,7 +220,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
           <MessageCircle className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="font-display text-2xl text-neutral-900">Bình luận</h2>
+          <h2 className="font-display text-2xl text-neutral-900">Comments</h2>
           <p className="text-neutral-600 text-sm">{commentCountLabel}</p>
         </div>
       </div>
@@ -234,7 +234,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
           ) : comments.length === 0 ? (
             <div className="py-12 px-6 bg-neutral-50 border border-dashed border-neutral-200 rounded-2xl text-center">
               <p className="text-neutral-600 text-sm">
-                Hãy là người đầu tiên để lại bình luận về bài viết này.
+                Be the first to share your thoughts on this article.
               </p>
             </div>
           ) : (
@@ -260,16 +260,16 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
         </div>
 
         <div className="bg-white border border-neutral-200 rounded-2xl p-8 shadow-sm order-1 lg:order-2">
-          <h3 className="font-semibold text-lg text-neutral-900 mb-4">Để lại bình luận của bạn</h3>
+          <h3 className="font-semibold text-lg text-neutral-900 mb-4">Leave a Comment</h3>
           <p className="text-sm text-neutral-500 mb-6">
-            Email của bạn sẽ không được công bố. Các trường bắt buộc được đánh dấu *
+            Your email address will not be published. Required fields are marked *.
           </p>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             {isAuthenticated ? (
               <div className="p-4 bg-brand-50 border border-brand-100 rounded-xl text-sm text-brand-700">
                 <p>
-                  Bạn đang bình luận với tài khoản <strong>{authenticatedName}</strong>
+                  You are commenting as <strong>{authenticatedName}</strong>
                   {authenticatedEmail ? ` (${authenticatedEmail})` : ''}.
                 </p>
               </div>
@@ -277,7 +277,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
               <>
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-2">
-                    Tên của bạn *
+                    Your Name *
                   </label>
                   <input
                     id="name"
@@ -286,7 +286,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
                     onChange={handleChange}
                     type="text"
                     required
-                    placeholder="Nguyễn Văn A"
+                    placeholder="Jane Doe"
                     className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
                   />
                 </div>
@@ -302,7 +302,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
                     onChange={handleChange}
                     type="email"
                     required
-                    placeholder="tenban@example.com"
+                    placeholder="you@example.com"
                     className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
                   />
                 </div>
@@ -311,7 +311,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
 
             <div>
               <label htmlFor="content" className="block text-sm font-medium text-neutral-700 mb-2">
-                Nội dung bình luận *
+                Comment *
               </label>
               <textarea
                 id="content"
@@ -320,7 +320,7 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
                 onChange={handleChange}
                 required
                 rows={5}
-                placeholder="Chia sẻ suy nghĩ của bạn về bài viết..."
+                placeholder="Share your thoughts about this article..."
                 className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all resize-none"
               />
             </div>
@@ -333,12 +333,12 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Đang gửi bình luận...
+                  Submitting comment...
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Gửi bình luận
+                  Post Comment
                 </>
               )}
             </button>

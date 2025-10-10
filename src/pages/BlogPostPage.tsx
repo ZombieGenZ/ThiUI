@@ -11,7 +11,7 @@ type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
 const formatPublishedDate = (isoString: string) => {
   try {
-    return new Intl.DateTimeFormat('vi-VN', {
+    return new Intl.DateTimeFormat('en-US', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -26,7 +26,7 @@ const calculateReadingTime = (content?: string | null) => {
   if (!content) return null;
   const words = content.trim().split(/\s+/).length;
   const minutes = Math.max(1, Math.round(words / 200));
-  return `${minutes} phút đọc`;
+  return `${minutes} minute${minutes === 1 ? '' : 's'} read`;
 };
 
 export function BlogPostPage() {
@@ -36,10 +36,10 @@ export function BlogPostPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   usePageMetadata({
-    title: post?.title || 'Chi tiết bài viết',
+    title: post?.title || 'Blog Post Details',
     description:
       post?.excerpt ||
-      'Khám phá các xu hướng nội thất, mẹo trang trí và câu chuyện thiết kế mới nhất từ ZShop.',
+      'Explore the latest interior trends, styling tips, and design stories curated by the ZShop team.',
   });
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export function BlogPostPage() {
 
     const fetchPost = async () => {
       if (!slug) {
-        setErrorMessage('Không tìm thấy bài viết bạn yêu cầu.');
+        setErrorMessage("We couldn't find the article you requested.");
         setIsLoading(false);
         return;
       }
@@ -71,11 +71,11 @@ export function BlogPostPage() {
             setPost(fallbackPost);
             setErrorMessage(null);
           } else {
-            setErrorMessage('Bài viết không tồn tại hoặc đã bị xoá.');
+            setErrorMessage('The article may not exist or has been removed.');
             setPost(null);
           }
         } else {
-          setErrorMessage('Bài viết không tồn tại hoặc đã bị xoá.');
+          setErrorMessage('The article may not exist or has been removed.');
           setPost(null);
         }
       } else {
@@ -116,15 +116,15 @@ export function BlogPostPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-6">
         <div className="max-w-lg w-full bg-neutral-50 border border-neutral-200 rounded-3xl p-10 text-center">
-          <h1 className="font-display text-3xl text-neutral-900 mb-4">Không tìm thấy bài viết</h1>
+          <h1 className="font-display text-3xl text-neutral-900 mb-4">Article Not Found</h1>
           <p className="text-neutral-600 mb-6">
-            {errorMessage || 'Có thể bài viết đã bị xoá hoặc đường dẫn không chính xác.'}
+            {errorMessage || 'The link may be incorrect or the article might have been deleted.'}
           </p>
           <Link
             to="/blog"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-colors"
           >
-            Quay về Blog
+            Back to Blog
           </Link>
         </div>
       </div>
@@ -147,8 +147,8 @@ export function BlogPostPage() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <Breadcrumb
               items={[
-                { label: 'Trang chủ', href: '/' },
-                { label: 'Blog & Tin tức', href: '/blog' },
+                { label: 'Home', href: '/' },
+                { label: 'Blog & News', href: '/blog' },
                 { label: post.title },
               ]}
             />
@@ -161,7 +161,7 @@ export function BlogPostPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
-                Quay về trang blog
+                Back to all articles
               </Link>
 
               <h1 className="mt-6 font-display text-4xl sm:text-5xl text-white leading-tight">{post.title}</h1>

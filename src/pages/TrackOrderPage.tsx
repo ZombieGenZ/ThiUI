@@ -305,10 +305,10 @@ export function TrackOrderPage() {
           </section>
         ) : (
           <section className="border border-dashed border-neutral-300 rounded-3xl p-12 text-center bg-white">
-            <h2 className="font-display text-2xl text-neutral-900 mb-2">Nhập thông tin để theo dõi đơn hàng</h2>
+            <h2 className="font-display text-2xl text-neutral-900 mb-2">Enter details to track your order</h2>
             <p className="text-sm text-neutral-600 max-w-xl mx-auto">
-              Vui lòng nhập mã đơn hàng và email đã dùng để đặt hàng. Bạn sẽ thấy trạng thái vận chuyển, ngày giao dự kiến và
-              thông tin nhà vận chuyển ngay sau khi truy xuất thành công.
+              Provide the order number and email used at checkout to view shipping status, estimated delivery, and carrier
+              information as soon as we locate your shipment.
             </p>
           </section>
         )}

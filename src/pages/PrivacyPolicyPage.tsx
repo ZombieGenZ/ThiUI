@@ -5,72 +5,72 @@ const sections = [
   {
     title: '1. Information We Collect',
     content: [
-      'Personal information: họ tên, email, số điện thoại, địa chỉ giao hàng và thanh toán.',
-      'Payment information: dữ liệu thẻ tín dụng được mã hóa và xử lý thông qua đối tác thanh toán đạt chuẩn PCI-DSS.',
-      'Browsing data: cookies, địa chỉ IP, loại thiết bị, hành vi duyệt web để tối ưu trải nghiệm.',
+      'Personal information: full name, email address, phone number, and shipping/billing addresses.',
+      'Payment information: encrypted card data processed through PCI-DSS compliant partners.',
+      'Browsing data: cookies, IP address, device type, and on-site behavior used to optimize your experience.',
     ],
   },
   {
     title: '2. How We Use Information',
     content: [
-      'Xử lý đơn hàng, giao hàng và cung cấp dịch vụ hậu mãi.',
-      'Gửi thông báo về đơn hàng, cập nhật sản phẩm và chương trình khuyến mãi (khi có sự đồng ý).',
-      'Phân tích dữ liệu để cải thiện website, cá nhân hóa đề xuất sản phẩm.',
-      'Triển khai chiến dịch marketing, retargeting khi bạn cho phép.',
+      'Fulfill orders, coordinate deliveries, and provide post-purchase support.',
+      'Send order notifications, product updates, and promotional offers (with your consent).',
+      'Analyze data to improve our website and personalize product recommendations.',
+      'Run marketing and retargeting campaigns when permitted.',
     ],
   },
   {
     title: '3. Information Sharing',
     content: [
-      'ZShop không bán hoặc cho thuê dữ liệu cá nhân của bạn.',
-      'Chúng tôi chia sẻ thông tin với đối tác vận chuyển, xử lý thanh toán, nhà cung cấp dịch vụ marketing khi cần thiết để hoàn thành đơn hàng.',
-      'Thông tin có thể được cung cấp theo yêu cầu pháp lý hoặc khi cần bảo vệ quyền lợi của ZShop và khách hàng.',
+      'ZShop never sells or rents your personal data.',
+      'We share information with shipping, payment, and marketing partners when required to deliver services.',
+      'Information may be disclosed to comply with legal requests or protect the rights of ZShop and our customers.',
     ],
   },
   {
     title: '4. Cookies',
     content: [
-      'Essential cookies: duy trì phiên đăng nhập, giỏ hàng và bảo mật.',
-      'Analytics cookies: đo lường hiệu suất trang, hành vi người dùng (Google Analytics).',
-      'Marketing cookies: phục vụ quảng cáo cá nhân hóa (Facebook Pixel, Google Ads).',
-      'Bạn có thể quản lý cookie qua phần cài đặt trình duyệt hoặc banner tuỳ chỉnh khi truy cập lần đầu.',
+      'Essential cookies maintain login sessions, carts, and site security.',
+      'Analytics cookies measure performance and user behavior (Google Analytics).',
+      'Marketing cookies deliver personalized advertising (Facebook Pixel, Google Ads).',
+      'Manage cookies via your browser settings or the consent banner when you first visit the site.',
     ],
   },
   {
     title: '5. Data Security',
     content: [
-      'Mã hóa SSL cho mọi giao dịch và truyền tải dữ liệu.',
-      'Máy chủ đặt tại trung tâm dữ liệu đạt chuẩn ISO 27001 với cơ chế kiểm soát truy cập nghiêm ngặt.',
-      'Thực hiện đánh giá bảo mật định kỳ và chương trình phát hiện xâm nhập.',
+      'SSL encryption protects every transaction and data transfer.',
+      'Servers are hosted in ISO 27001 certified data centers with strict access controls.',
+      'We perform routine security assessments and operate intrusion detection programs.',
     ],
   },
   {
     title: '6. Your Rights',
     content: [
-      'Truy cập, chỉnh sửa hoặc yêu cầu xoá dữ liệu cá nhân.',
-      'Từ chối nhận email marketing bất kỳ lúc nào bằng cách sử dụng liên kết “Unsubscribe”.',
-      'Yêu cầu bản sao dữ liệu và hạn chế xử lý theo quy định GDPR & CCPA.',
-      'Liên hệ privacy@furniturestore.com để gửi yêu cầu liên quan đến dữ liệu.',
+      'Access, correct, or request deletion of your personal data.',
+      'Opt out of marketing emails at any time using the "Unsubscribe" link.',
+      'Request copies of your data or restrict processing under GDPR and CCPA.',
+      'Contact privacy@furniturestore.com for any privacy-related requests.',
     ],
   },
   {
     title: "7. Children's Privacy",
     content: [
-      'ZShop không thu thập dữ liệu từ trẻ em dưới 13 tuổi. Nếu phát hiện, chúng tôi sẽ xoá thông tin ngay lập tức.',
+      'ZShop does not knowingly collect data from children under 13. We will delete such information immediately if discovered.',
     ],
   },
   {
     title: '8. Changes to Policy',
     content: [
-      'Chúng tôi có thể cập nhật chính sách bảo mật theo nhu cầu kinh doanh hoặc yêu cầu pháp luật. Thời gian cập nhật sẽ được thông báo trên trang này.',
+      'We may update this policy to reflect business needs or legal requirements. Updates will always be posted on this page.',
     ],
   },
   {
     title: '9. Contact Us',
     content: [
       'Email: privacy@furniturestore.com',
-      'Hotline bảo mật: (800) 555-0199 ext. 4',
-      'Địa chỉ: 245 Market Street, San Francisco, CA 94105',
+      'Security hotline: (800) 555-0199 ext. 4',
+      'Address: 245 Market Street, San Francisco, CA 94105',
     ],
   },
 ];
@@ -91,7 +91,7 @@ export function PrivacyPolicyPage() {
             <div className="mt-6">
               <h1 className="font-display text-4xl md:text-5xl text-white mb-4">Privacy Policy</h1>
               <p className="text-white/80 text-lg max-w-2xl">
-                ZShop cam kết bảo vệ dữ liệu cá nhân của bạn và tuân thủ các tiêu chuẩn bảo mật toàn cầu bao gồm GDPR và CCPA.
+                ZShop is committed to safeguarding your personal data and complies with global security standards including GDPR and CCPA.
               </p>
             </div>
           </div>
@@ -103,8 +103,7 @@ export function PrivacyPolicyPage() {
           <p>Effective Date: November 1, 2024</p>
           <p>Last Updated: November 20, 2024</p>
           <p className="mt-4">
-            Chính sách này áp dụng cho tất cả khách hàng, người đăng ký newsletter, khách tham quan showroom và người dùng dịch
-            vụ trực tuyến của ZShop.
+            This policy applies to all customers, newsletter subscribers, showroom visitors, and users of ZShop's online services.
           </p>
         </div>
 
@@ -126,8 +125,8 @@ export function PrivacyPolicyPage() {
 
         <div className="bg-neutral-50 border border-neutral-200 rounded-3xl p-8 text-sm text-neutral-600">
           <p>
-            ZShop thực hiện các quyền của bạn theo GDPR và CCPA. Bạn có thể gửi yêu cầu truy cập, di chuyển, xoá hoặc phản đối
-            xử lý dữ liệu bằng cách liên hệ <a href="mailto:privacy@furniturestore.com" className="text-brand-600 font-semibold">privacy@furniturestore.com</a>.
+            ZShop honors your rights under GDPR and CCPA. Submit access, portability, deletion, or objection requests by contacting
+            <a href="mailto:privacy@furniturestore.com" className="text-brand-600 font-semibold">privacy@furniturestore.com</a>.
           </p>
         </div>
       </div>

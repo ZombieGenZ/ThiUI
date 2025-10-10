@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { CreditCard, MapPin, User, Mail, Phone, Lock, Wallet, Building2, Smartphone, Tag, X } from 'lucide-react';
@@ -30,6 +30,30 @@ export function CheckoutPage() {
   const [voucherLoading, setVoucherLoading] = useState(false);
   const selectedItems = items.filter(item => item.selected);
 
+  const metadataName = useMemo(() => {
+    if (!user) {
+      return '';
+    }
+
+    const namesToCheck: Array<string | undefined> = [
+      typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : undefined,
+      typeof user.user_metadata?.name === 'string' ? user.user_metadata.name : undefined,
+      typeof user.user_metadata?.display_name === 'string' ? user.user_metadata.display_name : undefined,
+      typeof user.user_metadata?.user_name === 'string' ? user.user_metadata.user_name : undefined,
+      typeof user.user_metadata?.given_name === 'string'
+        ? [user.user_metadata.given_name, user.user_metadata.family_name].filter(Boolean).join(' ')
+        : undefined,
+    ];
+
+    for (const value of namesToCheck) {
+      if (value && value.trim().length > 0) {
+        return value.trim();
+      }
+    }
+
+    return '';
+  }, [user]);
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: user?.email || '',
@@ -48,13 +72,31 @@ export function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (user?.email) {
-      setFormData(prev => ({
-        ...prev,
-        email: user.email || ''
-      }));
+    if (!user) {
+      return;
     }
-  }, [user]);
+
+    setFormData(prev => {
+      const derivedFullName = prev.fullName || metadataName;
+      const derivedCardName = prev.cardName || metadataName || prev.fullName;
+      const nextEmail = user.email || prev.email;
+
+      if (
+        prev.email === nextEmail &&
+        prev.fullName === derivedFullName &&
+        prev.cardName === derivedCardName
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        email: nextEmail,
+        fullName: derivedFullName,
+        cardName: derivedCardName,
+      };
+    });
+  }, [metadataName, user]);
 
   const loadUserProfile = async () => {
     if (!user) return;
@@ -73,8 +115,9 @@ export function CheckoutPage() {
 
       setFormData(prev => ({
         ...prev,
-        fullName: data?.full_name || '',
-        phone: data?.phone || '',
+        fullName: data?.full_name || prev.fullName,
+        phone: data?.phone || prev.phone,
+        cardName: prev.cardName || data?.full_name || prev.fullName,
       }));
     } catch (error) {
       console.error('Error loading profile:', error);
