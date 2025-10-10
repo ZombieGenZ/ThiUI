@@ -2,6 +2,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useEffect, useMemo, useS
 import { Loader2, MessageCircle, Send, UserCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase, type Database } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 interface BlogCommentSectionProps {
   postId: string;
@@ -39,6 +40,57 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
     email: '',
     content: '',
   });
+  const { user } = useAuth();
+
+  const isAuthenticated = Boolean(user);
+  const authenticatedEmail = user?.email ?? '';
+  const authenticatedName = useMemo(() => {
+    if (!user) {
+      return '';
+    }
+
+    const rawName = typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : '';
+    if (rawName && rawName.trim().length > 0) {
+      return rawName.trim();
+    }
+
+    if (user.email) {
+      const [localPart] = user.email.split('@');
+      if (localPart) {
+        return localPart;
+      }
+    }
+
+    return 'Thành viên ZShop';
+  }, [user]);
+
+  useEffect(() => {
+    setFormState((prev) => {
+      if (isAuthenticated) {
+        const nextState = {
+          ...prev,
+          name: authenticatedName || prev.name,
+          email: authenticatedEmail || prev.email,
+        };
+
+        if (nextState.name === prev.name && nextState.email === prev.email) {
+          return prev;
+        }
+
+        return nextState;
+      }
+
+      if (prev.name === '' && prev.email === '') {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        name: '',
+        email: '',
+      };
+    });
+  }, [authenticatedEmail, authenticatedName, isAuthenticated]);
 
   const loadComments = useCallback(async () => {
     const { data, error } = await supabase
@@ -49,6 +101,10 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
       .order('created_at', { ascending: true });
 
     if (error) {
+      if (error.message?.includes("Could not find the table 'public.comments'")) {
+        return [];
+      }
+
       throw error;
     }
 
@@ -90,7 +146,22 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!formState.name.trim() || !formState.email.trim() || !formState.content.trim()) {
+    const trimmedContent = formState.content.trim();
+
+    let nameToSubmit = formState.name.trim();
+    let emailToSubmit = formState.email.trim();
+
+    if (!trimmedContent) {
+      toast.warn('Vui lòng nhập nội dung bình luận.');
+      return;
+    }
+
+    if (isAuthenticated) {
+      nameToSubmit = (authenticatedName || '').trim() || 'Thành viên ZShop';
+      emailToSubmit = authenticatedEmail.trim();
+    }
+
+    if (!nameToSubmit || !emailToSubmit) {
       toast.warn('Vui lòng nhập đầy đủ thông tin trước khi gửi bình luận.');
       return;
     }
@@ -100,18 +171,26 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
     try {
       const { error } = await supabase.from('comments').insert({
         post_id: postId,
-        name: formState.name.trim(),
-        email: formState.email.trim(),
-        content: formState.content.trim(),
+        name: nameToSubmit,
+        email: emailToSubmit,
+        content: trimmedContent,
       });
 
       if (error) {
+        if (error.message?.includes("Could not find the table 'public.comments'")) {
+          throw new Error('Tính năng bình luận đang được thiết lập. Vui lòng thử lại sau.');
+        }
+
         throw error;
       }
 
       const updatedComments = await loadComments();
       setComments(updatedComments);
-      setFormState({ name: '', email: '', content: '' });
+      setFormState((prev) => ({
+        name: isAuthenticated ? prev.name : '',
+        email: isAuthenticated ? prev.email : '',
+        content: '',
+      }));
       toast.success('Cảm ơn bạn! Bình luận đã được gửi thành công.');
     } catch (error) {
       console.error('Error submitting comment:', error);
@@ -187,37 +266,48 @@ export function BlogCommentSection({ postId }: BlogCommentSectionProps) {
           </p>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-2">
-                Tên của bạn *
-              </label>
-              <input
-                id="name"
-                name="name"
-                value={formState.name}
-                onChange={handleChange}
-                type="text"
-                required
-                placeholder="Nguyễn Văn A"
-                className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
-              />
-            </div>
+            {isAuthenticated ? (
+              <div className="p-4 bg-brand-50 border border-brand-100 rounded-xl text-sm text-brand-700">
+                <p>
+                  Bạn đang bình luận với tài khoản <strong>{authenticatedName}</strong>
+                  {authenticatedEmail ? ` (${authenticatedEmail})` : ''}.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-2">
+                    Tên của bạn *
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    value={formState.name}
+                    onChange={handleChange}
+                    type="text"
+                    required
+                    placeholder="Nguyễn Văn A"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+                  />
+                </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
-                Email *
-              </label>
-              <input
-                id="email"
-                name="email"
-                value={formState.email}
-                onChange={handleChange}
-                type="email"
-                required
-                placeholder="tenban@example.com"
-                className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
-              />
-            </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    value={formState.email}
+                    onChange={handleChange}
+                    type="email"
+                    required
+                    placeholder="tenban@example.com"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+                  />
+                </div>
+              </>
+            )}
 
             <div>
               <label htmlFor="content" className="block text-sm font-medium text-neutral-700 mb-2">
