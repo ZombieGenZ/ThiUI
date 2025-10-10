@@ -4,6 +4,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { normalizeImageUrl } from '../utils/imageHelpers';
 
 interface Product {
   id: string;
@@ -46,6 +47,8 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     toggleFavorite(product.id);
   };
 
+  const primaryImage = normalizeImageUrl(product.images?.[0]);
+
   return (
     <div className="group relative bg-white dark:bg-neutral-900 rounded-lg overflow-hidden card-hover shadow-sm border border-gray-100 dark:border-neutral-700 flex flex-col h-full will-change-transform hover:shadow-lg hover:border-brand-200 dark:hover:border-brand-500">
       <div className="relative aspect-square overflow-hidden bg-gray-50 flex-shrink-0">
@@ -74,7 +77,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           </div>
         )}
         <img
-          src={product.images[0] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
+          src={primaryImage}
           alt={displayName}
           loading="lazy"
           decoding="async"

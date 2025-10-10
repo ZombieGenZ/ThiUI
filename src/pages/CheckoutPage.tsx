@@ -6,6 +6,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { payosClient } from '../lib/payos';
+import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 
 type PaymentMethod = 'credit-card' | 'debit-card' | 'paypal' | 'bank-transfer' | 'cash-on-delivery';
 
@@ -737,8 +738,8 @@ export function CheckoutPage() {
                   <div key={item.id} className="flex space-x-4">
                     <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <img
-                        src={item.product?.images[0] || ''}
-                        alt={item.product?.name}
+                        src={normalizeImageUrl(item.product?.images?.[0], DEFAULT_PRODUCT_IMAGE)}
+                        alt={item.product?.name || 'Product image'}
                         className="w-full h-full object-cover"
                       />
                     </div>

@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 
 interface Order {
   id: string;
@@ -210,13 +211,13 @@ export function OrdersPage() {
                   <div className="space-y-4">
                     {order.order_items.map((item, index) => (
                       <div key={index} className="flex items-center space-x-4">
-                        {item.product?.images?.[0] && (
-                          <img
-                            src={item.product.images[0]}
-                            alt={getLocalizedValue(item.product.name_i18n, language, item.product.name)}
-                            className="w-16 h-16 object-cover rounded-lg"
-                          />
-                        )}
+                        <img
+                          src={normalizeImageUrl(item.product?.images?.[0], DEFAULT_PRODUCT_IMAGE)}
+                          alt={item.product
+                            ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
+                            : translate({ en: 'Product image', vi: 'Hình ảnh sản phẩm' })}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
                         <div className="flex-1">
                           <h4 className="font-semibold text-neutral-900">
                             {item.product

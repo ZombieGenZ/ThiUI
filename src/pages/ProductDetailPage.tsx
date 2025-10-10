@@ -10,6 +10,7 @@ import { ReviewSection } from '../components/ReviewSection';
 import { ProductModelViewer } from '../components/ProductModelViewer';
 import { useLanguage } from '../contexts/LanguageContext';
 import { formatCurrency, getLocalizedValue } from '../utils/i18n';
+import { normalizeImageUrl, DEFAULT_PRODUCT_IMAGE } from '../utils/imageHelpers';
 import { createAddToCartHandler } from '../utils/cartHelpers';
 
 interface Product {
@@ -69,7 +70,14 @@ export function ProductDetailPage() {
 
       if (error) throw error;
       if (data) {
-        setProduct(data);
+        const normalizedImages = (data.images || []).map((image) => normalizeImageUrl(image));
+        if (normalizedImages.length === 0) {
+          normalizedImages.push(DEFAULT_PRODUCT_IMAGE);
+        }
+        setProduct({
+          ...data,
+          images: normalizedImages,
+        });
       } else {
         navigate('/');
       }
@@ -200,7 +208,7 @@ export function ProductDetailPage() {
                 </div>
               )}
               <img
-                src={product.images[selectedImage] || 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg'}
+                src={product.images[selectedImage] || DEFAULT_PRODUCT_IMAGE}
                 alt={localizedName}
                 className="w-full h-full object-cover"
               />
@@ -246,7 +254,7 @@ export function ProductDetailPage() {
                 <ProductModelViewer
                   src={product.model_3d_url}
                   alt={`${localizedName} interactive 3D model`}
-                  poster={product.images[selectedImage]}
+                  poster={product.images[selectedImage] || DEFAULT_PRODUCT_IMAGE}
                 />
                 <p className="text-sm text-neutral-500 mt-3">
                   {translate({
