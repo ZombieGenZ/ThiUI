@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ProductCard } from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
@@ -173,13 +173,13 @@ export function HomePage() {
             </div>
             <h2 className="font-display text-3xl md:text-4xl text-neutral-900">Best Sellers</h2>
           </div>
-          <a
-            href="/best-sellers"
+          <Link
+            to="/best-sellers"
             className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
           >
             <span>View All</span>
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -199,8 +199,8 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            <a
-              href="/shop/living"
+            <Link
+              to="/shop/living"
               className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
               data-aos="zoom-in"
               data-aos-delay="0"
@@ -215,9 +215,9 @@ export function HomePage() {
                 <h3 className="text-white font-bold text-lg mb-1">Living Room</h3>
                 <p className="text-white/80 text-sm">Sofas, Tables & More</p>
               </div>
-            </a>
-            <a
-              href="/shop/bedroom"
+            </Link>
+            <Link
+              to="/shop/bedroom"
               className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
               data-aos="zoom-in"
               data-aos-delay="50"
@@ -232,9 +232,9 @@ export function HomePage() {
                 <h3 className="text-white font-bold text-lg mb-1">Bedroom</h3>
                 <p className="text-white/80 text-sm">Beds, Dressers & More</p>
               </div>
-            </a>
-            <a
-              href="/shop/dining"
+            </Link>
+            <Link
+              to="/shop/dining"
               className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
               data-aos="zoom-in"
               data-aos-delay="100"
@@ -249,9 +249,9 @@ export function HomePage() {
                 <h3 className="text-white font-bold text-lg mb-1">Dining</h3>
                 <p className="text-white/80 text-sm">Tables, Chairs & More</p>
               </div>
-            </a>
-            <a
-              href="/shop/office"
+            </Link>
+            <Link
+              to="/shop/office"
               className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
               data-aos="zoom-in"
               data-aos-delay="150"
@@ -266,9 +266,9 @@ export function HomePage() {
                 <h3 className="text-white font-bold text-lg mb-1">Office</h3>
                 <p className="text-white/80 text-sm">Desks, Chairs & More</p>
               </div>
-            </a>
-            <a
-              href="/shop/outdoor"
+            </Link>
+            <Link
+              to="/shop/outdoor"
               className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all"
               data-aos="zoom-in"
               data-aos-delay="200"
@@ -283,7 +283,7 @@ export function HomePage() {
                 <h3 className="text-white font-bold text-lg mb-1">Outdoor</h3>
                 <p className="text-white/80 text-sm">Patio, Garden & More</p>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -297,14 +297,14 @@ export function HomePage() {
             </div>
             <h2 className="font-display text-3xl md:text-4xl text-neutral-900">New Arrivals</h2>
           </div>
-          <a
-            href="/shop?filter=new"
+          <Link
+            to="/shop?filter=new"
             className="text-sm font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1 transition-colors"
            
           >
             <span>View All</span>
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
