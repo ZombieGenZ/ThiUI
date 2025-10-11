@@ -84,10 +84,7 @@ export function TrackOrderPage() {
     try {
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles:user_id (full_name, phone)
-        `)
+        .select('*')
         .eq('order_number', orderNumber.trim())
         .maybeSingle();
 
@@ -113,11 +110,17 @@ export function TrackOrderPage() {
         return;
       }
 
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('id', orderData.user_id)
+        .maybeSingle();
+
       const shippingAddr = orderData.shipping_address as Record<string, unknown> | null;
       const contactInfo = orderData.contact_info as Record<string, unknown> | null;
 
       const customerName = contactInfo?.name as string ||
-                          (orderData.profiles as unknown as { full_name?: string } | null)?.full_name ||
+                          profileData?.full_name ||
                           'Customer';
 
       const fullAddress = shippingAddr
