@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CheckCircle2, Mail, MapPin, Package, Truck, User } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { supabase } from '../lib/supabase';
 
 interface TrackingEvent {
   status: string;
@@ -25,70 +26,34 @@ interface OrderTrackingInfo {
   };
 }
 
-const mockOrders: OrderTrackingInfo[] = [
-  {
-    orderNumber: 'ZSH123456',
-    email: 'emma.lee@example.com',
-    customer: 'Emma Lee',
-    address: '245 Market Street, San Francisco, CA 94105',
-    estimatedDelivery: 'December 4, 2024',
-    carrier: 'FedEx Home Delivery',
-    trackingNumber: 'FE123409875US',
-    currentStatus: 'Out for Delivery',
-    coordinates: {
-      lat: 37.7893,
-      lng: -122.4015,
-    },
-    events: [
-      {
-        status: 'Order Placed',
-        description: 'Order confirmed and payment processed.',
-        date: 'November 26, 2024 - 09:14 AM',
-      },
-      {
-        status: 'Processing',
-        description: 'Furniture inspected and packaged at FurniCraft fulfillment center.',
-        date: 'November 27, 2024 - 02:30 PM',
-      },
-      {
-        status: 'Shipped',
-        description: 'Departed from Oakland, CA. Tracking updates activated.',
-        date: 'November 29, 2024 - 07:45 AM',
-      },
-      {
-        status: 'Out for Delivery',
-        description: 'Courier is en route to the delivery address.',
-        date: 'December 4, 2024 - 08:05 AM',
-      },
-    ],
-  },
-  {
-    orderNumber: 'ZSH987654',
-    email: 'diego.ramirez@example.com',
-    customer: 'Diego Ramirez',
-    address: '88 Hudson Yards, New York, NY 10001',
-    estimatedDelivery: 'December 12, 2024',
-    carrier: 'UPS Freight',
-    trackingNumber: '1Z45F89P0467823100',
-    currentStatus: 'Processing',
-    coordinates: {
-      lat: 40.7539,
-      lng: -74.0010,
-    },
-    events: [
-      {
-        status: 'Order Placed',
-        description: 'Order submitted and awaiting stock confirmation.',
-        date: 'November 24, 2024 - 04:50 PM',
-      },
-      {
-        status: 'Processing',
-        description: 'White Glove team assigned, preparing delivery schedule.',
-        date: 'November 28, 2024 - 11:20 AM',
-      },
-    ],
-  },
-];
+const statusDescriptions: Record<string, string> = {
+  'pending': 'Order confirmed and payment being processed.',
+  'processing': 'Furniture inspected and packaged at FurniCraft fulfillment center.',
+  'shipped': 'Departed from warehouse. Tracking updates activated.',
+  'out_for_delivery': 'Courier is en route to the delivery address.',
+  'delivered': 'Package delivered successfully.',
+  'cancelled': 'Order has been cancelled.',
+};
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+const statusToLabel: Record<string, string> = {
+  'pending': 'Order Placed',
+  'processing': 'Processing',
+  'shipped': 'Shipped',
+  'out_for_delivery': 'Out for Delivery',
+  'delivered': 'Delivered',
+  'cancelled': 'Cancelled',
+};
 
 export function TrackOrderPage() {
   usePageMetadata({
@@ -104,7 +69,7 @@ export function TrackOrderPage() {
   const [order, setOrder] = useState<OrderTrackingInfo | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!orderNumber.trim() || !email.trim()) {
@@ -116,21 +81,91 @@ export function TrackOrderPage() {
     setIsLoading(true);
     setSuccessMessage('');
 
-    setTimeout(() => {
-      const match = mockOrders.find(
-        (item) => item.orderNumber.toLowerCase() === orderNumber.trim().toLowerCase() && item.email === email.trim(),
-      );
+    try {
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          profiles:user_id (full_name, phone)
+        `)
+        .eq('order_number', orderNumber.trim())
+        .maybeSingle();
 
-      if (!match) {
+      if (orderError) throw orderError;
+
+      if (!orderData) {
         setOrder(null);
         setError('We could not locate an order with the provided details. Please double-check and try again.');
         setSuccessMessage('');
-      } else {
-        setOrder(match);
-        setSuccessMessage('Your order was located successfully. Live tracking details are now available below.');
+        setIsLoading(false);
+        return;
       }
+
+      const contactEmail = orderData.contact_info && typeof orderData.contact_info === 'object' && 'email' in orderData.contact_info
+        ? (orderData.contact_info as { email?: string }).email
+        : email.trim();
+
+      if (contactEmail?.toLowerCase() !== email.trim().toLowerCase()) {
+        setOrder(null);
+        setError('We could not locate an order with the provided details. Please double-check and try again.');
+        setSuccessMessage('');
+        setIsLoading(false);
+        return;
+      }
+
+      const shippingAddr = orderData.shipping_address as Record<string, unknown> | null;
+      const contactInfo = orderData.contact_info as Record<string, unknown> | null;
+
+      const customerName = contactInfo?.name as string ||
+                          (orderData.profiles as unknown as { full_name?: string } | null)?.full_name ||
+                          'Customer';
+
+      const fullAddress = shippingAddr
+        ? `${shippingAddr.address_line1 || ''}, ${shippingAddr.city || ''}, ${shippingAddr.state || ''} ${shippingAddr.zip_code || ''}`
+        : 'Address not available';
+
+      const statusStages: Array<'pending' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered'> = [
+        'pending', 'processing', 'shipped', 'out_for_delivery', 'delivered'
+      ];
+
+      const currentStatusIndex = statusStages.indexOf(orderData.status as 'pending' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered');
+
+      const events: TrackingEvent[] = statusStages
+        .slice(0, currentStatusIndex + 1)
+        .map((status, index) => ({
+          status: statusToLabel[status],
+          description: statusDescriptions[status],
+          date: index === 0 ? formatDate(orderData.created_at) : formatDate(orderData.updated_at),
+        }));
+
+      const estimatedDelivery = orderData.delivery_date
+        ? new Date(orderData.delivery_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : 'Estimated delivery date not available';
+
+      const trackingInfo: OrderTrackingInfo = {
+        orderNumber: orderData.order_number,
+        email: contactEmail || email.trim(),
+        customer: customerName,
+        address: fullAddress,
+        estimatedDelivery,
+        carrier: 'FedEx Home Delivery',
+        trackingNumber: `TRK${orderData.order_number.slice(-8)}`,
+        currentStatus: statusToLabel[orderData.status] || orderData.status,
+        events,
+        coordinates: {
+          lat: 37.7893,
+          lng: -122.4015,
+        },
+      };
+
+      setOrder(trackingInfo);
+      setSuccessMessage('Your order was located successfully. Live tracking details are now available below.');
+    } catch (err) {
+      console.error('Error fetching order:', err);
+      setError('An error occurred while fetching your order. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   const currentIndex = order
