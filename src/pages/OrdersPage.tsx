@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Clock, Truck, CheckCircle, XCircle, ShoppingBag, MapPin, Calendar } from 'lucide-react';
+import { Package, Clock, Truck, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -148,7 +148,7 @@ export function OrdersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12" data-aos="fade-down">
           <div className="flex items-center space-x-3 mb-2">
-            <ShoppingBag className="w-8 h-8 text-brand-600" />
+            <Package className="w-8 h-8 text-brand-600" />
             <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">
               {translate({ en: 'Order History', vi: 'Lịch sử đơn hàng' })}
             </span>
@@ -197,7 +197,7 @@ export function OrdersPage() {
                       </div>
                       <div>
                         <h3 className="font-display font-bold text-xl text-neutral-900 mb-1">
-                          {translate({ en: 'Order', vi: 'Đơn hàng' })} #{order.id.slice(0, 8).toUpperCase()}
+                          Order #{order.id.slice(0, 8).toUpperCase()}
                         </h3>
                         <div className="flex items-center space-x-4 text-sm text-neutral-600">
                           <div className="flex items-center space-x-1">
