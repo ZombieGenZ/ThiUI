@@ -252,7 +252,7 @@ export function Header({ onCartOpen }: HeaderProps) {
                           to="/admin/dashboard"
                           className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 dark:text-gray-200 transition-colors"
                         >
-                          Bảng điều khiển
+                          {t('admin.panel.routes.dashboard.label')}
                         </Link>
                       )}
                       <button
