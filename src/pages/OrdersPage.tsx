@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Clock, Truck, CheckCircle, XCircle } from 'lucide-react';
+import { Package, Clock, Truck, CheckCircle, XCircle, ShoppingBag, MapPin, Calendar } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -144,64 +144,92 @@ export function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center space-x-3 mb-8">
-          <Package className="w-8 h-8 text-brand-600" />
-          <h1 className="text-4xl font-display font-bold text-neutral-900">My Orders</h1>
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-12" data-aos="fade-down">
+          <div className="flex items-center space-x-3 mb-2">
+            <ShoppingBag className="w-8 h-8 text-brand-600" />
+            <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">
+              {translate({ en: 'Order History', vi: 'Lịch sử đơn hàng' })}
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-neutral-900">
+            {translate({ en: 'My Orders', vi: 'Đơn hàng của tôi' })}
+          </h1>
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl shadow-soft">
-            <Package className="w-24 h-24 text-neutral-300 mx-auto mb-6" />
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">No orders yet</h2>
-            <p className="text-neutral-600 mb-8">
-              Start shopping to see your orders here!
+          <div className="text-center py-20 bg-white rounded-2xl shadow-lg" data-aos="zoom-in">
+            <div className="relative inline-block mb-6">
+              <div className="absolute inset-0 bg-brand-100 rounded-full blur-2xl opacity-50 animate-pulse" />
+              <Package className="w-32 h-32 text-neutral-300 relative" />
+            </div>
+            <h2 className="text-3xl font-display font-bold text-neutral-900 mb-3">
+              {translate({ en: 'No orders yet', vi: 'Chưa có đơn hàng' })}
+            </h2>
+            <p className="text-lg text-neutral-600 mb-8 max-w-md mx-auto">
+              {translate({
+                en: 'Start shopping to see your orders here!',
+                vi: 'Bắt đầu mua sắm để xem đơn hàng tại đây!'
+              })}
             </p>
             <button
               onClick={() => navigate('/products')}
-              className="bg-brand-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-brand-700 transition-colors"
+              className="bg-brand-600 text-white px-10 py-4 rounded-xl font-semibold hover:bg-brand-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Browse Products
+              {translate({ en: 'Browse Products', vi: 'Xem sản phẩm' })}
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
-            {orders.map((order) => (
+          <div className="space-y-8">
+            {orders.map((order, orderIndex) => (
               <div
                 key={order.id}
-                className="bg-white rounded-xl shadow-soft overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-neutral-100"
+                data-aos="fade-up"
+                data-aos-delay={orderIndex * 50}
               >
-                <div className="p-6 border-b border-neutral-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                    <div className="flex items-center space-x-3">
-                      {getStatusIcon(order.status)}
+                <div className="bg-gradient-to-r from-brand-50 to-accent-50 p-6 border-b border-neutral-200">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        {getStatusIcon(order.status)}
+                      </div>
                       <div>
-                        <h3 className="font-semibold text-neutral-900">
-                          Order #{order.id.slice(0, 8).toUpperCase()}
+                        <h3 className="font-display font-bold text-xl text-neutral-900 mb-1">
+                          {translate({ en: 'Order', vi: 'Đơn hàng' })} #{order.id.slice(0, 8).toUpperCase()}
                         </h3>
-                        <p className="text-sm text-neutral-600">
-                          {new Date(order.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </p>
+                        <div className="flex items-center space-x-4 text-sm text-neutral-600">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-4 h-4" />
+                            <span>
+                              {new Date(order.created_at).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Package className="w-4 h-4" />
+                            <span>{order.order_items.length} {translate({ en: 'items', vi: 'sản phẩm' })}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-4">
                       <span
-                        className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(
+                        className={`px-5 py-2.5 rounded-full text-sm font-bold ${getStatusColor(
                           order.status
-                        )}`}
+                        )} shadow-sm`}
                       >
                         {formatStatus(order.status)}
                       </span>
-                      <div className="text-right">
-                        <p className="text-sm text-neutral-600">
-                          {translate({ en: 'Total', vi: 'Tổng cộng' })}
+                      <div className="text-right bg-white rounded-xl px-6 py-3 shadow-sm">
+                        <p className="text-xs text-neutral-600 mb-1">
+                          {translate({ en: 'Total Amount', vi: 'Tổng tiền' })}
                         </p>
-                        <p className="text-lg font-bold text-neutral-900">
+                        <p className="text-2xl font-display font-bold text-brand-600">
                           {formatPrice(order.total_amount, language)}
                         </p>
                       </div>
@@ -212,27 +240,37 @@ export function OrdersPage() {
                 <div className="p-6">
                   <div className="space-y-4">
                     {order.order_items.map((item, index) => (
-                      <div key={index} className="flex items-center space-x-4">
-                        <img
-                          src={normalizeImageUrl(item.product?.images?.[0], DEFAULT_PRODUCT_IMAGE)}
-                          alt={item.product
-                            ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
-                            : translate({ en: 'Product image', vi: 'Hình ảnh sản phẩm' })}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-neutral-900">
+                      <div
+                        key={index}
+                        className="flex items-center space-x-4 p-4 rounded-xl hover:bg-neutral-50 transition-colors group"
+                      >
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={normalizeImageUrl(item.product?.images?.[0], DEFAULT_PRODUCT_IMAGE)}
+                            alt={item.product
+                              ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
+                              : translate({ en: 'Product image', vi: 'Hình ảnh sản phẩm' })}
+                            className="w-20 h-20 object-cover rounded-xl shadow-sm group-hover:shadow-md transition-shadow"
+                          />
+                          <div className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                            {item.quantity}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-lg text-neutral-900 mb-1 truncate">
                             {item.product
                               ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
                               : translate({ en: 'Product', vi: 'Sản phẩm' })}
                           </h4>
                           <p className="text-sm text-neutral-600">
-                            {translate({ en: 'Quantity', vi: 'Số lượng' })}: {item.quantity} x {formatPrice(item.unit_price, language)}
+                            {item.quantity} × {formatPrice(item.unit_price, language)}
                           </p>
                         </div>
-                        <p className="font-semibold text-neutral-900">
-                          {formatPrice(item.quantity * item.unit_price, language)}
-                        </p>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-neutral-900">
+                            {formatPrice(item.quantity * item.unit_price, language)}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
