@@ -1,4 +1,5 @@
 import { ReactNode, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, CheckCircle2, X } from 'lucide-react';
 
 interface ConfirmDialogProps {
@@ -63,8 +64,8 @@ export function ConfirmDialog({
 
   const style = toneStyles[tone];
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4 py-6">
       <div
         className="absolute inset-0 bg-neutral-950/60 backdrop-blur-sm animate-fade-in"
         onClick={onCancel}
@@ -116,6 +117,7 @@ export function ConfirmDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
