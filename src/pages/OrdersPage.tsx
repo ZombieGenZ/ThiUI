@@ -94,14 +94,14 @@ export function OrdersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Clock className="w-5 h-5 text-yellow-600" />;
+        return <Clock className="w-5 h-5 text-amber-600" />;
       case 'processing':
         return <Package className="w-5 h-5 text-blue-600" />;
       case 'shipped':
       case 'out_for_delivery':
-        return <Truck className="w-5 h-5 text-purple-600" />;
+        return <Truck className="w-5 h-5 text-cyan-600" />;
       case 'delivered':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <CheckCircle className="w-5 h-5 text-emerald-600" />;
       case 'cancelled':
         return <XCircle className="w-5 h-5 text-red-600" />;
       default:
@@ -112,18 +112,18 @@ export function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'processing':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-50 text-blue-700 border border-blue-200';
       case 'shipped':
       case 'out_for_delivery':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-cyan-50 text-cyan-700 border border-cyan-200';
       case 'delivered':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-50 text-red-700 border border-red-200';
       default:
-        return 'bg-neutral-100 text-neutral-800';
+        return 'bg-neutral-50 text-neutral-700 border border-neutral-200';
     }
   };
 
@@ -144,30 +144,24 @@ export function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12" data-aos="fade-down">
-          <div className="flex items-center space-x-3 mb-2">
-            <Package className="w-8 h-8 text-brand-600" />
-            <span className="text-sm font-semibold text-neutral-600 uppercase tracking-wider">
-              {translate({ en: 'Order History', vi: 'Lịch sử đơn hàng' })}
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-neutral-900">
+    <div className="min-h-screen bg-neutral-50 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8" data-aos="fade-down">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-1">
             {translate({ en: 'My Orders', vi: 'Đơn hàng của tôi' })}
           </h1>
+          <p className="text-neutral-600">
+            {translate({ en: 'Track and manage your orders', vi: 'Theo dõi và quản lý đơn hàng' })}
+          </p>
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-lg" data-aos="zoom-in">
-            <div className="relative inline-block mb-6">
-              <div className="absolute inset-0 bg-brand-100 rounded-full blur-2xl opacity-50 animate-pulse" />
-              <Package className="w-32 h-32 text-neutral-300 relative" />
-            </div>
-            <h2 className="text-3xl font-display font-bold text-neutral-900 mb-3">
+          <div className="text-center py-16 bg-white rounded-xl border border-neutral-200" data-aos="fade-up">
+            <Package className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-neutral-900 mb-2">
               {translate({ en: 'No orders yet', vi: 'Chưa có đơn hàng' })}
             </h2>
-            <p className="text-lg text-neutral-600 mb-8 max-w-md mx-auto">
+            <p className="text-neutral-600 mb-6">
               {translate({
                 en: 'Start shopping to see your orders here!',
                 vi: 'Bắt đầu mua sắm để xem đơn hàng tại đây!'
@@ -175,74 +169,69 @@ export function OrdersPage() {
             </p>
             <button
               onClick={() => navigate('/products')}
-              className="bg-brand-600 text-white px-10 py-4 rounded-xl font-semibold hover:bg-brand-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="bg-neutral-900 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-neutral-800 transition-colors"
             >
               {translate({ en: 'Browse Products', vi: 'Xem sản phẩm' })}
             </button>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4">
             {orders.map((order, orderIndex) => (
               <div
                 key={order.id}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-neutral-100"
+                className="bg-white rounded-xl border border-neutral-200 overflow-hidden hover:border-neutral-300 transition-colors"
                 data-aos="fade-up"
                 data-aos-delay={orderIndex * 50}
               >
-                <div className="bg-gradient-to-r from-brand-50 to-accent-50 p-6 border-b border-neutral-200">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">
-                        {getStatusIcon(order.status)}
-                      </div>
-                      <div>
-                        <h3 className="font-display font-bold text-xl text-neutral-900 mb-1">
-                          Order #{order.id.slice(0, 8).toUpperCase()}
+                <div className="p-5 border-b border-neutral-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-semibold text-neutral-900">
+                          #{order.id.slice(0, 8).toUpperCase()}
                         </h3>
-                        <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>
-                              {new Date(order.created_at).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Package className="w-4 h-4" />
-                            <span>{order.order_items.length} {translate({ en: 'items', vi: 'sản phẩm' })}</span>
-                          </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            order.status
+                          )}`}
+                        >
+                          {formatStatus(order.status)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-neutral-500">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4" />
+                          <span>
+                            {new Date(order.created_at).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Package className="w-4 h-4" />
+                          <span>{order.order_items.length} {translate({ en: 'items', vi: 'sản phẩm' })}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <span
-                        className={`px-5 py-2.5 rounded-full text-sm font-bold ${getStatusColor(
-                          order.status
-                        )} shadow-sm`}
-                      >
-                        {formatStatus(order.status)}
-                      </span>
-                      <div className="text-right bg-white rounded-xl px-6 py-3 shadow-sm">
-                        <p className="text-xs text-neutral-600 mb-1">
-                          {translate({ en: 'Total Amount', vi: 'Tổng tiền' })}
-                        </p>
-                        <p className="text-2xl font-display font-bold text-brand-600">
-                          {formatPrice(order.total_amount, language)}
-                        </p>
-                      </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs text-neutral-500 mb-1">
+                        {translate({ en: 'Total', vi: 'Tổng tiền' })}
+                      </p>
+                      <p className="text-xl font-bold text-neutral-900">
+                        {formatPrice(order.total_amount, language)}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-6">
-                  <div className="space-y-4">
+                <div className="p-5">
+                  <div className="space-y-3">
                     {order.order_items.map((item, index) => (
                       <div
                         key={index}
-                        className="flex items-center space-x-4 p-4 rounded-xl hover:bg-neutral-50 transition-colors group"
+                        className="flex items-center gap-4"
                       >
                         <div className="relative flex-shrink-0">
                           <img
@@ -250,24 +239,24 @@ export function OrdersPage() {
                             alt={item.product
                               ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
                               : translate({ en: 'Product image', vi: 'Hình ảnh sản phẩm' })}
-                            className="w-20 h-20 object-cover rounded-xl shadow-sm group-hover:shadow-md transition-shadow"
+                            className="w-16 h-16 object-cover rounded-lg border border-neutral-200"
                           />
-                          <div className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                          <div className="absolute -top-1.5 -right-1.5 bg-neutral-900 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
                             {item.quantity}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-lg text-neutral-900 mb-1 truncate">
+                          <h4 className="font-medium text-neutral-900 truncate">
                             {item.product
                               ? getLocalizedValue(item.product.name_i18n, language, item.product.name)
                               : translate({ en: 'Product', vi: 'Sản phẩm' })}
                           </h4>
-                          <p className="text-sm text-neutral-600">
+                          <p className="text-sm text-neutral-500">
                             {item.quantity} × {formatPrice(item.unit_price, language)}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg text-neutral-900">
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-semibold text-neutral-900">
                             {formatPrice(item.quantity * item.unit_price, language)}
                           </p>
                         </div>
